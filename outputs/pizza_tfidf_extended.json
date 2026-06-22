@@ -1,0 +1,282 @@
+{
+  "documents": [
+    {
+      "text": "Ayer comí una pizza hawaiana en Valencia.",
+      "metadata": {
+        "doc_id": 0,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.3862943611198906,
+          "Pizza": 0.6931471805599453,
+          "Food": 0.34657359027997264,
+          "Margherita": 0.34657359027997264,
+          "PepperoniPizza": 0.34657359027997264,
+          "Ingredient": 0.17328679513998632,
+          "Cheese": 0.08664339756999316,
+          "Tomato": 0.08664339756999316,
+          "Ham": 0.08664339756999316,
+          "Pineapple": 0.08664339756999316,
+          "Pepperoni": 0.08664339756999316
+        }
+      },
+      "annotations": [
+        {
+          "start": 14,
+          "end": 28,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Pedro pidió una pizza margarita para cenar.",
+      "metadata": {
+        "doc_id": 1,
+        "tfidf_extended": {
+          "Margherita": 1.0,
+          "Pizza": 0.5,
+          "Food": 0.25,
+          "PepperoniPizza": 0.25,
+          "HawaiianPizza": 0.25,
+          "Ingredient": 0.125,
+          "Cheese": 0.0625,
+          "Tomato": 0.0625,
+          "Ham": 0.0625,
+          "Pineapple": 0.0625,
+          "Pepperoni": 0.0625
+        }
+      },
+      "annotations": [
+        {
+          "start": 16,
+          "end": 31,
+          "text": "pizza margarita",
+          "label": "Margherita",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Mañana iremos a una pizzería italiana.",
+      "metadata": {
+        "doc_id": 2,
+        "tfidf_extended": {}
+      },
+      "annotations": []
+    },
+    {
+      "text": "María prefiere la pizza pepperoni.",
+      "metadata": {
+        "doc_id": 3,
+        "tfidf_extended": {
+          "PepperoniPizza": 1.0,
+          "Pizza": 0.5,
+          "Food": 0.25,
+          "Margherita": 0.25,
+          "HawaiianPizza": 0.25,
+          "Ingredient": 0.125,
+          "Cheese": 0.0625,
+          "Tomato": 0.0625,
+          "Ham": 0.0625,
+          "Pineapple": 0.0625,
+          "Pepperoni": 0.0625
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 33,
+          "text": "pizza pepperoni",
+          "label": "PepperoniPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "La pizza hawaiana lleva jamón y piña.",
+      "metadata": {
+        "doc_id": 4,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.5112943611198906,
+          "Pizza": 0.9431471805599453,
+          "Food": 0.8465735902799727,
+          "Margherita": 0.47157359027997264,
+          "PepperoniPizza": 0.47157359027997264,
+          "Ingredient": 1.1732867951399863,
+          "Cheese": 0.5866433975699932,
+          "Tomato": 0.5866433975699932,
+          "Ham": 1.3366433975699932,
+          "Pineapple": 1.3366433975699932,
+          "Pepperoni": 0.5866433975699932
+        }
+      },
+      "annotations": [
+        {
+          "start": 3,
+          "end": 17,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 24,
+          "end": 29,
+          "text": "jamón",
+          "label": "Ham",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        },
+        {
+          "start": 32,
+          "end": 36,
+          "text": "piña",
+          "label": "Pineapple",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "El próximo lunes comeremos pizza.",
+      "metadata": {
+        "doc_id": 5,
+        "tfidf_extended": {
+          "Pizza": 1.0,
+          "Food": 0.5,
+          "Margherita": 0.5,
+          "PepperoniPizza": 0.5,
+          "HawaiianPizza": 0.5,
+          "Ingredient": 0.25,
+          "Cheese": 0.125,
+          "Tomato": 0.125,
+          "Ham": 0.125,
+          "Pineapple": 0.125,
+          "Pepperoni": 0.125
+        }
+      },
+      "annotations": [
+        {
+          "start": 27,
+          "end": 32,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Juan estuvo en Murcia ayer.",
+      "metadata": {
+        "doc_id": 6,
+        "tfidf_extended": {}
+      },
+      "annotations": []
+    },
+    {
+      "text": "Me gusta mucho el queso mozzarella.",
+      "metadata": {
+        "doc_id": 7,
+        "tfidf_extended": {
+          "Cheese": 1.0,
+          "Ingredient": 0.5,
+          "Food": 0.25,
+          "Tomato": 0.25,
+          "Ham": 0.25,
+          "Pineapple": 0.25,
+          "Pepperoni": 0.25,
+          "Pizza": 0.125,
+          "Margherita": 0.0625,
+          "PepperoniPizza": 0.0625,
+          "HawaiianPizza": 0.0625
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 23,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    }
+  ]
+}

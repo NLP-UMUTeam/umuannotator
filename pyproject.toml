@@ -18,7 +18,9 @@ dependencies = [
     "typer",
     "rich",
     "diskcache",
-    "dateparser"
+    "dateparser",
+    "tqdm",
+    "pyyaml"
 ]
 
 [project.optional-dependencies]

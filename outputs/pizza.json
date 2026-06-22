@@ -1,0 +1,236 @@
+{
+  "documents": [
+    {
+      "text": "Ayer comí una pizza hawaiana en Valencia.",
+      "metadata": {
+        "doc_id": 0,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.3862943611198906,
+          "Pizza": 0.6931471805599453,
+          "Food": 0.34657359027997264
+        }
+      },
+      "annotations": [
+        {
+          "start": 14,
+          "end": 28,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Pedro pidió una pizza margarita para cenar.",
+      "metadata": {
+        "doc_id": 1,
+        "tfidf_extended": {
+          "Margherita": 1.0,
+          "Pizza": 0.5,
+          "Food": 0.25
+        }
+      },
+      "annotations": [
+        {
+          "start": 16,
+          "end": 31,
+          "text": "pizza margarita",
+          "label": "Margherita",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Mañana iremos a una pizzería italiana.",
+      "metadata": {
+        "doc_id": 2,
+        "tfidf_extended": {}
+      },
+      "annotations": []
+    },
+    {
+      "text": "María prefiere la pizza pepperoni.",
+      "metadata": {
+        "doc_id": 3,
+        "tfidf_extended": {
+          "PepperoniPizza": 1.0,
+          "Pizza": 0.5,
+          "Food": 0.25
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 33,
+          "text": "pizza pepperoni",
+          "label": "PepperoniPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "La pizza hawaiana lleva jamón y piña.",
+      "metadata": {
+        "doc_id": 4,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.3862943611198906,
+          "Pizza": 0.6931471805599453,
+          "Food": 0.8465735902799727,
+          "Ham": 1.0,
+          "Ingredient": 1.0,
+          "Pineapple": 1.0
+        }
+      },
+      "annotations": [
+        {
+          "start": 3,
+          "end": 17,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 24,
+          "end": 29,
+          "text": "jamón",
+          "label": "Ham",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        },
+        {
+          "start": 32,
+          "end": 36,
+          "text": "piña",
+          "label": "Pineapple",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "El próximo lunes comeremos pizza.",
+      "metadata": {
+        "doc_id": 5,
+        "tfidf_extended": {
+          "Pizza": 1.0,
+          "Food": 0.5
+        }
+      },
+      "annotations": [
+        {
+          "start": 27,
+          "end": 32,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Juan estuvo en Murcia ayer.",
+      "metadata": {
+        "doc_id": 6,
+        "tfidf_extended": {}
+      },
+      "annotations": []
+    },
+    {
+      "text": "Me gusta mucho el queso mozzarella.",
+      "metadata": {
+        "doc_id": 7,
+        "tfidf_extended": {
+          "Cheese": 1.0,
+          "Ingredient": 0.5,
+          "Food": 0.25
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 23,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        }
+      ]
+    }
+  ]
+}
