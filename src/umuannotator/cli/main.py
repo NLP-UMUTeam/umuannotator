@@ -1,6 +1,7 @@
 import typer
 
 from umuannotator.cli import ontology
+from umuannotator.renderers.json import corpus_to_dict
 
 app = typer.Typer(
     help="UMU Annotator: modular annotation toolkit."
@@ -15,7 +16,7 @@ app.add_typer(
 
 @app.command()
 def annotate(
-    text: str = typer.Option(..., "--text", "-t"),
+    text: list[str] = typer.Option(..., "--text", "-t"),
     annotator: list[str] = typer.Option(
         [],
         "--annotator",
@@ -24,6 +25,11 @@ def annotate(
     ),
     ontology_path: str | None = typer.Option(None, "--ontology", "-o"),
     language: str = typer.Option("es", "--language", "-l"),
+    use_tfidf: bool = typer.Option(
+        False,
+        "--tfidf",
+        help="Calculate TF-IDF scores after annotation.",
+    ),
 ):
     from rich import print_json
 
@@ -37,12 +43,13 @@ def annotate(
     )
 
     pipeline = AnnotationPipeline(annotators)
-    document = pipeline.run_text(text)
+    documents = pipeline.run_texts(text)
 
-    print_json(data={
-        "text": document.text,
-        "annotations": [
-            annotation.__dict__
-            for annotation in document.annotations
-        ],
-    })
+    if use_tfidf:
+        from umuannotator.metrics import TfidfScorer
+
+        documents = TfidfScorer(layer="ontology").score(documents)
+
+    print_json(
+        data=corpus_to_dict(documents)
+    )

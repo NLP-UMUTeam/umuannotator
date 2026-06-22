@@ -24,20 +24,3 @@ class Document:
 
     def add_annotation(self, annotation: Annotation) -> None:
         self.annotations.append(annotation)
-
-    def by_layer(self, layer: str) -> list[Annotation]:
-        return [
-            annotation
-            for annotation in self.annotations
-            if annotation.layer == layer
-        ]
-
-    def sorted_annotations(self) -> list[Annotation]:
-        return sorted(
-            self.annotations,
-            key=lambda annotation: (
-                annotation.start,
-                -(annotation.end - annotation.start),
-                annotation.layer,
-            ),
-        )
