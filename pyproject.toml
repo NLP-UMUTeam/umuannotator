@@ -16,7 +16,8 @@ dependencies = [
     "pydantic",
     "typer",
     "rich",
-    "diskcache"
+    "diskcache",
+    "dateparser"
 ]
 
 [project.optional-dependencies]
@@ -26,8 +27,12 @@ dev = [
     "mypy"
 ]
 
+stanza = [
+    "stanza"
+]
+
 [project.scripts]
-umuannotator = "umuannotator.cli:app"
+umuannotator = "umuannotator.cli.main:app"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

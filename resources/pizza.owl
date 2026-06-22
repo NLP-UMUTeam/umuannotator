@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://example.org/pizza#"
+    xml:base="http://example.org/pizza"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#">
+
+    <owl:Ontology rdf:about="http://example.org/pizza"/>
+
+    <!-- ========================= -->
+    <!-- Clases principales         -->
+    <!-- ========================= -->
+
+    <owl:Class rdf:about="#Food">
+        <rdfs:label xml:lang="en">food</rdfs:label>
+        <rdfs:label xml:lang="es">comida</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Pizza">
+        <rdfs:subClassOf rdf:resource="#Food"/>
+        <rdfs:label xml:lang="en">pizza</rdfs:label>
+        <rdfs:label xml:lang="es">pizza</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Ingredient">
+        <rdfs:subClassOf rdf:resource="#Food"/>
+        <rdfs:label xml:lang="en">ingredient</rdfs:label>
+        <rdfs:label xml:lang="es">ingrediente</rdfs:label>
+    </owl:Class>
+
+    <!-- ========================= -->
+    <!-- Tipos de pizza             -->
+    <!-- ========================= -->
+
+    <owl:Class rdf:about="#Margherita">
+        <rdfs:subClassOf rdf:resource="#Pizza"/>
+        <rdfs:label xml:lang="en">margherita</rdfs:label>
+        <rdfs:label xml:lang="es">pizza margarita</rdfs:label>
+        <rdfs:seeAlso xml:lang="es">margarita</rdfs:seeAlso>
+    </owl:Class>
+
+    <owl:Class rdf:about="#PepperoniPizza">
+        <rdfs:subClassOf rdf:resource="#Pizza"/>
+        <rdfs:label xml:lang="en">pepperoni pizza</rdfs:label>
+        <rdfs:label xml:lang="es">pizza pepperoni</rdfs:label>
+        <rdfs:seeAlso xml:lang="es">pepperoni</rdfs:seeAlso>
+    </owl:Class>
+
+    <owl:Class rdf:about="#HawaiianPizza">
+        <rdfs:subClassOf rdf:resource="#Pizza"/>
+        <rdfs:label xml:lang="en">hawaiian pizza</rdfs:label>
+        <rdfs:label xml:lang="es">pizza hawaiana</rdfs:label>
+        <rdfs:seeAlso xml:lang="es">hawaiana</rdfs:seeAlso>
+    </owl:Class>
+
+    <!-- ========================= -->
+    <!-- Ingredientes               -->
+    <!-- ========================= -->
+
+    <owl:Class rdf:about="#Cheese">
+        <rdfs:subClassOf rdf:resource="#Ingredient"/>
+        <rdfs:label xml:lang="es">queso</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Tomato">
+        <rdfs:subClassOf rdf:resource="#Ingredient"/>
+        <rdfs:label xml:lang="es">tomate</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Ham">
+        <rdfs:subClassOf rdf:resource="#Ingredient"/>
+        <rdfs:label xml:lang="es">jamón</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Pineapple">
+        <rdfs:subClassOf rdf:resource="#Ingredient"/>
+        <rdfs:label xml:lang="es">piña</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Pepperoni">
+        <rdfs:subClassOf rdf:resource="#Ingredient"/>
+        <rdfs:label xml:lang="es">pepperoni</rdfs:label>
+    </owl:Class>
+
+</rdf:RDF>
