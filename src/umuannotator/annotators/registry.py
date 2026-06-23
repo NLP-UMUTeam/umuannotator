@@ -35,11 +35,6 @@ class AnnotatorFactory:
 
             return StanzaNERAnnotator(language=language)
 
-        if name == "temporal":
-            from umuannotator.annotators.temporal import TemporalAnnotator
-
-            return TemporalAnnotator(language=language)
-
         if name == "dbpedia":
             from umuannotator.annotators.dbpedia import DBpediaSpotlightAnnotator
 
@@ -57,6 +52,35 @@ class AnnotatorFactory:
             return RegexAnnotator(
                 source=source,
                 layer=layer,
+            )
+
+        if name == "duckling":
+            from umuannotator.annotators.duckling import DucklingAnnotator
+
+            dimensions = kwargs.get("dimensions")
+            layer = kwargs.get("layer", "duckling")
+            locale = kwargs.get("locale")
+            timezone = kwargs.get("timezone", "Europe/Madrid")
+
+            if not dimensions:
+                raise ValueError("duckling annotator requires dimensions")
+
+            return DucklingAnnotator(
+                dimensions=dimensions,
+                language=language,
+                locale=locale,
+                timezone=timezone,
+                layer=layer,
+            )
+
+        if name == "temporal":
+            from umuannotator.annotators.temporal import TemporalAnnotator
+
+            return TemporalAnnotator(
+                language=language,
+                locale=kwargs.get("locale"),
+                timezone=kwargs.get("timezone", "Europe/Madrid"),
+                layer=kwargs.get("layer", "temporal"),
             )
 
         raise ValueError(f"Unknown annotator: {name}")

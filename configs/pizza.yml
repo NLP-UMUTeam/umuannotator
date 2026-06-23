@@ -4,12 +4,25 @@ ontology:
 
 annotators:
   - name: ontology
-  # - name: stanza-ner
+    color: "#ffd6d6"
+
   - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+
+  - name: duckling
+    layer: cantidades
+    color: "#d6fff6"
+    dimensions:
+      - number
+      - quantity
+      - amount-of-money
+
   - name: regex
-    layer: pizza-order
+    layer: pedido
     source: resources/pizza_regex.yml
     color: "#ffe0b2"
+
 
 resolver:
   enabled: true

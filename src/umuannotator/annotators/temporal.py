@@ -1,18 +1,6 @@
 from __future__ import annotations
 
-import pendulum
-
-from duckling import (
-    Context,
-    default_locale_lang,
-    load_time_zones,
-    parse,
-    parse_dimensions,
-    parse_lang,
-    parse_locale,
-    parse_ref_time,
-)
-
+from umuannotator.annotators.duckling import DucklingAnnotator
 from umuannotator.document.model import Annotation, Document
 
 
@@ -34,86 +22,46 @@ def is_bad_temporal_surface(surface: str) -> bool:
 
     return False
 
-class TemporalAnnotator:
-    layer = "temporal"
 
+class TemporalAnnotator(DucklingAnnotator):
     def __init__(
         self,
         language: str = "es",
         locale: str | None = None,
         timezone: str = "Europe/Madrid",
+        layer: str = "temporal",
     ):
-        self.language = language
-        self.locale_code = locale or self._locale_from_language(language)
-        self.timezone = timezone
-
-        self.time_zones = load_time_zones("/usr/share/zoneinfo")
-        self.dimensions = parse_dimensions(["time", "time-grain", "duration"])
-
-    def annotate(self, document: Document) -> Document:
-        context = self._build_context()
-
-        results = parse(
-            document.text,
-            context,
-            self.dimensions,
-            False,
+        super().__init__(
+            dimensions=["time", "time-grain", "duration"],
+            language=language,
+            locale=locale,
+            timezone=timezone,
+            layer=layer,
+            source="duckling-temporal",
         )
 
-        for result in results:
-            start = result.get("start")
-            end = result.get("end")
+    def result_to_annotation(
+        self,
+        document: Document,
+        result: dict,
+    ) -> Annotation | None:
+        annotation = super().result_to_annotation(document, result)
 
-            if start is None or end is None:
-                continue
+        if annotation is None:
+            return None
 
-            value = result.get("value", {})
-            body = result.get("body") or document.text[start:end]
+        if is_bad_temporal_surface(annotation.text):
+            return None
 
-            surface = document.text[start:end].strip()
-            surface_lower = surface.lower()
+        annotation.type = "temporal"
+        annotation.label = self._temporal_label(result)
 
-            if is_bad_temporal_surface(surface):
-                continue
+        annotation.metadata["normalized"] = self._normalized_value(result)
+        annotation.metadata["raw_value"] = result.get("value", {})
 
-            document.add_annotation(
-                Annotation(
-                    start=start,
-                    end=end,
-                    text=document.text[start:end],
-                    label=self._label_for(result),
-                    layer=self.layer,
-                    source="duckling",
-                    type="temporal",
-                    subtype=result.get("dim"),
-                    metadata={
-                        "body": body,
-                        "dim": result.get("dim"),
-                        "value": value,
-                        "locale": self.locale_code,
-                        "timezone": self.timezone,
-                    },
-                )
-            )
+        return annotation
 
-        return document
-
-    def _build_context(self) -> Context:
-        now = pendulum.now(self.timezone).replace(microsecond=0)
-
-        ref_time = parse_ref_time(
-            self.time_zones,
-            self.timezone,
-            now.int_timestamp,
-        )
-
-        lang = parse_lang(self._duckling_language(self.language))
-        default_locale = default_locale_lang(lang)
-        locale = parse_locale(self.locale_code, default_locale)
-
-        return Context(ref_time, locale)
-
-    def _label_for(self, result: dict) -> str:
+    def _temporal_label(self, result: dict) -> str:
         dim = result.get("dim")
 
         if dim == "time":
@@ -127,14 +75,14 @@ class TemporalAnnotator:
 
         return "TEMPORAL"
 
-    def _locale_from_language(self, language: str) -> str:
-        return {
-            "es": "ES_ES",
-            "en": "EN_US",
-        }.get(language, language.upper())
+    def _normalized_value(self, result: dict):
+        value = result.get("value", {})
 
-    def _duckling_language(self, language: str) -> str:
-        return {
-            "es": "ES",
-            "en": "EN",
-        }.get(language, language.upper())
+        if isinstance(value, dict):
+            return (
+                value.get("value")
+                or value.get("from", {}).get("value")
+                or value.get("to", {}).get("value")
+            )
+
+        return value

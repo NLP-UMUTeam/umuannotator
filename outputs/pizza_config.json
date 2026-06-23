@@ -5,9 +5,9 @@
       "metadata": {
         "doc_id": 0,
         "tfidf_extended": {
-          "HawaiianPizza": 1.466337068793427,
-          "Pizza": 0.7331685343967135,
-          "Food": 0.36658426719835674
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 0.4184941083929179
         }
       },
       "annotations": [
@@ -17,12 +17,11 @@
           "text": "Ayer",
           "label": "DATE",
           "layer": "temporal",
-          "source": "duckling",
+          "source": "duckling-temporal",
           "type": "temporal",
           "subtype": "time",
           "score": null,
           "metadata": {
-            "body": "Ayer",
             "dim": "time",
             "value": {
               "grain": "day",
@@ -36,6 +35,41 @@
                 }
               ]
             },
+            "body": "Ayer",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-22T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
             "locale": "ES_ES",
             "timezone": "Europe/Madrid"
           }
@@ -49,12 +83,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.6739764335716716,
           "metadata": {
             "tf": 1,
             "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
           }
         }
       ]
@@ -64,12 +98,33 @@
       "metadata": {
         "doc_id": 1,
         "tfidf_extended": {
-          "Margherita": 1.8718021769015913,
-          "Pizza": 0.9359010884507957,
-          "Food": 0.46795054422539784
+          "Margherita": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
         }
       },
       "annotations": [
+        {
+          "start": 12,
+          "end": 15,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
         {
           "start": 16,
           "end": 31,
@@ -79,12 +134,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         }
       ]
@@ -102,12 +157,11 @@
           "text": "Mañana",
           "label": "DATE",
           "layer": "temporal",
-          "source": "duckling",
+          "source": "duckling-temporal",
           "type": "temporal",
           "subtype": "time",
           "score": null,
           "metadata": {
-            "body": "MaÃ±ana",
             "dim": "time",
             "value": {
               "grain": "day",
@@ -121,6 +175,41 @@
                 }
               ]
             },
+            "body": "MaÃ±ana",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-24T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
             "locale": "ES_ES",
             "timezone": "Europe/Madrid"
           }
@@ -132,9 +221,9 @@
       "metadata": {
         "doc_id": 3,
         "tfidf_extended": {
-          "PepperoniPizza": 1.8718021769015913,
-          "Pizza": 0.9359010884507957,
-          "Food": 0.46795054422539784
+          "PepperoniPizza": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
         }
       },
       "annotations": [
@@ -147,12 +236,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         }
       ]
@@ -162,12 +251,12 @@
       "metadata": {
         "doc_id": 4,
         "tfidf_extended": {
-          "HawaiianPizza": 1.466337068793427,
-          "Pizza": 0.7331685343967135,
-          "Food": 1.0845348114237545,
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 1.1883544938128767,
           "Ham": 1.0,
-          "Ingredient": 1.4359010884507957,
-          "Pineapple": 1.8718021769015913
+          "Ingredient": 1.5397207708399179,
+          "Pineapple": 2.0794415416798357
         }
       },
       "annotations": [
@@ -180,12 +269,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.6739764335716716,
           "metadata": {
             "tf": 1,
             "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
           }
         },
         {
@@ -214,12 +303,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         }
       ]
@@ -229,8 +318,8 @@
       "metadata": {
         "doc_id": 5,
         "tfidf_extended": {
-          "Pizza": 1.466337068793427,
-          "Food": 0.7331685343967135
+          "Pizza": 1.3862943611198906,
+          "Food": 0.6931471805599453
         }
       },
       "annotations": [
@@ -240,12 +329,11 @@
           "text": "El próximo lunes",
           "label": "DATE",
           "layer": "temporal",
-          "source": "duckling",
+          "source": "duckling-temporal",
           "type": "temporal",
           "subtype": "time",
           "score": null,
           "metadata": {
-            "body": "El prÃ³ximo lunes",
             "dim": "time",
             "value": {
               "grain": "day",
@@ -259,8 +347,22 @@
                 }
               ]
             },
+            "body": "El prÃ³ximo lunes",
             "locale": "ES_ES",
-            "timezone": "Europe/Madrid"
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-29T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-29T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-29T00:00:00.000+02:00"
+                }
+              ]
+            }
           }
         },
         {
@@ -272,12 +374,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         }
       ]
@@ -295,12 +397,11 @@
           "text": "ayer",
           "label": "DATE",
           "layer": "temporal",
-          "source": "duckling",
+          "source": "duckling-temporal",
           "type": "temporal",
           "subtype": "time",
           "score": null,
           "metadata": {
-            "body": "ayer",
             "dim": "time",
             "value": {
               "grain": "day",
@@ -314,8 +415,22 @@
                 }
               ]
             },
+            "body": "ayer",
             "locale": "ES_ES",
-            "timezone": "Europe/Madrid"
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-22T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            }
           }
         }
       ]
@@ -325,9 +440,9 @@
       "metadata": {
         "doc_id": 7,
         "tfidf_extended": {
-          "Cheese": 1.466337068793427,
-          "Ingredient": 0.7331685343967135,
-          "Food": 0.36658426719835674
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453,
+          "Food": 0.34657359027997264
         }
       },
       "annotations": [
@@ -340,12 +455,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         }
       ]
@@ -355,12 +470,33 @@
       "metadata": {
         "doc_id": 8,
         "tfidf_extended": {
-          "HawaiianPizza": 1.466337068793427,
-          "Pizza": 0.7331685343967135,
-          "Food": 0.36658426719835674
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 0.4184941083929179
         }
       },
       "annotations": [
+        {
+          "start": 7,
+          "end": 10,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
         {
           "start": 11,
           "end": 25,
@@ -370,12 +506,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.6739764335716716,
           "metadata": {
             "tf": 1,
             "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
           }
         },
         {
@@ -383,7 +519,7 @@
           "end": 32,
           "text": "grande",
           "label": "SIZE_LARGE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "size",
@@ -397,7 +533,7 @@
           "end": 46,
           "text": "masa fina",
           "label": "CRUST_THIN",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "crust",
@@ -413,14 +549,35 @@
       "metadata": {
         "doc_id": 9,
         "tfidf_extended": {
-          "PepperoniPizza": 1.8718021769015913,
-          "Pizza": 0.9359010884507957,
-          "Food": 0.8345348114237545,
-          "Cheese": 1.466337068793427,
-          "Ingredient": 0.7331685343967135
+          "PepperoniPizza": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.8664339756999315,
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453
         }
       },
       "annotations": [
+        {
+          "start": 12,
+          "end": 15,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
         {
           "start": 16,
           "end": 31,
@@ -430,12 +587,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         },
         {
@@ -443,7 +600,7 @@
           "end": 40,
           "text": "familiar",
           "label": "SIZE_LARGE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "size",
@@ -457,7 +614,7 @@
           "end": 59,
           "text": "extra de queso",
           "label": "EXTRA_CHEESE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "modifier",
@@ -475,12 +632,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         }
       ]
@@ -490,12 +647,33 @@
       "metadata": {
         "doc_id": 10,
         "tfidf_extended": {
-          "Margherita": 1.8718021769015913,
-          "Pizza": 0.9359010884507957,
-          "Food": 0.46795054422539784
+          "Margherita": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
         }
       },
       "annotations": [
+        {
+          "start": 13,
+          "end": 16,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
         {
           "start": 17,
           "end": 26,
@@ -505,12 +683,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         },
         {
@@ -518,7 +696,7 @@
           "end": 34,
           "text": "pequeña",
           "label": "SIZE_SMALL",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "size",
@@ -532,7 +710,7 @@
           "end": 47,
           "text": "bien hecha",
           "label": "COOKING_WELL_DONE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "cooking",
@@ -548,10 +726,10 @@
       "metadata": {
         "doc_id": 11,
         "tfidf_extended": {
-          "Pineapple": 1.8718021769015913,
-          "Ingredient": 0.9359010884507957,
-          "Food": 1.2011190786221113,
-          "Pizza": 1.466337068793427
+          "Pineapple": 2.0794415416798357,
+          "Ingredient": 1.0397207708399179,
+          "Food": 1.2130075659799042,
+          "Pizza": 1.3862943611198906
         }
       },
       "annotations": [
@@ -560,7 +738,7 @@
           "end": 14,
           "text": "No quiero piña",
           "label": "NO_PINEAPPLE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "restriction",
@@ -578,12 +756,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.8718021769015913,
+          "score": 2.0794415416798357,
           "metadata": {
             "tf": 1,
             "df": 2,
-            "idf": 1.8718021769015913,
-            "tfidf": 1.8718021769015913
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
           }
         },
         {
@@ -595,12 +773,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         },
         {
@@ -608,7 +786,7 @@
           "end": 48,
           "text": "masa gruesa",
           "label": "CRUST_THICK",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "crust",
@@ -624,13 +802,34 @@
       "metadata": {
         "doc_id": 12,
         "tfidf_extended": {
-          "Pizza": 1.466337068793427,
-          "Food": 1.0997528015950702,
-          "Cheese": 1.466337068793427,
-          "Ingredient": 0.7331685343967135
+          "Pizza": 1.3862943611198906,
+          "Food": 1.0397207708399179,
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453
         }
       },
       "annotations": [
+        {
+          "start": 0,
+          "end": 3,
+          "text": "Una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "Una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
         {
           "start": 4,
           "end": 9,
@@ -640,12 +839,12 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         },
         {
@@ -653,7 +852,7 @@
           "end": 27,
           "text": "borde relleno",
           "label": "CRUST_THICK",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "crust",
@@ -667,7 +866,7 @@
           "end": 41,
           "text": "mucho queso",
           "label": "EXTRA_CHEESE",
-          "layer": "pizza-order",
+          "layer": "pedido",
           "source": "resources/pizza_regex.yml",
           "type": "regex",
           "subtype": "modifier",
@@ -685,12 +884,188 @@
           "source": "resources/pizza.owl",
           "type": "ontology",
           "subtype": null,
-          "score": 1.466337068793427,
+          "score": 1.3862943611198906,
           "metadata": {
             "tf": 1,
-            "df": 3,
-            "idf": 1.466337068793427,
-            "tfidf": 1.466337068793427
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Mañana pediremos 3 pizzas grandes.",
+      "metadata": {
+        "doc_id": 13,
+        "tfidf_extended": {}
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 6,
+          "text": "Mañana",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "MaÃ±ana",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-24T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 17,
+          "end": 18,
+          "text": "3",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 3
+            },
+            "body": "3",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        }
+      ]
+    },
+    {
+      "text": "La pizza cuesta 12 euros.",
+      "metadata": {
+        "doc_id": 14,
+        "tfidf_extended": {
+          "Pizza": 1.3862943611198906,
+          "Food": 0.6931471805599453
+        }
+      },
+      "annotations": [
+        {
+          "start": 3,
+          "end": 8,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 16,
+          "end": 24,
+          "text": "12 euros",
+          "label": "AMOUNT_OF_MONEY",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "amount-of-money",
+          "score": null,
+          "metadata": {
+            "dim": "amount-of-money",
+            "value": {
+              "type": "value",
+              "unit": "EUR",
+              "value": 12
+            },
+            "body": "12 euros",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Añade 200 gramos de queso.",
+      "metadata": {
+        "doc_id": 15,
+        "tfidf_extended": {
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453,
+          "Food": 0.34657359027997264
+        }
+      },
+      "annotations": [
+        {
+          "start": 6,
+          "end": 25,
+          "text": "200 gramos de queso",
+          "label": "QUANTITY",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "quantity",
+          "score": null,
+          "metadata": {
+            "dim": "quantity",
+            "value": {
+              "product": "queso",
+              "type": "value",
+              "unit": "gram",
+              "value": 200
+            },
+            "body": "200 gramos de queso",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 20,
+          "end": 25,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
           }
         }
       ]
@@ -698,7 +1073,10 @@
   ],
   "metadata": {
     "layer_colors": {
-      "pizza-order": "#ffe0b2"
+      "ontology": "#ffd6d6",
+      "temporal": "#d6e4ff",
+      "cantidades": "#d6fff6",
+      "pedido": "#ffe0b2"
     }
   }
 }
