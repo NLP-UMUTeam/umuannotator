@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Informe Pizza</title>
+  <title>UMU Annotator</title>
 
   <style>
   :root {
@@ -159,24 +159,37 @@ th {
 <body>
 <div class="page">
 
-  <h1>Informe Pizza</h1>
+  <h1>UMU Annotator</h1>
 
   <div class="legend">
-    <span class="legend-item">
-      <span class="badge badge-ontology">Ontology</span>
-    </span>
-
-    <span class="legend-item">
-      <span class="badge badge-ner">NER</span>
-    </span>
-
-    <span class="legend-item">
-      <span class="badge badge-temporal">Temporal</span>
-    </span>
-
-    <span class="legend-item">
-      <span class="badge badge-entity-linking">Entity Linking</span>
-    </span>
+    
+      <span class="legend-item">
+        <span
+          class="badge"
+          style="background-color: #ffd6d6"
+        >
+          ontology
+        </span>
+      </span>
+    
+      <span class="legend-item">
+        <span
+          class="badge"
+          style="background-color: #ffe0b2"
+        >
+          pizza-order
+        </span>
+      </span>
+    
+      <span class="legend-item">
+        <span
+          class="badge"
+          style="background-color: #d6e4ff"
+        >
+          temporal
+        </span>
+      </span>
+    
   </div>
 
   
@@ -184,7 +197,7 @@ th {
     <h2>Documento 1</h2>
 
     <div class="text">
-      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Ayer</span> comí una <span class="annotation" style="background:#ffd6d6" title="HawaiianPizza · ontology">pizza hawaiana</span> en <span class="annotation" style="background:#d6ffd6" title="LOC · ner">Valencia</span>.
+      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Ayer</span> comí una <span class="annotation" style="background:#ffd6d6" title="HawaiianPizza · ontology">pizza hawaiana</span> en Valencia.
     </div>
 
     
@@ -223,18 +236,7 @@ th {
           <td>28</td>
           <td class="score">
             
-              1.3863
-            
-          </td>
-        </tr>
-      
-        <tr>
-          <td>Valencia</td>
-          <td>LOC</td>
-          <td>ner</td>
-          <td>32</td>
-          <td>40</td>
-          <td class="score">
+              1.4663
             
           </td>
         </tr>
@@ -258,17 +260,17 @@ th {
       
         <tr>
           <td>HawaiianPizza</td>
-          <td class="score">1.3863</td>
+          <td class="score">1.4663</td>
         </tr>
       
         <tr>
           <td>Pizza</td>
-          <td class="score">0.6931</td>
+          <td class="score">0.7332</td>
         </tr>
       
         <tr>
           <td>Food</td>
-          <td class="score">0.3466</td>
+          <td class="score">0.3666</td>
         </tr>
       
       </tbody>
@@ -280,7 +282,7 @@ th {
     <h2>Documento 2</h2>
 
     <div class="text">
-      <span class="annotation" style="background:#d6ffd6" title="PER · ner">Pedro</span> pidió una <span class="annotation" style="background:#ffd6d6" title="Margherita · ontology">pizza margarita</span> para cenar.
+      Pedro pidió una <span class="annotation" style="background:#ffd6d6" title="Margherita · ontology">pizza margarita</span> para cenar.
     </div>
 
     
@@ -301,17 +303,6 @@ th {
       <tbody>
       
         <tr>
-          <td>Pedro</td>
-          <td>PER</td>
-          <td>ner</td>
-          <td>0</td>
-          <td>5</td>
-          <td class="score">
-            
-          </td>
-        </tr>
-      
-        <tr>
           <td>pizza margarita</td>
           <td>Margherita</td>
           <td>ontology</td>
@@ -319,7 +310,7 @@ th {
           <td>31</td>
           <td class="score">
             
-              1.0000
+              1.8718
             
           </td>
         </tr>
@@ -343,17 +334,17 @@ th {
       
         <tr>
           <td>Margherita</td>
-          <td class="score">1.0000</td>
+          <td class="score">1.8718</td>
         </tr>
       
         <tr>
           <td>Pizza</td>
-          <td class="score">0.5000</td>
+          <td class="score">0.9359</td>
         </tr>
       
         <tr>
           <td>Food</td>
-          <td class="score">0.2500</td>
+          <td class="score">0.4680</td>
         </tr>
       
       </tbody>
@@ -365,7 +356,7 @@ th {
     <h2>Documento 3</h2>
 
     <div class="text">
-      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Mañana</span> iremos <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">a una</span> pizzería italiana.
+      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Mañana</span> iremos a una pizzería italiana.
     </div>
 
     
@@ -396,17 +387,6 @@ th {
           </td>
         </tr>
       
-        <tr>
-          <td>a una</td>
-          <td>DATE</td>
-          <td>temporal</td>
-          <td>14</td>
-          <td>19</td>
-          <td class="score">
-            
-          </td>
-        </tr>
-      
       </tbody>
     </table>
     
@@ -418,7 +398,7 @@ th {
     <h2>Documento 4</h2>
 
     <div class="text">
-      <span class="annotation" style="background:#d6ffd6" title="PER · ner">María</span> prefiere la <span class="annotation" style="background:#ffd6d6" title="PepperoniPizza · ontology">pizza pepperoni</span>.
+      María prefiere la <span class="annotation" style="background:#ffd6d6" title="PepperoniPizza · ontology">pizza pepperoni</span>.
     </div>
 
     
@@ -439,17 +419,6 @@ th {
       <tbody>
       
         <tr>
-          <td>María</td>
-          <td>PER</td>
-          <td>ner</td>
-          <td>0</td>
-          <td>5</td>
-          <td class="score">
-            
-          </td>
-        </tr>
-      
-        <tr>
           <td>pizza pepperoni</td>
           <td>PepperoniPizza</td>
           <td>ontology</td>
@@ -457,7 +426,7 @@ th {
           <td>33</td>
           <td class="score">
             
-              1.0000
+              1.8718
             
           </td>
         </tr>
@@ -481,17 +450,17 @@ th {
       
         <tr>
           <td>PepperoniPizza</td>
-          <td class="score">1.0000</td>
+          <td class="score">1.8718</td>
         </tr>
       
         <tr>
           <td>Pizza</td>
-          <td class="score">0.5000</td>
+          <td class="score">0.9359</td>
         </tr>
       
         <tr>
           <td>Food</td>
-          <td class="score">0.2500</td>
+          <td class="score">0.4680</td>
         </tr>
       
       </tbody>
@@ -531,7 +500,7 @@ th {
           <td>17</td>
           <td class="score">
             
-              1.3863
+              1.4663
             
           </td>
         </tr>
@@ -557,7 +526,7 @@ th {
           <td>36</td>
           <td class="score">
             
-              1.0000
+              1.8718
             
           </td>
         </tr>
@@ -580,8 +549,23 @@ th {
       <tbody>
       
         <tr>
+          <td>Pineapple</td>
+          <td class="score">1.8718</td>
+        </tr>
+      
+        <tr>
           <td>HawaiianPizza</td>
-          <td class="score">1.3863</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">1.4359</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">1.0845</td>
         </tr>
       
         <tr>
@@ -590,23 +574,8 @@ th {
         </tr>
       
         <tr>
-          <td>Ingredient</td>
-          <td class="score">1.0000</td>
-        </tr>
-      
-        <tr>
-          <td>Pineapple</td>
-          <td class="score">1.0000</td>
-        </tr>
-      
-        <tr>
-          <td>Food</td>
-          <td class="score">0.8466</td>
-        </tr>
-      
-        <tr>
           <td>Pizza</td>
-          <td class="score">0.6931</td>
+          <td class="score">0.7332</td>
         </tr>
       
       </tbody>
@@ -618,7 +587,7 @@ th {
     <h2>Documento 6</h2>
 
     <div class="text">
-      El próximo <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">lunes</span> comeremos <span class="annotation" style="background:#ffd6d6" title="Pizza · ontology">pizza</span>.
+      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">El próximo lunes</span> comeremos <span class="annotation" style="background:#ffd6d6" title="Pizza · ontology">pizza</span>.
     </div>
 
     
@@ -639,10 +608,10 @@ th {
       <tbody>
       
         <tr>
-          <td>lunes</td>
+          <td>El próximo lunes</td>
           <td>DATE</td>
           <td>temporal</td>
-          <td>11</td>
+          <td>0</td>
           <td>16</td>
           <td class="score">
             
@@ -657,7 +626,7 @@ th {
           <td>32</td>
           <td class="score">
             
-              1.0000
+              1.4663
             
           </td>
         </tr>
@@ -681,12 +650,12 @@ th {
       
         <tr>
           <td>Pizza</td>
-          <td class="score">1.0000</td>
+          <td class="score">1.4663</td>
         </tr>
       
         <tr>
           <td>Food</td>
-          <td class="score">0.5000</td>
+          <td class="score">0.7332</td>
         </tr>
       
       </tbody>
@@ -698,7 +667,7 @@ th {
     <h2>Documento 7</h2>
 
     <div class="text">
-      <span class="annotation" style="background:#d6ffd6" title="PER · ner">Juan</span> estuvo en <span class="annotation" style="background:#d6ffd6" title="LOC · ner">Murcia</span> <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">ayer</span>.
+      Juan estuvo en Murcia <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">ayer</span>.
     </div>
 
     
@@ -717,28 +686,6 @@ th {
       </thead>
 
       <tbody>
-      
-        <tr>
-          <td>Juan</td>
-          <td>PER</td>
-          <td>ner</td>
-          <td>0</td>
-          <td>4</td>
-          <td class="score">
-            
-          </td>
-        </tr>
-      
-        <tr>
-          <td>Murcia</td>
-          <td>LOC</td>
-          <td>ner</td>
-          <td>15</td>
-          <td>21</td>
-          <td class="score">
-            
-          </td>
-        </tr>
       
         <tr>
           <td>ayer</td>
@@ -790,7 +737,7 @@ th {
           <td>23</td>
           <td class="score">
             
-              1.0000
+              1.4663
             
           </td>
         </tr>
@@ -814,17 +761,556 @@ th {
       
         <tr>
           <td>Cheese</td>
-          <td class="score">1.0000</td>
+          <td class="score">1.4663</td>
         </tr>
       
         <tr>
           <td>Ingredient</td>
-          <td class="score">0.5000</td>
+          <td class="score">0.7332</td>
         </tr>
       
         <tr>
           <td>Food</td>
-          <td class="score">0.2500</td>
+          <td class="score">0.3666</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 9</h2>
+
+    <div class="text">
+      Quiero una <span class="annotation" style="background:#ffd6d6" title="HawaiianPizza · ontology">pizza hawaiana</span> <span class="annotation" style="background:#ffe0b2" title="SIZE_LARGE · pizza-order">grande</span> con <span class="annotation" style="background:#ffe0b2" title="CRUST_THIN · pizza-order">masa fina</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>pizza hawaiana</td>
+          <td>HawaiianPizza</td>
+          <td>ontology</td>
+          <td>11</td>
+          <td>25</td>
+          <td class="score">
+            
+              1.4663
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>grande</td>
+          <td>SIZE_LARGE</td>
+          <td>pizza-order</td>
+          <td>26</td>
+          <td>32</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>masa fina</td>
+          <td>CRUST_THIN</td>
+          <td>pizza-order</td>
+          <td>37</td>
+          <td>46</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>HawaiianPizza</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.7332</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.3666</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 10</h2>
+
+    <div class="text">
+      Pedro pidió una <span class="annotation" style="background:#ffd6d6" title="PepperoniPizza · ontology">pizza pepperoni</span> <span class="annotation" style="background:#ffe0b2" title="SIZE_LARGE · pizza-order">familiar</span> con <span class="annotation" style="background:#ffe0b2" title="EXTRA_CHEESE · pizza-order">extra de queso</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>pizza pepperoni</td>
+          <td>PepperoniPizza</td>
+          <td>ontology</td>
+          <td>16</td>
+          <td>31</td>
+          <td class="score">
+            
+              1.8718
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>familiar</td>
+          <td>SIZE_LARGE</td>
+          <td>pizza-order</td>
+          <td>32</td>
+          <td>40</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>extra de queso</td>
+          <td>EXTRA_CHEESE</td>
+          <td>pizza-order</td>
+          <td>45</td>
+          <td>59</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>queso</td>
+          <td>Cheese</td>
+          <td>ontology</td>
+          <td>54</td>
+          <td>59</td>
+          <td class="score">
+            
+              1.4663
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>PepperoniPizza</td>
+          <td class="score">1.8718</td>
+        </tr>
+      
+        <tr>
+          <td>Cheese</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.9359</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.8345</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">0.7332</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 11</h2>
+
+    <div class="text">
+      María quiere una <span class="annotation" style="background:#ffd6d6" title="Margherita · ontology">margarita</span> <span class="annotation" style="background:#ffe0b2" title="SIZE_SMALL · pizza-order">pequeña</span> y <span class="annotation" style="background:#ffe0b2" title="COOKING_WELL_DONE · pizza-order">bien hecha</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>margarita</td>
+          <td>Margherita</td>
+          <td>ontology</td>
+          <td>17</td>
+          <td>26</td>
+          <td class="score">
+            
+              1.8718
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pequeña</td>
+          <td>SIZE_SMALL</td>
+          <td>pizza-order</td>
+          <td>27</td>
+          <td>34</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>bien hecha</td>
+          <td>COOKING_WELL_DONE</td>
+          <td>pizza-order</td>
+          <td>37</td>
+          <td>47</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Margherita</td>
+          <td class="score">1.8718</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.9359</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.4680</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 12</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#ffe0b2" title="NO_PINEAPPLE · pizza-order">No quiero piña</span> en la <span class="annotation" style="background:#ffd6d6" title="Pizza · ontology">pizza</span>, prefiero <span class="annotation" style="background:#ffe0b2" title="CRUST_THICK · pizza-order">masa gruesa</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>No quiero piña</td>
+          <td>NO_PINEAPPLE</td>
+          <td>pizza-order</td>
+          <td>0</td>
+          <td>14</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>piña</td>
+          <td>Pineapple</td>
+          <td>ontology</td>
+          <td>10</td>
+          <td>14</td>
+          <td class="score">
+            
+              1.8718
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pizza</td>
+          <td>Pizza</td>
+          <td>ontology</td>
+          <td>21</td>
+          <td>26</td>
+          <td class="score">
+            
+              1.4663
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>masa gruesa</td>
+          <td>CRUST_THICK</td>
+          <td>pizza-order</td>
+          <td>37</td>
+          <td>48</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Pineapple</td>
+          <td class="score">1.8718</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">1.2011</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">0.9359</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 13</h2>
+
+    <div class="text">
+      Una <span class="annotation" style="background:#ffd6d6" title="Pizza · ontology">pizza</span> con <span class="annotation" style="background:#ffe0b2" title="CRUST_THICK · pizza-order">borde relleno</span> y <span class="annotation" style="background:#ffe0b2" title="EXTRA_CHEESE · pizza-order">mucho queso</span>, por favor.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>pizza</td>
+          <td>Pizza</td>
+          <td>ontology</td>
+          <td>4</td>
+          <td>9</td>
+          <td class="score">
+            
+              1.4663
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>borde relleno</td>
+          <td>CRUST_THICK</td>
+          <td>pizza-order</td>
+          <td>14</td>
+          <td>27</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>mucho queso</td>
+          <td>EXTRA_CHEESE</td>
+          <td>pizza-order</td>
+          <td>30</td>
+          <td>41</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>queso</td>
+          <td>Cheese</td>
+          <td>ontology</td>
+          <td>36</td>
+          <td>41</td>
+          <td class="score">
+            
+              1.4663
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Cheese</td>
+          <td class="score">1.4663</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">1.0998</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">0.7332</td>
         </tr>
       
       </tbody>

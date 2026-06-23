@@ -18,10 +18,11 @@ dependencies = [
     "typer",
     "rich",
     "diskcache",
-    "dateparser",
     "tqdm",
     "pyyaml",
-    "jinja2"
+    "jinja2",
+    "pyduckling-native-phihos",
+    "pendulum"
 ]
 
 [project.optional-dependencies]
