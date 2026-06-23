@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Informe Pizza</title>
+
+  <style>
+  :root {
+    --page-width: 1200px;
+
+    --background: #f2f3f5;
+    --paper: #ffffff;
+
+    --border: #d9d9d9;
+
+    --text: #222;
+    --muted: #666;
+
+    --ontology: #ffd6d6;
+    --ner: #d6ffd6;
+    --temporal: #d6e4ff;
+    --entity-linking: #fff4bf;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    padding: 2rem;
+
+    background: var(--background);
+    color: var(--text);
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+
+.page {
+    max-width: var(--page-width);
+
+    margin: 1rem auto;
+
+    background: var(--paper);
+
+    padding: 2rem 3rem;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,.08);
+}
+
+h1 {
+    margin-top: 0;
+}
+
+.document {
+    margin-bottom: 3rem;
+}
+
+.document:not(:last-child) {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.annotation {
+    border-radius: 4px;
+    padding: 0.05rem 0.15rem;
+    border-bottom: 2px solid rgba(0,0,0,.25);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th,
+td {
+    border: 1px solid var(--border);
+    padding: .45rem .6rem;
+    text-align: left;
+}
+
+th {
+    background: #fafafa;
+}
+
+.score {
+    text-align: right;
+    font-family: ui-monospace, monospace;
+}
+
+.legend {
+    margin-bottom: 2rem;
+}
+
+.legend-item {
+    display: inline-block;
+    margin-right: 1rem;
+}
+
+.badge {
+    padding: .15rem .4rem;
+    border-radius: 4px;
+}
+
+.badge-ontology {
+    background: var(--ontology);
+}
+
+.badge-ner {
+    background: var(--ner);
+}
+
+.badge-temporal {
+    background: var(--temporal);
+}
+
+.badge-entity-linking {
+    background: var(--entity-linking);
+}
+
+@media print {
+
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .page {
+        max-width: none;
+
+        margin: 0;
+        padding: 0;
+
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .document {
+        page-break-inside: avoid;
+    }
+}
+  </style>
+</head>
+
+<body>
+<div class="page">
+
+  <h1>Informe Pizza</h1>
+
+  <div class="legend">
+    <span class="legend-item">
+      <span class="badge badge-ontology">Ontology</span>
+    </span>
+
+    <span class="legend-item">
+      <span class="badge badge-ner">NER</span>
+    </span>
+
+    <span class="legend-item">
+      <span class="badge badge-temporal">Temporal</span>
+    </span>
+
+    <span class="legend-item">
+      <span class="badge badge-entity-linking">Entity Linking</span>
+    </span>
+  </div>
+
+  
+  <section class="document">
+    <h2>Documento 1</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Ayer</span> comí una <span class="annotation" style="background:#ffd6d6" title="HawaiianPizza · ontology">pizza hawaiana</span> en <span class="annotation" style="background:#d6ffd6" title="LOC · ner">Valencia</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Ayer</td>
+          <td>DATE</td>
+          <td>temporal</td>
+          <td>0</td>
+          <td>4</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pizza hawaiana</td>
+          <td>HawaiianPizza</td>
+          <td>ontology</td>
+          <td>14</td>
+          <td>28</td>
+          <td class="score">
+            
+              1.3863
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Valencia</td>
+          <td>LOC</td>
+          <td>ner</td>
+          <td>32</td>
+          <td>40</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>HawaiianPizza</td>
+          <td class="score">1.3863</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.6931</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.3466</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 2</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#d6ffd6" title="PER · ner">Pedro</span> pidió una <span class="annotation" style="background:#ffd6d6" title="Margherita · ontology">pizza margarita</span> para cenar.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Pedro</td>
+          <td>PER</td>
+          <td>ner</td>
+          <td>0</td>
+          <td>5</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pizza margarita</td>
+          <td>Margherita</td>
+          <td>ontology</td>
+          <td>16</td>
+          <td>31</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Margherita</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.5000</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.2500</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 3</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">Mañana</span> iremos <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">a una</span> pizzería italiana.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Mañana</td>
+          <td>DATE</td>
+          <td>temporal</td>
+          <td>0</td>
+          <td>6</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>a una</td>
+          <td>DATE</td>
+          <td>temporal</td>
+          <td>14</td>
+          <td>19</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 4</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#d6ffd6" title="PER · ner">María</span> prefiere la <span class="annotation" style="background:#ffd6d6" title="PepperoniPizza · ontology">pizza pepperoni</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>María</td>
+          <td>PER</td>
+          <td>ner</td>
+          <td>0</td>
+          <td>5</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pizza pepperoni</td>
+          <td>PepperoniPizza</td>
+          <td>ontology</td>
+          <td>18</td>
+          <td>33</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>PepperoniPizza</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.5000</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.2500</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 5</h2>
+
+    <div class="text">
+      La <span class="annotation" style="background:#ffd6d6" title="HawaiianPizza · ontology">pizza hawaiana</span> lleva <span class="annotation" style="background:#ffd6d6" title="Ham · ontology">jamón</span> y <span class="annotation" style="background:#ffd6d6" title="Pineapple · ontology">piña</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>pizza hawaiana</td>
+          <td>HawaiianPizza</td>
+          <td>ontology</td>
+          <td>3</td>
+          <td>17</td>
+          <td class="score">
+            
+              1.3863
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>jamón</td>
+          <td>Ham</td>
+          <td>ontology</td>
+          <td>24</td>
+          <td>29</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>piña</td>
+          <td>Pineapple</td>
+          <td>ontology</td>
+          <td>32</td>
+          <td>36</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>HawaiianPizza</td>
+          <td class="score">1.3863</td>
+        </tr>
+      
+        <tr>
+          <td>Ham</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Pineapple</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.8466</td>
+        </tr>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">0.6931</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 6</h2>
+
+    <div class="text">
+      El próximo <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">lunes</span> comeremos <span class="annotation" style="background:#ffd6d6" title="Pizza · ontology">pizza</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>lunes</td>
+          <td>DATE</td>
+          <td>temporal</td>
+          <td>11</td>
+          <td>16</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>pizza</td>
+          <td>Pizza</td>
+          <td>ontology</td>
+          <td>27</td>
+          <td>32</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Pizza</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.5000</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 7</h2>
+
+    <div class="text">
+      <span class="annotation" style="background:#d6ffd6" title="PER · ner">Juan</span> estuvo en <span class="annotation" style="background:#d6ffd6" title="LOC · ner">Murcia</span> <span class="annotation" style="background:#d6e4ff" title="DATE · temporal">ayer</span>.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Juan</td>
+          <td>PER</td>
+          <td>ner</td>
+          <td>0</td>
+          <td>4</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>Murcia</td>
+          <td>LOC</td>
+          <td>ner</td>
+          <td>15</td>
+          <td>21</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+        <tr>
+          <td>ayer</td>
+          <td>DATE</td>
+          <td>temporal</td>
+          <td>22</td>
+          <td>26</td>
+          <td class="score">
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+  </section>
+  
+  <section class="document">
+    <h2>Documento 8</h2>
+
+    <div class="text">
+      Me gusta mucho el <span class="annotation" style="background:#ffd6d6" title="Cheese · ontology">queso</span> mozzarella.
+    </div>
+
+    
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>queso</td>
+          <td>Cheese</td>
+          <td>ontology</td>
+          <td>18</td>
+          <td>23</td>
+          <td class="score">
+            
+              1.0000
+            
+          </td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+
+    
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      
+        <tr>
+          <td>Cheese</td>
+          <td class="score">1.0000</td>
+        </tr>
+      
+        <tr>
+          <td>Ingredient</td>
+          <td class="score">0.5000</td>
+        </tr>
+      
+        <tr>
+          <td>Food</td>
+          <td class="score">0.2500</td>
+        </tr>
+      
+      </tbody>
+    </table>
+    
+  </section>
+  
+
+</div>
+</body>
+</html>

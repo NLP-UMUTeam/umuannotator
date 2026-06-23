@@ -20,7 +20,8 @@ dependencies = [
     "diskcache",
     "dateparser",
     "tqdm",
-    "pyyaml"
+    "pyyaml",
+    "jinja2"
 ]
 
 [project.optional-dependencies]

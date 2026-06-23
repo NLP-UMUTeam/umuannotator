@@ -4,6 +4,12 @@ ontology:
 
 annotators:
   - name: ontology
+  # - name: stanza-ner
+  - name: temporal
+  - name: regex
+    layer: pizza-order
+    source: resources/pizza_regex.yml
+    color: "#ffe0b2"
 
 resolver:
   enabled: true

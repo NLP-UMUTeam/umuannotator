@@ -1,0 +1,35 @@
+patterns:
+  - label: SIZE_SMALL
+    regex: "\\b(pequeña|pequeño|individual)\\b"
+    metadata:
+      category: size
+
+  - label: SIZE_LARGE
+    regex: "\\b(grande|familiar|tamaño familiar)\\b"
+    metadata:
+      category: size
+
+  - label: CRUST_THIN
+    regex: "\\b(masa fina|base fina)\\b"
+    metadata:
+      category: crust
+
+  - label: CRUST_THICK
+    regex: "\\b(masa gruesa|borde relleno)\\b"
+    metadata:
+      category: crust
+
+  - label: COOKING_WELL_DONE
+    regex: "\\b(muy hecha|bien hecha|tostada)\\b"
+    metadata:
+      category: cooking
+
+  - label: EXTRA_CHEESE
+    regex: "\\b(extra de queso|doble queso|mucho queso)\\b"
+    metadata:
+      category: modifier
+
+  - label: NO_PINEAPPLE
+    regex: "\\b(sin piña|no quiero piña|sin ananá)\\b"
+    metadata:
+      category: restriction

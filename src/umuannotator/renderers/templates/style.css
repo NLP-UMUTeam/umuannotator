@@ -1,0 +1,148 @@
+:root {
+    --page-width: 1200px;
+
+    --background: #f2f3f5;
+    --paper: #ffffff;
+
+    --border: #d9d9d9;
+
+    --text: #222;
+    --muted: #666;
+
+    --ontology: #ffd6d6;
+    --ner: #d6ffd6;
+    --temporal: #d6e4ff;
+    --entity-linking: #fff4bf;
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    margin: 0;
+    padding: 2rem;
+
+    background: var(--background);
+    color: var(--text);
+
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+}
+
+.page {
+    max-width: var(--page-width);
+
+    margin: 1rem auto;
+
+    background: var(--paper);
+
+    padding: 2rem 3rem;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 2px 6px rgba(0,0,0,.08);
+}
+
+h1 {
+    margin-top: 0;
+}
+
+.document {
+    margin-bottom: 3rem;
+}
+
+.document:not(:last-child) {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.annotation {
+    border-radius: 4px;
+    padding: 0.05rem 0.15rem;
+    border-bottom: 2px solid rgba(0,0,0,.25);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th,
+td {
+    border: 1px solid var(--border);
+    padding: .45rem .6rem;
+    text-align: left;
+}
+
+th {
+    background: #fafafa;
+}
+
+.score {
+    text-align: right;
+    font-family: ui-monospace, monospace;
+}
+
+.legend {
+    margin-bottom: 2rem;
+}
+
+.legend-item {
+    display: inline-block;
+    margin-right: 1rem;
+}
+
+.badge {
+    padding: .15rem .4rem;
+    border-radius: 4px;
+}
+
+.badge-ontology {
+    background: var(--ontology);
+}
+
+.badge-ner {
+    background: var(--ner);
+}
+
+.badge-temporal {
+    background: var(--temporal);
+}
+
+.badge-entity-linking {
+    background: var(--entity-linking);
+}
+
+@media print {
+
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .page {
+        max-width: none;
+
+        margin: 0;
+        padding: 0;
+
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .document {
+        page-break-inside: avoid;
+    }
+}

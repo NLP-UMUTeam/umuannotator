@@ -1,5 +1,6 @@
 import typer
 
+from umuannotator.cli import render
 from umuannotator.cli import ontology
 from umuannotator.cli import metrics
 from umuannotator.renderers.json import corpus_to_dict
@@ -18,6 +19,12 @@ app.add_typer(
     metrics.app,
     name="metrics",
     help="Metric-related commands.",
+)
+
+app.add_typer(
+    render.app,
+    name="render",
+    help="Render annotated results.",
 )
 
 
@@ -118,6 +125,7 @@ def run(
     from umuannotator.ontology.graph import build_graph
     from umuannotator.pipeline import AnnotationPipeline
     from umuannotator.renderers.json import corpus_to_dict
+    from umuannotator.renderers.colors import collect_layer_colors
 
     config = load_config(config_path)
 
@@ -125,10 +133,16 @@ def run(
     ontology_path = ontology_config.get("path")
     language = ontology_config.get("language", "es")
 
-    annotator_names = [
-        item["name"] if isinstance(item, dict) else item
-        for item in config.get("annotators", [])
-    ]
+    annotator_configs = config.get(
+        "annotators",
+        [],
+    )
+
+    annotators = build_annotators(
+        annotator_configs,
+        language=language,
+        ontology_path=ontology_path,
+    )
 
     df = pd.read_csv(input_path, sep=sep)
 
@@ -137,11 +151,6 @@ def run(
         text_column=text_column,
     )
 
-    annotators = build_annotators(
-        annotator_names,
-        language=language,
-        ontology_path=ontology_path,
-    )
 
     pipeline = AnnotationPipeline(annotators)
     corpus = pipeline.run_corpus(corpus)
@@ -182,6 +191,10 @@ def run(
         ).score(corpus)
 
     data = corpus_to_dict(corpus)
+    data["metadata"] = {
+        "layer_colors": collect_layer_colors(config)
+    }
+
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)

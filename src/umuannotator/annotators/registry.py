@@ -40,22 +40,57 @@ class AnnotatorFactory:
 
             return TemporalAnnotator(language=language)
 
+        if name == "dbpedia":
+            from umuannotator.annotators.dbpedia import DBpediaSpotlightAnnotator
+
+            return DBpediaSpotlightAnnotator(language=language)
+
+        if name == "regex":
+            from umuannotator.annotators.regex import RegexAnnotator
+
+            source = kwargs.get("source")
+            layer = kwargs.get("layer", "regex")
+
+            if source is None:
+                raise ValueError("regex annotator requires source")
+
+            return RegexAnnotator(
+                source=source,
+                layer=layer,
+            )
+
         raise ValueError(f"Unknown annotator: {name}")
 
 
-def build_annotators( 
-    names: list[str],
+def build_annotators(
+    names: list,
     *,
     language: str = "es",
     ontology_path: str | None = None,
 ):
     factory = AnnotatorFactory()
 
-    return [
-        factory.create(
-            name,
-            language=language,
-            ontology_path=ontology_path,
+    annotators = []
+
+    for item in names:
+        if isinstance(item, str):
+            name = item
+            params = {}
+        else:
+            name = item["name"]
+            params = {
+                key: value
+                for key, value in item.items()
+                if key != "name"
+            }
+
+        annotators.append(
+            factory.create(
+                name,
+                language=language,
+                ontology_path=ontology_path,
+                **params,
+            )
         )
-        for name in names
-    ]
+
+    return annotators

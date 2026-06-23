@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+
+  <style>
+  {{ css }}
+  </style>
+</head>
+
+<body>
+<div class="page">
+
+  <h1>{{ title }}</h1>
+
+  <div class="legend">
+    {% for layer in layers %}
+      <span class="legend-item">
+        <span
+          class="badge"
+          style="background-color: {{ layer_color(layer) }}"
+        >
+          {{ layer }}
+        </span>
+      </span>
+    {% endfor %}
+  </div>
+
+  {% for document in documents %}
+  <section class="document">
+    <h2>Documento {{ loop.index }}</h2>
+
+    <div class="text">
+      {{ document.annotated_text | safe }}
+    </div>
+
+    {% if document.annotations %}
+    <h3>Anotaciones</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Texto</th>
+          <th>Etiqueta</th>
+          <th>Capa</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for annotation in document.annotations %}
+        <tr>
+          <td>{{ annotation.text }}</td>
+          <td>{{ annotation.label }}</td>
+          <td>{{ annotation.layer }}</td>
+          <td>{{ annotation.start }}</td>
+          <td>{{ annotation.end }}</td>
+          <td class="score">
+            {% if annotation.score is not none %}
+              {{ "%.4f"|format(annotation.score) }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p><em>Sin anotaciones.</em></p>
+    {% endif %}
+
+    {% if document.tfidf_extended %}
+    <h3>TF-IDF extendido</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Concepto</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+
+      <tbody>
+      {% for concept, score in document.tfidf_extended %}
+        <tr>
+          <td>{{ concept }}</td>
+          <td class="score">{{ "%.4f"|format(score) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </section>
+  {% endfor %}
+
+</div>
+</body>
+</html>

@@ -12,6 +12,7 @@ class StanzaNERAnnotator:
             lang=language,
             processors="tokenize,ner",
             verbose=False,
+            use_gpu=False,
         )
 
     def annotate(self, document: Document) -> Document:
