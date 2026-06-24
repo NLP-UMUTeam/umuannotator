@@ -2,7 +2,6 @@ import typer
 
 from umuannotator.cli import render
 from umuannotator.cli import ontology
-from umuannotator.cli import metrics
 from umuannotator.renderers.json import corpus_to_dict
 
 app = typer.Typer(
@@ -13,12 +12,6 @@ app.add_typer(
     ontology.app,
     name="ontology",
     help="Ontology-related commands.",
-)
-
-app.add_typer(
-    metrics.app,
-    name="metrics",
-    help="Metric-related commands.",
 )
 
 app.add_typer(
