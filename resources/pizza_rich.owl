@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+
+<rdf:RDF
+xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+xmlns:owl="http://www.w3.org/2002/07/owl#"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+xmlns:pizza="http://example.org/pizza#">
+
+```
+<owl:Ontology rdf:about="http://example.org/pizza"/>
+
+<!-- ===================================================== -->
+<!-- Annotation properties                                 -->
+<!-- ===================================================== -->
+
+<owl:AnnotationProperty rdf:about="http://example.org/pizza#regex"/>
+<owl:AnnotationProperty rdf:about="http://example.org/pizza#code"/>
+<owl:AnnotationProperty rdf:about="http://example.org/pizza#category"/>
+<owl:AnnotationProperty rdf:about="http://example.org/pizza#priority"/>
+
+<!-- ===================================================== -->
+<!-- Object properties                                     -->
+<!-- ===================================================== -->
+
+<owl:ObjectProperty rdf:about="http://example.org/pizza#hasIngredient"/>
+<owl:ObjectProperty rdf:about="http://example.org/pizza#hasCookingMethod"/>
+<owl:ObjectProperty rdf:about="http://example.org/pizza#hasDietType"/>
+
+<!-- ===================================================== -->
+<!-- Generic classes                                       -->
+<!-- ===================================================== -->
+
+<owl:Class rdf:about="http://example.org/pizza#Food"/>
+
+<owl:Class rdf:about="http://example.org/pizza#Dish">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Food"/>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.org/pizza#Pizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Dish"/>
+
+    <pizza:regex>pizza</pizza:regex>
+    <pizza:code>PIZZA</pizza:code>
+    <pizza:category>dish</pizza:category>
+    <pizza:priority rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</pizza:priority>
+</owl:Class>
+
+<!-- ===================================================== -->
+<!-- Ingredients                                            -->
+<!-- ===================================================== -->
+
+<owl:Class rdf:about="http://example.org/pizza#Ingredient"/>
+
+<owl:Class rdf:about="http://example.org/pizza#Pineapple">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Ingredient"/>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.org/pizza#Ham">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Ingredient"/>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.org/pizza#Mozzarella">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Ingredient"/>
+</owl:Class>
+
+<!-- ===================================================== -->
+<!-- Cooking methods                                       -->
+<!-- ===================================================== -->
+
+<owl:Class rdf:about="http://example.org/pizza#CookingMethod"/>
+
+<owl:Class rdf:about="http://example.org/pizza#Baked">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#CookingMethod"/>
+</owl:Class>
+
+<!-- ===================================================== -->
+<!-- Diet types                                             -->
+<!-- ===================================================== -->
+
+<owl:Class rdf:about="http://example.org/pizza#DietType"/>
+
+<owl:Class rdf:about="http://example.org/pizza#Vegetarian">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#DietType"/>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.org/pizza#NonVegetarian">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#DietType"/>
+</owl:Class>
+
+<!-- ===================================================== -->
+<!-- Concrete pizzas                                       -->
+<!-- ===================================================== -->
+
+<owl:Class rdf:about="http://example.org/pizza#HawaianPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Pizza"/>
+
+    <pizza:hasIngredient rdf:resource="http://example.org/pizza#Pineapple"/>
+    <pizza:hasIngredient rdf:resource="http://example.org/pizza#Ham"/>
+    <pizza:hasIngredient rdf:resource="http://example.org/pizza#Mozzarella"/>
+
+    <pizza:hasCookingMethod rdf:resource="http://example.org/pizza#Baked"/>
+
+    <pizza:hasDietType rdf:resource="http://example.org/pizza#NonVegetarian"/>
+
+    <pizza:regex>pizza\s+hawaiana|hawaiana</pizza:regex>
+    <pizza:code>PIZZA-HAW</pizza:code>
+    <pizza:category>dish</pizza:category>
+    <pizza:priority rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">100</pizza:priority>
+</owl:Class>
+
+<owl:Class rdf:about="http://example.org/pizza#MargheritaPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/pizza#Pizza"/>
+
+    <pizza:hasIngredient rdf:resource="http://example.org/pizza#Mozzarella"/>
+
+    <pizza:hasCookingMethod rdf:resource="http://example.org/pizza#Baked"/>
+
+    <pizza:hasDietType rdf:resource="http://example.org/pizza#Vegetarian"/>
+
+    <pizza:regex>pizza\s+margarita|margarita</pizza:regex>
+    <pizza:code>PIZZA-MAR</pizza:code>
+    <pizza:category>dish</pizza:category>
+    <pizza:priority rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">90</pizza:priority>
+</owl:Class>
+
+<!-- ===================================================== -->
+<!-- Named individuals                                     -->
+<!-- ===================================================== -->
+
+<owl:NamedIndividual rdf:about="http://example.org/pizza#order_001">
+    <rdf:type rdf:resource="http://example.org/pizza#HawaianPizza"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="http://example.org/pizza#order_002">
+    <rdf:type rdf:resource="http://example.org/pizza#MargheritaPizza"/>
+</owl:NamedIndividual>
+```
+
+</rdf:RDF>

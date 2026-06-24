@@ -12,6 +12,7 @@ class AnnotatorFactory:
         *,
         language: str = "es",
         ontology_path: str | None = None,
+        config: dict | None = None,
         **kwargs: Any,
     ):
         if name == "ontology":
@@ -23,7 +24,11 @@ class AnnotatorFactory:
             from umuannotator.ontology.index import build_index
 
             graph = load_ontology(ontology_path)
-            concepts = build_index(graph)
+
+            concepts = build_index(
+                graph,
+                config=config,
+            )
 
             return OntologyAnnotator(
                 concepts=concepts,
@@ -91,6 +96,7 @@ def build_annotators(
     *,
     language: str = "es",
     ontology_path: str | None = None,
+    config: dict | None = None,
 ):
     factory = AnnotatorFactory()
 
@@ -113,6 +119,7 @@ def build_annotators(
                 name,
                 language=language,
                 ontology_path=ontology_path,
+                config=config,
                 **params,
             )
         )

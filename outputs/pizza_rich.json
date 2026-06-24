@@ -1,0 +1,1082 @@
+{
+  "documents": [
+    {
+      "text": "Ayer comí una pizza hawaiana en Valencia.",
+      "metadata": {
+        "doc_id": 0,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 0.4184941083929179
+        }
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 4,
+          "text": "Ayer",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "Ayer",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-22T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 10,
+          "end": 13,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 14,
+          "end": 28,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.6739764335716716,
+          "metadata": {
+            "tf": 1,
+            "df": 3,
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
+          }
+        }
+      ]
+    },
+    {
+      "text": "Pedro pidió una pizza margarita para cenar.",
+      "metadata": {
+        "doc_id": 1,
+        "tfidf_extended": {
+          "Margherita": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
+        }
+      },
+      "annotations": [
+        {
+          "start": 12,
+          "end": 15,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 16,
+          "end": 31,
+          "text": "pizza margarita",
+          "label": "Margherita",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        }
+      ]
+    },
+    {
+      "text": "Mañana iremos a una pizzería italiana.",
+      "metadata": {
+        "doc_id": 2,
+        "tfidf_extended": {}
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 6,
+          "text": "Mañana",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "MaÃ±ana",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-24T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 16,
+          "end": 19,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        }
+      ]
+    },
+    {
+      "text": "María prefiere la pizza pepperoni.",
+      "metadata": {
+        "doc_id": 3,
+        "tfidf_extended": {
+          "PepperoniPizza": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 33,
+          "text": "pizza pepperoni",
+          "label": "PepperoniPizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        }
+      ]
+    },
+    {
+      "text": "La pizza hawaiana lleva jamón y piña.",
+      "metadata": {
+        "doc_id": 4,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 1.1883544938128767,
+          "Ham": 1.0,
+          "Ingredient": 1.5397207708399179,
+          "Pineapple": 2.0794415416798357
+        }
+      },
+      "annotations": [
+        {
+          "start": 3,
+          "end": 17,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.6739764335716716,
+          "metadata": {
+            "tf": 1,
+            "df": 3,
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
+          }
+        },
+        {
+          "start": 24,
+          "end": 29,
+          "text": "jamón",
+          "label": "Ham",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.0,
+          "metadata": {
+            "tf": 1,
+            "df": 1,
+            "idf": 1.0,
+            "tfidf": 1.0
+          }
+        },
+        {
+          "start": 32,
+          "end": 36,
+          "text": "piña",
+          "label": "Pineapple",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        }
+      ]
+    },
+    {
+      "text": "El próximo lunes comeremos pizza.",
+      "metadata": {
+        "doc_id": 5,
+        "tfidf_extended": {
+          "Pizza": 1.3862943611198906,
+          "Food": 0.6931471805599453
+        }
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 16,
+          "text": "El próximo lunes",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-29T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-29T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "El prÃ³ximo lunes",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-29T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-29T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-29T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 27,
+          "end": 32,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Juan estuvo en Murcia ayer.",
+      "metadata": {
+        "doc_id": 6,
+        "tfidf_extended": {}
+      },
+      "annotations": [
+        {
+          "start": 22,
+          "end": 26,
+          "text": "ayer",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "ayer",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-22T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-22T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-22T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "text": "Me gusta mucho el queso mozzarella.",
+      "metadata": {
+        "doc_id": 7,
+        "tfidf_extended": {
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453,
+          "Food": 0.34657359027997264
+        }
+      },
+      "annotations": [
+        {
+          "start": 18,
+          "end": 23,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Quiero una pizza hawaiana grande con masa fina.",
+      "metadata": {
+        "doc_id": 8,
+        "tfidf_extended": {
+          "HawaiianPizza": 1.6739764335716716,
+          "Pizza": 0.8369882167858358,
+          "Food": 0.4184941083929179
+        }
+      },
+      "annotations": [
+        {
+          "start": 7,
+          "end": 10,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 11,
+          "end": 25,
+          "text": "pizza hawaiana",
+          "label": "HawaiianPizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.6739764335716716,
+          "metadata": {
+            "tf": 1,
+            "df": 3,
+            "idf": 1.6739764335716716,
+            "tfidf": 1.6739764335716716
+          }
+        },
+        {
+          "start": 26,
+          "end": 32,
+          "text": "grande",
+          "label": "SIZE_LARGE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "size",
+          "score": null,
+          "metadata": {
+            "category": "size"
+          }
+        },
+        {
+          "start": 37,
+          "end": 46,
+          "text": "masa fina",
+          "label": "CRUST_THIN",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "crust",
+          "score": null,
+          "metadata": {
+            "category": "crust"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Pedro pidió una pizza pepperoni familiar con extra de queso.",
+      "metadata": {
+        "doc_id": 9,
+        "tfidf_extended": {
+          "PepperoniPizza": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.8664339756999315,
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453
+        }
+      },
+      "annotations": [
+        {
+          "start": 12,
+          "end": 15,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 16,
+          "end": 31,
+          "text": "pizza pepperoni",
+          "label": "PepperoniPizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        },
+        {
+          "start": 32,
+          "end": 40,
+          "text": "familiar",
+          "label": "SIZE_LARGE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "size",
+          "score": null,
+          "metadata": {
+            "category": "size"
+          }
+        },
+        {
+          "start": 45,
+          "end": 59,
+          "text": "extra de queso",
+          "label": "EXTRA_CHEESE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "modifier",
+          "score": null,
+          "metadata": {
+            "category": "modifier"
+          }
+        },
+        {
+          "start": 54,
+          "end": 59,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "María quiere una margarita pequeña y bien hecha.",
+      "metadata": {
+        "doc_id": 10,
+        "tfidf_extended": {
+          "Margherita": 2.0794415416798357,
+          "Pizza": 1.0397207708399179,
+          "Food": 0.5198603854199589
+        }
+      },
+      "annotations": [
+        {
+          "start": 13,
+          "end": 16,
+          "text": "una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 17,
+          "end": 26,
+          "text": "margarita",
+          "label": "Margherita",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        },
+        {
+          "start": 27,
+          "end": 34,
+          "text": "pequeña",
+          "label": "SIZE_SMALL",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "size",
+          "score": null,
+          "metadata": {
+            "category": "size"
+          }
+        },
+        {
+          "start": 37,
+          "end": 47,
+          "text": "bien hecha",
+          "label": "COOKING_WELL_DONE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "cooking",
+          "score": null,
+          "metadata": {
+            "category": "cooking"
+          }
+        }
+      ]
+    },
+    {
+      "text": "No quiero piña en la pizza, prefiero masa gruesa.",
+      "metadata": {
+        "doc_id": 11,
+        "tfidf_extended": {
+          "Pineapple": 2.0794415416798357,
+          "Ingredient": 1.0397207708399179,
+          "Food": 1.2130075659799042,
+          "Pizza": 1.3862943611198906
+        }
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 14,
+          "text": "No quiero piña",
+          "label": "NO_PINEAPPLE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "restriction",
+          "score": null,
+          "metadata": {
+            "category": "restriction"
+          }
+        },
+        {
+          "start": 10,
+          "end": 14,
+          "text": "piña",
+          "label": "Pineapple",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 2.0794415416798357,
+          "metadata": {
+            "tf": 1,
+            "df": 2,
+            "idf": 2.0794415416798357,
+            "tfidf": 2.0794415416798357
+          }
+        },
+        {
+          "start": 21,
+          "end": 26,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 37,
+          "end": 48,
+          "text": "masa gruesa",
+          "label": "CRUST_THICK",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "crust",
+          "score": null,
+          "metadata": {
+            "category": "crust"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Una pizza con borde relleno y mucho queso, por favor.",
+      "metadata": {
+        "doc_id": 12,
+        "tfidf_extended": {
+          "Pizza": 1.3862943611198906,
+          "Food": 1.0397207708399179,
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453
+        }
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 3,
+          "text": "Una",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 1
+            },
+            "body": "Una",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 4,
+          "end": 9,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 14,
+          "end": 27,
+          "text": "borde relleno",
+          "label": "CRUST_THICK",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "crust",
+          "score": null,
+          "metadata": {
+            "category": "crust"
+          }
+        },
+        {
+          "start": 30,
+          "end": 41,
+          "text": "mucho queso",
+          "label": "EXTRA_CHEESE",
+          "layer": "pedido",
+          "source": "resources/pizza_regex.yml",
+          "type": "regex",
+          "subtype": "modifier",
+          "score": null,
+          "metadata": {
+            "category": "modifier"
+          }
+        },
+        {
+          "start": 36,
+          "end": 41,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    },
+    {
+      "text": "Mañana pediremos 3 pizzas grandes.",
+      "metadata": {
+        "doc_id": 13,
+        "tfidf_extended": {}
+      },
+      "annotations": [
+        {
+          "start": 0,
+          "end": 6,
+          "text": "Mañana",
+          "label": "DATE",
+          "layer": "temporal",
+          "source": "duckling-temporal",
+          "type": "temporal",
+          "subtype": "time",
+          "score": null,
+          "metadata": {
+            "dim": "time",
+            "value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            },
+            "body": "MaÃ±ana",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid",
+            "normalized": "2026-06-24T00:00:00.000+02:00",
+            "raw_value": {
+              "grain": "day",
+              "type": "value",
+              "value": "2026-06-24T00:00:00.000+02:00",
+              "values": [
+                {
+                  "grain": "day",
+                  "type": "value",
+                  "value": "2026-06-24T00:00:00.000+02:00"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "start": 17,
+          "end": 18,
+          "text": "3",
+          "label": "NUMBER",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "number",
+          "score": null,
+          "metadata": {
+            "dim": "number",
+            "value": {
+              "type": "value",
+              "value": 3
+            },
+            "body": "3",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        }
+      ]
+    },
+    {
+      "text": "La pizza cuesta 12 euros.",
+      "metadata": {
+        "doc_id": 14,
+        "tfidf_extended": {
+          "Pizza": 1.3862943611198906,
+          "Food": 0.6931471805599453
+        }
+      },
+      "annotations": [
+        {
+          "start": 3,
+          "end": 8,
+          "text": "pizza",
+          "label": "Pizza",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        },
+        {
+          "start": 16,
+          "end": 24,
+          "text": "12 euros",
+          "label": "AMOUNT_OF_MONEY",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "amount-of-money",
+          "score": null,
+          "metadata": {
+            "dim": "amount-of-money",
+            "value": {
+              "type": "value",
+              "unit": "EUR",
+              "value": 12
+            },
+            "body": "12 euros",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Añade 200 gramos de queso.",
+      "metadata": {
+        "doc_id": 15,
+        "tfidf_extended": {
+          "Cheese": 1.3862943611198906,
+          "Ingredient": 0.6931471805599453,
+          "Food": 0.34657359027997264
+        }
+      },
+      "annotations": [
+        {
+          "start": 6,
+          "end": 25,
+          "text": "200 gramos de queso",
+          "label": "QUANTITY",
+          "layer": "cantidades",
+          "source": "duckling",
+          "type": "duckling",
+          "subtype": "quantity",
+          "score": null,
+          "metadata": {
+            "dim": "quantity",
+            "value": {
+              "product": "queso",
+              "type": "value",
+              "unit": "gram",
+              "value": 200
+            },
+            "body": "200 gramos de queso",
+            "locale": "ES_ES",
+            "timezone": "Europe/Madrid"
+          }
+        },
+        {
+          "start": 20,
+          "end": 25,
+          "text": "queso",
+          "label": "Cheese",
+          "layer": "ontology",
+          "source": "resources/pizza_rich.owl",
+          "type": "ontology",
+          "subtype": null,
+          "score": 1.3862943611198906,
+          "metadata": {
+            "tf": 1,
+            "df": 4,
+            "idf": 1.3862943611198906,
+            "tfidf": 1.3862943611198906
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "layer_colors": {
+      "ontology": "#ffd6d6",
+      "temporal": "#d6e4ff",
+      "cantidades": "#d6fff6",
+      "pedido": "#ffe0b2"
+    }
+  }
+}

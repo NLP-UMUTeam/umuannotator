@@ -61,7 +61,7 @@ def test_temporal_annotator_labels_are_temporal():
     for annotation in result.annotations:
         assert annotation.layer == "temporal"
         assert annotation.type == "temporal"
-        assert annotation.source == "duckling"
+        assert annotation.source == "duckling-temporal"
 
 
 def test_temporal_annotator_has_value_metadata():

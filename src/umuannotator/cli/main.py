@@ -74,6 +74,7 @@ def annotate(
         annotator,
         language=language,
         ontology_path=ontology_path,
+        config=None,
     )
 
     corpus = Corpus(documents=documents)
@@ -121,7 +122,6 @@ def run(
     from umuannotator.io.dataframe import dataframe_to_corpus
     from umuannotator.metrics import TfidfScorer, ExtendedTfidfScorer
     from umuannotator.ontology.loader import load_ontology
-    from umuannotator.ontology.index import build_index
     from umuannotator.ontology.graph import build_graph
     from umuannotator.pipeline import AnnotationPipeline
     from umuannotator.renderers.json import corpus_to_dict
@@ -142,6 +142,7 @@ def run(
         annotator_configs,
         language=language,
         ontology_path=ontology_path,
+        config=config,
     )
 
     df = pd.read_csv(input_path, sep=sep)
@@ -169,15 +170,11 @@ def run(
 
     extended_config = metrics_config.get("extended_tfidf", {})
     if extended_config.get("enabled", False):
-        graph = load_ontology(ontology_path)
-        concepts = build_index(graph)
-
-        direction = extended_config.get("direction", "ancestors")
-        directed = direction == "ancestors"
+        rdf_graph = load_ontology(ontology_path)
 
         ontology_graph = build_graph(
-            concepts,
-            directed=directed,
+            rdf_graph,
+            config,
         )
 
         decay_config = extended_config.get("decay", {})

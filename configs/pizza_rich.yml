@@ -1,0 +1,80 @@
+ontology:
+  path: resources/pizza_rich.owl
+  language: es
+
+  entity_types:
+    include:
+      - owl:Class
+      - owl:NamedIndividual
+
+  annotation_properties:
+    regex: regex
+    code: code
+    category: category
+    priority: priority
+
+  relations:
+    - property: rdfs:subClassOf
+      distance: 1
+      direction: child_to_parent
+
+    - property: rdf:type
+      distance: 1
+      direction: instance_to_class
+
+    - property: hasIngredient
+      distance: 1
+      direction: both
+
+    - property: hasCookingMethod
+      distance: 2
+      direction: both
+
+    - property: hasDietType
+      distance: 2
+      direction: both
+
+annotators:
+  - name: ontology
+    color: "#ffd6d6"
+
+  - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+
+  - name: duckling
+    layer: cantidades
+    color: "#d6fff6"
+    dimensions:
+      - number
+      - quantity
+      - amount-of-money
+
+  - name: regex
+    layer: pedido
+    source: resources/pizza_regex.yml
+    color: "#ffe0b2"
+
+resolver:
+  enabled: true
+  strategy: longest_match
+  layers:
+    - ontology
+    - pedido
+
+metrics:
+  tfidf:
+    enabled: true
+    layer: ontology
+
+  extended_tfidf:
+    enabled: true
+    layer: ontology
+    max_distance: 5
+
+    decay:
+      type: exponential
+      value: 0.5
+
+render:
+  title: Informe Pizza Rich
