@@ -46,13 +46,20 @@ def build_index(
 
         ontology.annotation_properties
     """
+
     config = config or {}
 
     ontology_config = config.get("ontology", config)
     annotation_properties = ontology_config.get(
         "annotation_properties",
-        {},
+        {
+            "regex": "regex",
+            "code": "code",
+            "category": "category",
+            "priority": "priority",
+        },
     )
+
 
     include_types = set(
         ontology_config
@@ -125,6 +132,7 @@ def build_index(
         concept.metadata["name"] = name
 
         concepts[uri] = concept
+
 
     return concepts
 

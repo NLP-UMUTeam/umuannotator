@@ -78,6 +78,16 @@ class AnnotatorFactory:
                 layer=layer,
             )
 
+        if name == "quantity":
+            from umuannotator.annotators.quantity import QuantityAnnotator
+
+            return QuantityAnnotator(
+                language=language,
+                locale=kwargs.get("locale"),
+                timezone=kwargs.get("timezone", "Europe/Madrid"),
+                layer=kwargs.get("layer", "cantidades"),
+            )
+
         if name == "temporal":
             from umuannotator.annotators.temporal import TemporalAnnotator
 

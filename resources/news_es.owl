@@ -1,0 +1,286 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://example.org/news-es#"
+    xml:base="http://example.org/news-es"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#">
+
+  <owl:Ontology rdf:about="http://example.org/news-es"/>
+
+  <!-- Annotation properties -->
+
+  <owl:AnnotationProperty rdf:about="http://example.org/news-es#regex"/>
+  <owl:AnnotationProperty rdf:about="http://example.org/news-es#code"/>
+  <owl:AnnotationProperty rdf:about="http://example.org/news-es#category"/>
+  <owl:AnnotationProperty rdf:about="http://example.org/news-es#priority"/>
+
+  <!-- Top class -->
+
+  <owl:Class rdf:about="http://example.org/news-es#NewsTopic">
+    <rdfs:label>tema informativo</rdfs:label>
+  </owl:Class>
+
+  <!-- Main sections -->
+
+  <owl:Class rdf:about="http://example.org/news-es#Politics">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>política</rdfs:label>
+    <regex>pol[ií]tica|gobierno|congreso|senado|moncloa|elecciones|investidura|ministro|ministra|presidente</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Economy">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>economía</rdfs:label>
+    <regex>econom[ií]a|inflaci[oó]n|IPC|PIB|paro|empleo|bolsa|Ibex\s*35|Banco de Espa[ñn]a|hipoteca|salario</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#CrimeAndEvents">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>sucesos</rdfs:label>
+    <regex>sucesos|accidente|incendio|detenido|detenida|prisi[oó]n|homicidio|asesinato|agresi[oó]n|Guardia Civil|Polic[ií]a Nacional</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Sports">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>deportes</rdfs:label>
+    <regex>deporte|deportes|f[uú]tbol|Liga|Champions|Real Madrid|Bar[cç]a|Barcelona|Atl[eé]tico|selecci[oó]n espa[ñn]ola</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Health">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>sanidad</rdfs:label>
+    <regex>sanidad|salud|hospital|m[eé]dico|m[eé]dica|enfermer[ií]a|vacuna|virus|covid|gripe|urgencias</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Education">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>educación</rdfs:label>
+    <regex>educaci[oó]n|colegio|instituto|universidad|alumno|alumna|profesor|profesora|beca|selectividad|EBAU</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Justice">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>justicia</rdfs:label>
+    <regex>justicia|juez|jueza|tribunal|sentencia|fiscal[ií]a|fiscal|juicio|condena|Audiencia Nacional|Tribunal Supremo</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Weather">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>meteorología</rdfs:label>
+    <regex>meteorolog[ií]a|tiempo|lluvia|tormenta|DANA|gota fr[ií]a|ola de calor|nieve|AEMET|temperaturas</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Technology">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>tecnología</rdfs:label>
+    <regex>tecnolog[ií]a|inteligencia artificial|IA|ciberseguridad|internet|redes sociales|m[oó]vil|datos|algoritmo|OpenAI</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/news-es#Culture">
+    <rdfs:subClassOf rdf:resource="http://example.org/news-es#NewsTopic"/>
+    <rdfs:label>cultura</rdfs:label>
+    <regex>cultura|cine|m[uú]sica|teatro|festival|libro|novela|premio|museo|exposici[oó]n</regex>
+    <category>section</category>
+    <priority>10</priority>
+  </owl:Class>
+
+  <!-- Political entities -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Government">
+    <rdf:type rdf:resource="http://example.org/news-es#Politics"/>
+    <rdfs:label>Gobierno</rdfs:label>
+    <regex>Gobierno|Ejecutivo|Consejo de Ministros</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Congress">
+    <rdf:type rdf:resource="http://example.org/news-es#Politics"/>
+    <rdfs:label>Congreso</rdfs:label>
+    <regex>Congreso|Congreso de los Diputados|C[aá]mara Baja</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Senate">
+    <rdf:type rdf:resource="http://example.org/news-es#Politics"/>
+    <rdfs:label>Senado</rdfs:label>
+    <regex>Senado|C[aá]mara Alta</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Moncloa">
+    <rdf:type rdf:resource="http://example.org/news-es#Politics"/>
+    <rdfs:label>Moncloa</rdfs:label>
+    <regex>Moncloa|Palacio de la Moncloa</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <!-- Economy entities -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Ibex35">
+    <rdf:type rdf:resource="http://example.org/news-es#Economy"/>
+    <rdfs:label>Ibex 35</rdfs:label>
+    <regex>Ibex\s*35|IBEX\s*35|selectivo espa[ñn]ol</regex>
+    <category>index</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#BankOfSpain">
+    <rdf:type rdf:resource="http://example.org/news-es#Economy"/>
+    <rdfs:label>Banco de España</rdfs:label>
+    <regex>Banco de Espa[ñn]a|BdE</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Inflation">
+    <rdf:type rdf:resource="http://example.org/news-es#Economy"/>
+    <rdfs:label>inflación</rdfs:label>
+    <regex>inflaci[oó]n|IPC|precios</regex>
+    <category>indicator</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Unemployment">
+    <rdf:type rdf:resource="http://example.org/news-es#Economy"/>
+    <rdfs:label>paro</rdfs:label>
+    <regex>paro|desempleo|tasa de paro|mercado laboral</regex>
+    <category>indicator</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <!-- Security / events -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#GuardiaCivil">
+    <rdf:type rdf:resource="http://example.org/news-es#CrimeAndEvents"/>
+    <rdfs:label>Guardia Civil</rdfs:label>
+    <regex>Guardia Civil|guardias civiles</regex>
+    <category>security_force</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#PoliciaNacional">
+    <rdf:type rdf:resource="http://example.org/news-es#CrimeAndEvents"/>
+    <rdfs:label>Policía Nacional</rdfs:label>
+    <regex>Polic[ií]a Nacional|polic[ií]as nacionales</regex>
+    <category>security_force</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Fire">
+    <rdf:type rdf:resource="http://example.org/news-es#CrimeAndEvents"/>
+    <rdfs:label>incendio</rdfs:label>
+    <regex>incendio|arde|calcinado|bomberos</regex>
+    <category>event</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#TrafficAccident">
+    <rdf:type rdf:resource="http://example.org/news-es#CrimeAndEvents"/>
+    <rdfs:label>accidente de tráfico</rdfs:label>
+    <regex>accidente de tr[aá]fico|colisi[oó]n|atropello|carretera</regex>
+    <category>event</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <!-- Sports -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#RealMadrid">
+    <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
+    <rdfs:label>Real Madrid</rdfs:label>
+    <regex>Real Madrid|Madrid</regex>
+    <category>team</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#BarcelonaFC">
+    <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
+    <rdfs:label>Barcelona</rdfs:label>
+    <regex>FC Barcelona|Bar[cç]a|Barcelona</regex>
+    <category>team</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#AtleticoMadrid">
+    <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
+    <rdfs:label>Atlético de Madrid</rdfs:label>
+    <regex>Atl[eé]tico de Madrid|Atl[eé]tico</regex>
+    <category>team</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#LaLiga">
+    <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
+    <rdfs:label>LaLiga</rdfs:label>
+    <regex>LaLiga|Liga espa[ñn]ola|Primera Divisi[oó]n</regex>
+    <category>competition</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <!-- Weather -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#AEMET">
+    <rdf:type rdf:resource="http://example.org/news-es#Weather"/>
+    <rdfs:label>AEMET</rdfs:label>
+    <regex>AEMET|Agencia Estatal de Meteorolog[ií]a</regex>
+    <category>institution</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#DANA">
+    <rdf:type rdf:resource="http://example.org/news-es#Weather"/>
+    <rdfs:label>DANA</rdfs:label>
+    <regex>DANA|gota fr[ií]a|depresi[oó]n aislada en niveles altos</regex>
+    <category>weather_event</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#HeatWave">
+    <rdf:type rdf:resource="http://example.org/news-es#Weather"/>
+    <rdfs:label>ola de calor</rdfs:label>
+    <regex>ola de calor|temperaturas extremas|calor extremo</regex>
+    <category>weather_event</category>
+    <priority>15</priority>
+  </owl:NamedIndividual>
+
+  <!-- Tech -->
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#ArtificialIntelligence">
+    <rdf:type rdf:resource="http://example.org/news-es#Technology"/>
+    <rdfs:label>inteligencia artificial</rdfs:label>
+    <regex>inteligencia artificial|IA|algoritmo|machine learning|aprendizaje autom[aá]tico</regex>
+    <category>technology</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+  <owl:NamedIndividual rdf:about="http://example.org/news-es#Cybersecurity">
+    <rdf:type rdf:resource="http://example.org/news-es#Technology"/>
+    <rdfs:label>ciberseguridad</rdfs:label>
+    <regex>ciberseguridad|ciberataque|hackeo|ransomware|filtraci[oó]n de datos</regex>
+    <category>technology</category>
+    <priority>20</priority>
+  </owl:NamedIndividual>
+
+</rdf:RDF>

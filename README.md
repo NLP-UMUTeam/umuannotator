@@ -1,3 +1,8 @@
+<p align="center">
+  <img src="docs/umuannotator-logo.png" alt="UMUAnnotator logo" width="500"/>
+</p>
+
+
 # UMUAnnotator
 
 UMUAnnotator is a modular annotation framework for enriching text with semantic, linguistic and structured information.
@@ -6,14 +11,19 @@ The project is designed around independent annotators that can be combined into 
 
 ## Features
 
-* Ontology-based semantic annotation (OWL/RDF)
+* Configuration-driven annotation pipelines using YAML
+* Ontology-based semantic annotation with OWL/RDF
 * Temporal annotation using Duckling
-* Named Entity Recognition (Stanza)
+* Quantity annotation using Duckling + optional Stanza preprocessing
+* Linguistic preprocessing with Stanza and local cache
+* Named Entity Recognition with Stanza
 * Dictionary and regex-based annotation
 * Annotation conflict resolution
 * TF-IDF and ontology-aware TF-IDF expansion
-* JSON, console and HTML rendering
-* Configuration-driven pipelines using YAML
+* Input formats: CSV, JSONL and plain text
+* Output formats: JSON, JSONL and text
+* Console and HTML rendering
+* Unix-style pipelines using stdin/stdout
 
 ## Installation
 
@@ -23,21 +33,49 @@ pip install -e .
 
 ## Quick start
 
-Annotate a text:
+Run a configured annotation pipeline over a CSV file:
 
 ```bash
-umuannotator annotate \
-  --text "Ayer comí una pizza hawaiana"
-```
+mkdir -p outputs
 
-Run a complete pipeline from a configuration file:
-
-```bash
 umuannotator run \
   --config configs/pizza_rich.yml \
   --input datasets/pizza_es.csv \
-  --output outputs/results.json
+  --text-column text \
+  --output outputs/pizza_rich.json
 ```
+
+Render the result as HTML:
+
+```
+umuannotator render html \
+  --input outputs/pizza_rich.json \
+  --output outputs/pizza_rich.html \
+  --title "Pizza Rich"
+```
+
+Or run and render in a single pipeline:
+
+```
+umuannotator run \
+  --config configs/pizza_rich.yml \
+  --input datasets/pizza_es.csv \
+  --text-column text \
+  --output - \
+  --output-format json \
+  --no-progress \
+| umuannotator render html \
+  --input - \
+  --output outputs/pizza_rich.html \
+  --title "Pizza Rich"
+```
+
+## Input and output formats
+UMUAnnotator can read from files or from standard input: CSV, JSONL y plain text.
+
+When input or output formats are omitted, they are inferred from file extensions when possible.
+
+
 
 ## Ontology utilities
 
@@ -75,49 +113,16 @@ umuannotator ontology relations \
 ```text
 umuannotator/
 ├── annotators/
+├── preprocessors/
 ├── ontology/
 ├── metrics/
 ├── renderers/
 ├── document/
 ├── pipeline/
+├── io/
 └── cli/
 ```
 
-## Core concepts
-
-### Annotation
-
-All annotators generate a common annotation format:
-
-```python
-Annotation(
-    start=0,
-    end=10,
-    text="pizza hawaiana",
-    label="HawaianPizza",
-    layer="ontology",
-)
-```
-
-### Document
-
-Annotations are attached to documents:
-
-```python
-Document(
-    text="Ayer comí una pizza hawaiana"
-)
-```
-
-### Corpus
-
-Multiple documents can be processed together:
-
-```python
-Corpus(
-    documents=[...]
-)
-```
 
 ## Status
 

@@ -47,6 +47,7 @@ def info(
         config=config,
     )
 
+
     table = Table(title="Ontology info")
     table.add_column("Metric")
     table.add_column("Value")
@@ -94,6 +95,7 @@ def concepts(
         rdf_graph,
         config=config,
     )
+    
 
     table = Table(title="Ontology concepts")
     table.add_column("Name")

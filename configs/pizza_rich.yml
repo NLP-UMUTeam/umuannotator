@@ -42,12 +42,14 @@ annotators:
     layer: temporal
     color: "#d6e4ff"
 
-  - name: duckling
+  - name: quantity
     layer: cantidades
     color: "#d6fff6"
+
+  - name: duckling
+    layer: dinero
+    color: "#d6fff6"
     dimensions:
-      - number
-      - quantity
       - amount-of-money
 
   - name: regex

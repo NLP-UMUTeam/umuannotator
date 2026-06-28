@@ -6,7 +6,6 @@ from umuannotator.ontology.loader import load_ontology
 from umuannotator.ontology.index import build_index
 from umuannotator.pipeline import AnnotationPipeline
 
-
 app = typer.Typer()
 
 

@@ -1,0 +1,44 @@
+preprocessors:
+  - name: stanza
+    processors: tokenize,pos,lemma,ner
+    cache_dir: .cache/stanza
+    use_cache: true
+    metadata_key: stanza
+
+
+ontology:
+  path: resources/news_es.owl
+  language: es
+
+  entity_types:
+    include:
+      - owl:Class
+      - owl:NamedIndividual
+
+  annotation_properties:
+    regex: regex
+    code: code
+    category: category
+    priority: priority
+
+  relations:
+    - property: rdfs:subClassOf
+      distance: 1
+      direction: child_to_parent
+
+    - property: rdf:type
+      distance: 1
+      direction: instance_to_class
+
+
+annotators:
+  - name: ontology
+    color: "#ffd6d6"
+
+  - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+
+  - name: quantity
+    layer: cantidades
+
