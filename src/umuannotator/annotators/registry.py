@@ -30,9 +30,12 @@ class AnnotatorFactory:
                 config=config,
             )
 
+            ontology_config = (config or {}).get("ontology", {})
+
             return OntologyAnnotator(
                 concepts=concepts,
                 source=ontology_path,
+                matching_config=ontology_config.get("matching", {}),
             )
 
         if name == "stanza-ner":

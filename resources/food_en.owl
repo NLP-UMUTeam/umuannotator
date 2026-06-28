@@ -1,0 +1,207 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://example.org/food-en#"
+    xml:base="http://example.org/food-en"
+    xmlns:food="http://example.org/food-en#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#">
+
+  <owl:Ontology rdf:about="http://example.org/food-en"/>
+
+  <owl:AnnotationProperty rdf:about="http://example.org/food-en#regex"/>
+  <owl:AnnotationProperty rdf:about="http://example.org/food-en#category"/>
+  <owl:AnnotationProperty rdf:about="http://example.org/food-en#priority"/>
+
+  <owl:Class rdf:about="http://example.org/food-en#Food">
+    <rdfs:label>food</rdfs:label>
+    <regex>food|meal|dish|cuisine</regex>
+    <category>root</category>
+    <priority>1</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Dish">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Food"/>
+    <rdfs:label>dish</rdfs:label>
+    <regex>dish|meal|recipe</regex>
+    <category>food_type</category>
+    <priority>5</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Ingredient">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Food"/>
+    <rdfs:label>ingredient</rdfs:label>
+    <regex>ingredient|ingredients</regex>
+    <category>food_type</category>
+    <priority>5</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Pizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Dish"/>
+    <rdfs:label>pizza</rdfs:label>
+    <regex>pizza|pizzas</regex>
+    <category>dish</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Pasta">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Dish"/>
+    <rdfs:label>pasta</rdfs:label>
+    <regex>pasta|spaghetti|macaroni|penne|lasagna</regex>
+    <category>dish</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Salad">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Dish"/>
+    <rdfs:label>salad</rdfs:label>
+    <regex>salad|salads</regex>
+    <category>dish</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Burger">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Dish"/>
+    <rdfs:label>burger</rdfs:label>
+    <regex>burger|hamburger|cheeseburger</regex>
+    <category>dish</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Soup">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Dish"/>
+    <rdfs:label>soup</rdfs:label>
+    <regex>soup|soups|broth</regex>
+    <category>dish</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#HawaiianPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Pizza"/>
+    <rdfs:label>Hawaiian pizza</rdfs:label>
+    <regex>hawaiian pizza|hawaiian</regex>
+    <category>pizza</category>
+    <priority>30</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#MargheritaPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Pizza"/>
+    <rdfs:label>Margherita pizza</rdfs:label>
+    <regex>margherita pizza|margherita</regex>
+    <category>pizza</category>
+    <priority>30</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#PepperoniPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Pizza"/>
+    <rdfs:label>Pepperoni pizza</rdfs:label>
+    <regex>pepperoni pizza|pepperoni</regex>
+    <category>pizza</category>
+    <priority>30</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#VegetarianPizza">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Pizza"/>
+    <rdfs:label>vegetarian pizza</rdfs:label>
+    <regex>vegetarian pizza|veggie pizza|vegetarian</regex>
+    <category>pizza</category>
+    <priority>30</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Cheese">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Ingredient"/>
+    <rdfs:label>cheese</rdfs:label>
+    <regex>cheese|cheeses</regex>
+    <category>ingredient</category>
+    <priority>20</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Mozzarella">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Cheese"/>
+    <rdfs:label>mozzarella</rdfs:label>
+    <regex>mozzarella</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Parmesan">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Cheese"/>
+    <rdfs:label>parmesan</rdfs:label>
+    <regex>parmesan|parmigiano</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Vegetable">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Ingredient"/>
+    <rdfs:label>vegetable</rdfs:label>
+    <regex>vegetable|vegetables|veggie|veggies</regex>
+    <category>ingredient_group</category>
+    <priority>15</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Tomato">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Vegetable"/>
+    <rdfs:label>tomato</rdfs:label>
+    <regex>tomato|tomatoes|tomato sauce</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Mushroom">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Vegetable"/>
+    <rdfs:label>mushroom</rdfs:label>
+    <regex>mushroom|mushrooms</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Olive">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Vegetable"/>
+    <rdfs:label>olive</rdfs:label>
+    <regex>olive|olives</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Garlic">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Vegetable"/>
+    <rdfs:label>garlic</rdfs:label>
+    <regex>garlic</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Meat">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Ingredient"/>
+    <rdfs:label>meat</rdfs:label>
+    <regex>meat|beef|pork|chicken</regex>
+    <category>ingredient_group</category>
+    <priority>15</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Ham">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Meat"/>
+    <rdfs:label>ham</rdfs:label>
+    <regex>ham</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Pepperoni">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Meat"/>
+    <rdfs:label>pepperoni</rdfs:label>
+    <regex>pepperoni</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+  <owl:Class rdf:about="http://example.org/food-en#Pineapple">
+    <rdfs:subClassOf rdf:resource="http://example.org/food-en#Ingredient"/>
+    <rdfs:label>pineapple</rdfs:label>
+    <regex>pineapple|pineapples</regex>
+    <category>ingredient</category>
+    <priority>25</priority>
+  </owl:Class>
+
+</rdf:RDF>

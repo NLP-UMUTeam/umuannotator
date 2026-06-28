@@ -1,0 +1,57 @@
+ontology:
+  path: resources/food_en.owl
+  language: en
+
+  entity_types:
+    include:
+      - owl:Class
+      - owl:NamedIndividual
+
+  annotation_properties:
+    regex: regex
+    category: category
+    priority: priority
+
+  matching:
+    fields:
+      labels: true
+      aliases: true
+      patterns: true
+      name: true
+      name_camel_case: true
+
+  relations:
+    - property: rdfs:subClassOf
+      distance: 1
+      direction: child_to_parent
+
+    - property: rdf:type
+      distance: 1
+      direction: instance_to_class
+
+annotators:
+  - name: ontology
+    color: "#ffd6d6"
+
+  - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+
+resolver:
+  enabled: true
+  strategy: longest_match
+
+metrics:
+  tfidf:
+    enabled: true
+    layer: ontology
+
+  extended_tfidf:
+    enabled: true
+    layer: ontology
+    direction: ancestors
+    max_distance: 5
+
+    decay:
+      type: exponential
+      value: 0.5

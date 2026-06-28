@@ -3,6 +3,10 @@ import re
 from umuannotator.document.model import Annotation, Document
 
 
+def split_camel_case(value: str) -> str:
+    return re.sub(r"(?<!^)(?=[A-Z])", " ", value)
+
+
 class OntologyAnnotator:
     """
     Ontology-based semantic annotator.
@@ -29,9 +33,19 @@ class OntologyAnnotator:
         self,
         concepts: dict,
         source: str | None = None,
+        matching_config: dict | None = None,
     ):
         self.concepts = concepts
         self.source = source
+        self.matching_config = matching_config or {}
+
+        fields = self.matching_config.get("fields", {})
+
+        self.match_labels = fields.get("labels", True)
+        self.match_aliases = fields.get("aliases", True)
+        self.match_patterns = fields.get("patterns", True)
+        self.match_name = fields.get("name", False)
+        self.match_name_camel_case = fields.get("name_camel_case", True)
 
     def annotate(
         self,
@@ -51,19 +65,21 @@ class OntologyAnnotator:
         text = document.text
 
         for concept_uri, concept in self.concepts.items():
-            self._annotate_terms(
-                document=document,
-                text=text,
-                concept_uri=concept_uri,
-                concept=concept,
-            )
+            if self.match_labels or self.match_aliases or self.match_name:
+                self._annotate_terms(
+                    document=document,
+                    text=text,
+                    concept_uri=concept_uri,
+                    concept=concept,
+                )
 
-            self._annotate_patterns(
-                document=document,
-                text=text,
-                concept_uri=concept_uri,
-                concept=concept,
-            )
+            if self.match_patterns:
+                self._annotate_patterns(
+                    document=document,
+                    text=text,
+                    concept_uri=concept_uri,
+                    concept=concept,
+                )
 
         return document
 
@@ -80,12 +96,27 @@ class OntologyAnnotator:
         These values are treated as plain text, not as regular
         expressions.
         """
-        terms = []
+        terms: list[tuple[str, str]] = []
 
-        terms.extend(concept.labels)
-        terms.extend(concept.aliases)
+        if self.match_labels:
+            terms.extend((label, "label") for label in concept.labels)
 
-        for term in terms:
+        if self.match_aliases:
+            terms.extend((alias, "alias") for alias in concept.aliases)
+
+        if self.match_name:
+            terms.append((concept.name, "name"))
+
+            if self.match_name_camel_case:
+                split_name = split_camel_case(concept.name)
+
+                if split_name != concept.name:
+                    terms.append((split_name, "name_camel_case"))
+
+        for term, match_source in terms:
+            if not term:
+                continue
+
             pattern = rf"\b{re.escape(term)}\b"
 
             for match in re.finditer(
@@ -98,7 +129,8 @@ class OntologyAnnotator:
                     match=match,
                     concept_uri=concept_uri,
                     concept=concept,
-                    match_source="term",
+                    match_source=match_source,
+                    matched_value=term,
                 )
 
     def _annotate_patterns(
@@ -128,6 +160,7 @@ class OntologyAnnotator:
                     concept_uri=concept_uri,
                     concept=concept,
                     match_source="regex",
+                    matched_value=pattern,
                 )
 
     def _add_annotation(
@@ -137,13 +170,8 @@ class OntologyAnnotator:
         concept_uri: str,
         concept,
         match_source: str,
+        matched_value: str,
     ) -> None:
-        """
-        Add a normalized ontology annotation.
-
-        The annotation keeps a readable label while preserving the URI
-        required by graph-based metrics.
-        """
         document.add_annotation(
             Annotation(
                 start=match.start(),
@@ -159,6 +187,7 @@ class OntologyAnnotator:
                     "concept_name": concept.name,
                     "entity_type": concept.entity_type,
                     "match_source": match_source,
+                    "matched_value": matched_value,
                 },
             )
         )

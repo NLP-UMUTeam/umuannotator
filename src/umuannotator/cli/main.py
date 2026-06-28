@@ -67,6 +67,7 @@ def run(
         show_progress=show_progress,
     )
 
+
     write_output(
         data,
         output_path,

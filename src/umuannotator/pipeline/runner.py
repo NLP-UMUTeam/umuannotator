@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from umuannotator.io.loader import load_corpus_input
 from umuannotator.annotators.registry import build_annotators
 from umuannotator.config.loader import load_config
@@ -29,15 +31,18 @@ def run_from_config(
     with timed("load_config", timings):
         config = load_config(config_path)
 
+
     ontology_config = config.get("ontology", {})
     ontology_path = ontology_config.get("path")
     language = ontology_config.get("language", "es")
+
 
     with timed("build_preprocessors", timings):
         preprocessors = build_preprocessors(
             config.get("preprocessors", []),
             language=language,
         )
+
 
     with timed("build_annotators", timings):
         annotators = build_annotators(
@@ -46,6 +51,7 @@ def run_from_config(
             ontology_path=ontology_path,
             config=config,
         )
+
 
     with timed("load_input", timings):
         corpus = load_corpus_input(

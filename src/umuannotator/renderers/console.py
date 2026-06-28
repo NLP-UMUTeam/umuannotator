@@ -3,7 +3,7 @@ from rich.text import Text
 
 console = Console()
 
-COLORS = [
+FALLBACK_COLORS = [
     "red",
     "green",
     "blue",
@@ -16,11 +16,19 @@ COLORS = [
 ]
 
 
-def color_for(label: str) -> str:
-    return COLORS[hash(label) % len(COLORS)]
+def fallback_color_for(value: str) -> str:
+    return FALLBACK_COLORS[hash(value) % len(FALLBACK_COLORS)]
 
 
-def render_document(document: dict) -> None:
+def layer_color(layer: str, layer_colors: dict[str, str]) -> str:
+    return layer_colors.get(layer) or fallback_color_for(layer)
+
+
+def render_document(
+    document: dict,
+    *,
+    layer_colors: dict[str, str],
+) -> None:
     text = document["text"]
     annotations = sorted(
         document.get("annotations", []),
@@ -32,11 +40,10 @@ def render_document(document: dict) -> None:
     for ann in annotations:
         start = ann["start"]
         end = ann["end"]
-        label = ann["label"]
         layer = ann["layer"]
 
         rich_text.stylize(
-            f"bold {color_for(label)}",
+            f"bold {layer_color(layer, layer_colors)}",
             start,
             end,
         )
@@ -44,8 +51,10 @@ def render_document(document: dict) -> None:
     console.print(rich_text)
 
     for ann in annotations:
+        color = layer_color(ann["layer"], layer_colors)
+
         console.print(
-            f"  [{color_for(ann['label'])}]"
+            f"  [{color}]"
             f"{ann['text']}[/] "
             f"→ {ann['label']} "
             f"({ann['layer']})"
@@ -55,6 +64,14 @@ def render_document(document: dict) -> None:
 
 
 def render_corpus(data: dict) -> None:
+    layer_colors = (
+        data.get("metadata", {})
+        .get("layer_colors", {})
+    )
+
     for index, document in enumerate(data.get("documents", []), start=1):
         console.rule(f"Document {index}")
-        render_document(document)
+        render_document(
+            document,
+            layer_colors=layer_colors,
+        )
