@@ -52,7 +52,7 @@ annotators:
     dimensions:
       - amount-of-money
 
-  - name: regex
+  - name: pattern
     layer: pedido
     source: resources/pizza_regex.yml
     color: "#ffe0b2"

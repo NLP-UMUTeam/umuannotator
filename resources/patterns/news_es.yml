@@ -1,0 +1,217 @@
+name: news_es_patterns
+language: es
+
+defaults:
+  layer: pattern
+  type: pattern
+  match: phrase
+  case_sensitive: false
+  word_boundaries: true
+  priority: 0
+
+patterns:
+  - id: email
+    label: EMAIL
+    match: regex
+    pattern: '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
+    layer: contact
+    type: entity
+    subtype: email
+    priority: 50
+    metadata:
+      category: contact
+
+  - id: url
+    label: URL
+    match: regex
+    pattern: '\bhttps?://[^\s<>"'']+'
+    layer: contact
+    type: entity
+    subtype: url
+    priority: 45
+    metadata:
+      category: contact
+
+  - id: hashtag
+    label: HASHTAG
+    match: regex
+    pattern: '(?<!\w)#[\wáéíóúÁÉÍÓÚñÑüÜ]+'
+    layer: social
+    type: entity
+    subtype: hashtag
+    priority: 30
+    metadata:
+      category: social
+
+  - id: mention
+    label: MENTION
+    match: regex
+    pattern: '(?<!\w)@[\wáéíóúÁÉÍÓÚñÑüÜ]+'
+    layer: social
+    type: entity
+    subtype: mention
+    priority: 30
+    metadata:
+      category: social
+
+  - id: country_spain
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - España
+      - Reino de España
+      - Estado español
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: ES
+      iso3: ESP
+      wikidata: Q29
+
+  - id: country_france
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Francia
+      - República Francesa
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: FR
+      iso3: FRA
+      wikidata: Q142
+
+  - id: country_germany
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Alemania
+      - República Federal de Alemania
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: DE
+      iso3: DEU
+      wikidata: Q183
+
+  - id: country_italy
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Italia
+      - República Italiana
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: IT
+      iso3: ITA
+      wikidata: Q38
+
+  - id: country_portugal
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Portugal
+      - República Portuguesa
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: PT
+      iso3: PRT
+      wikidata: Q45
+
+  - id: country_united_states
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Estados Unidos
+      - EEUU
+      - EE.UU.
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: US
+      iso3: USA
+      wikidata: Q30
+
+  - id: country_united_kingdom
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Reino Unido
+      - Gran Bretaña
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: GB
+      iso3: GBR
+      wikidata: Q145
+
+  - id: country_morocco
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Marruecos
+      - Reino de Marruecos
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: MA
+      iso3: MAR
+      wikidata: Q1028
+
+  - id: country_china
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - China
+      - República Popular China
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: CN
+      iso3: CHN
+      wikidata: Q148
+
+  - id: country_russia
+    label: COUNTRY
+    match: phrase
+    patterns:
+      - Rusia
+      - Federación Rusa
+    layer: entity
+    type: entity
+    subtype: country
+    priority: 40
+    metadata:
+      category: geopolitical
+      iso2: RU
+      iso3: RUS
+      wikidata: Q159

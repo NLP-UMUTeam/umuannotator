@@ -35,10 +35,18 @@ annotators:
   - name: ontology
     color: "#ffd6d6"
 
+  - name: pattern
+    source: resources/patterns/news_es.yml
+    layer: pattern
+    ignore_case: true
+    word_boundaries: true
+    conflict_strategy: longest_priority
+    color: "#e2f7d4"
+
   - name: temporal
     layer: temporal
     color: "#d6e4ff"
 
   - name: quantity
     layer: cantidades
-
+    color: "#fff2cc"

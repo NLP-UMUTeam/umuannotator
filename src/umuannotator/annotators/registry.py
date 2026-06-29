@@ -1,8 +1,4 @@
-# src/umuannotator/annotators/registry.py
-
 from typing import Any
-
-from umuannotator.document.model import Document
 
 
 class AnnotatorFactory:
@@ -48,18 +44,24 @@ class AnnotatorFactory:
 
             return DBpediaSpotlightAnnotator(language=language)
 
-        if name == "regex":
-            from umuannotator.annotators.regex import RegexAnnotator
+        if name == "pattern":
+            from umuannotator.annotators.pattern import PatternAnnotator
 
             source = kwargs.get("source")
-            layer = kwargs.get("layer", "regex")
+            layer = kwargs.get("layer", "pattern")
+            ignore_case = kwargs.get("ignore_case", True)
+            word_boundaries = kwargs.get("word_boundaries", True)
+            conflict_strategy = kwargs.get("conflict_strategy", "longest_priority")
 
             if source is None:
-                raise ValueError("regex annotator requires source")
+                raise ValueError("pattern annotator requires source")
 
-            return RegexAnnotator(
+            return PatternAnnotator(
                 source=source,
                 layer=layer,
+                ignore_case=ignore_case,
+                word_boundaries=word_boundaries,
+                conflict_strategy=conflict_strategy,
             )
 
         if name == "duckling":

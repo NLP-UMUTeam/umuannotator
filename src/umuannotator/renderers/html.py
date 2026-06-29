@@ -4,6 +4,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from umuannotator.renderers.colors import collect_layers, layer_color
+from umuannotator.renderers.visibility import select_visible_annotations
 
 
 def render_html(data: dict, title: str = "UMU Annotator") -> str:
@@ -42,15 +43,17 @@ def load_css() -> str:
 
 def prepare_document(document: dict, custom_colors: dict | None = None) -> dict:
     annotations = document.get("annotations", [])
+    visible_annotations = select_visible_annotations(annotations)
 
     return {
         "text": document.get("text", ""),
         "annotated_text": render_annotated_text(
             document.get("text", ""),
-            resolve_overlaps(annotations),
+            visible_annotations,
             custom_colors,
         ),
-        "annotations": annotations,
+        "annotations": visible_annotations,
+        "all_annotations": annotations,
         "metadata": document.get("metadata", {}),
         "tfidf_extended": sorted(
             document.get("metadata", {})
@@ -67,7 +70,10 @@ def render_annotated_text(
     annotations: list[dict],
     custom_colors: dict | None = None,
 ) -> str:
-    annotations = sorted(annotations, key=lambda a: a["start"])
+    annotations = sorted(
+        annotations,
+        key=lambda a: (a["start"], a["end"]),
+    )
 
     chunks = []
     cursor = 0
@@ -99,29 +105,3 @@ def render_annotated_text(
     chunks.append(escape(text[cursor:]))
 
     return "".join(chunks)
-
-
-def resolve_overlaps(annotations: list[dict]) -> list[dict]:
-    candidates = sorted(
-        annotations,
-        key=lambda a: (
-            -(a["end"] - a["start"]),
-            a["start"],
-        ),
-    )
-
-    selected = []
-
-    for annotation in candidates:
-        if not overlaps_any(annotation, selected):
-            selected.append(annotation)
-
-    return sorted(selected, key=lambda a: a["start"])
-
-
-def overlaps_any(annotation: dict, selected: list[dict]) -> bool:
-    return any(
-        annotation["start"] < other["end"]
-        and other["start"] < annotation["end"]
-        for other in selected
-    )

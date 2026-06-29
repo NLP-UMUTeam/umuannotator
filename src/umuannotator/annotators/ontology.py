@@ -56,7 +56,7 @@ class OntologyAnnotator:
 
         Matching currently supports two sources:
 
-        - literal terms from rdfs:label and rdfs:seeAlso
+        - literal terms from rdfs:label, rdfs:seeAlso and concept names
         - regex patterns from the configured ontology regex property
 
         Literal terms are escaped and wrapped with word boundaries.
@@ -91,10 +91,15 @@ class OntologyAnnotator:
         concept,
     ) -> None:
         """
-        Annotate literal labels and aliases.
+        Annotate literal labels, aliases and concept names.
 
         These values are treated as plain text, not as regular
-        expressions.
+        expressions. They are escaped and wrapped with word boundaries
+        to avoid matches inside longer words.
+
+        Example:
+            IA matches "La IA avanza"
+            IA does not match "Francia" or "Alemania"
         """
         terms: list[tuple[str, str]] = []
 
@@ -117,21 +122,17 @@ class OntologyAnnotator:
             if not term:
                 continue
 
-            pattern = rf"\b{re.escape(term)}\b"
+            pattern = self._literal_to_regex(term)
 
-            for match in re.finditer(
-                pattern,
-                text,
-                flags=re.IGNORECASE,
-            ):
-                self._add_annotation(
-                    document=document,
-                    match=match,
-                    concept_uri=concept_uri,
-                    concept=concept,
-                    match_source=match_source,
-                    matched_value=term,
-                )
+            self._annotate_regex_match(
+                document=document,
+                text=text,
+                concept_uri=concept_uri,
+                concept=concept,
+                pattern=pattern,
+                match_source=match_source,
+                matched_value=term,
+            )
 
     def _annotate_patterns(
         self,
@@ -143,25 +144,73 @@ class OntologyAnnotator:
         """
         Annotate configured ontology regex patterns.
 
-        Regex patterns are read from concept.patterns and used directly.
-        This allows ontology authors to define alternatives such as:
+        Regex patterns are read from concept.patterns.
+
+        They are not escaped, so ontology authors can still define regex
+        alternatives such as:
 
             pizza\\s+hawaiana|hawaiana
+            pizza(s)?
+
+        However, they are wrapped with word boundaries to avoid short regex
+        patterns such as "IA" matching inside longer words such as
+        "Francia" or "Alemania".
         """
         for pattern in concept.patterns:
-            for match in re.finditer(
-                pattern,
-                text,
-                flags=re.IGNORECASE,
-            ):
-                self._add_annotation(
-                    document=document,
-                    match=match,
-                    concept_uri=concept_uri,
-                    concept=concept,
-                    match_source="regex",
-                    matched_value=pattern,
-                )
+            bounded_pattern = self._regex_with_boundaries(pattern)
+
+            self._annotate_regex_match(
+                document=document,
+                text=text,
+                concept_uri=concept_uri,
+                concept=concept,
+                pattern=bounded_pattern,
+                match_source="regex",
+                matched_value=pattern,
+            )
+
+    def _literal_to_regex(self, value: str) -> str:
+        """
+        Convert a literal ontology value into a safe regex.
+
+        Used for labels, aliases, concept names and camel-case names.
+
+        This prevents short literals such as "IA" from matching inside
+        longer words like "Francia" or "Alemania".
+        """
+        return rf"(?<!\w){re.escape(value)}(?!\w)"
+
+    def _annotate_regex_match(
+        self,
+        document: Document,
+        text: str,
+        concept_uri: str,
+        concept,
+        pattern: str,
+        match_source: str,
+        matched_value: str,
+    ) -> None:
+        """
+        Apply a regex pattern to text and add one annotation per match.
+
+        For literal ontology values, pattern should come from
+        _literal_to_regex(...).
+
+        For ontology regex patterns, pattern should be used directly.
+        """
+        for match in re.finditer(
+            pattern,
+            text,
+            flags=re.IGNORECASE,
+        ):
+            self._add_annotation(
+                document=document,
+                match=match,
+                concept_uri=concept_uri,
+                concept=concept,
+                match_source=match_source,
+                matched_value=matched_value,
+            )
 
     def _add_annotation(
         self,
@@ -191,3 +240,22 @@ class OntologyAnnotator:
                 },
             )
         )
+
+    def _regex_with_boundaries(self, pattern: str) -> str:
+        """
+        Wrap a regex pattern with word boundaries without escaping it.
+
+        This preserves regex behavior while preventing matches inside words.
+
+        Example:
+            pizza(s)?  -> (?<!\\w)(?:pizza(s)?)(?!\\w)
+
+        So it still matches:
+            pizza
+            pizzas
+
+        But it avoids:
+            IA inside Francia
+            IA inside Alemania
+        """
+        return rf"(?<!\w)(?:{pattern})(?!\w)"

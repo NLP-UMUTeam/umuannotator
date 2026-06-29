@@ -1,6 +1,8 @@
 from rich.console import Console
 from rich.text import Text
 
+from umuannotator.renderers.visibility import select_visible_annotations
+
 console = Console()
 
 FALLBACK_COLORS = [
@@ -30,10 +32,13 @@ def render_document(
     layer_colors: dict[str, str],
 ) -> None:
     text = document["text"]
-    annotations = sorted(
+
+    raw_annotations = sorted(
         document.get("annotations", []),
         key=lambda ann: (ann["start"], -(ann["end"] - ann["start"])),
     )
+
+    annotations = select_visible_annotations(raw_annotations)
 
     rich_text = Text(text)
 
