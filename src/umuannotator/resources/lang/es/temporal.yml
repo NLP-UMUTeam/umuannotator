@@ -1,5 +1,8 @@
 language: es
 
+bad_exact_surfaces:
+  - SEP
+
 bad_starts:
   - a
   - en
@@ -20,6 +23,9 @@ bad_single_words:
   - ahora
   - primero
   - mar
+
+bad_prepositional_time_starts:
+  - a
 
 bad_prepositional_time_words:
   - una
@@ -42,6 +48,10 @@ bad_year_surfaces:
   - "1.000"
   - "1000"
   - "2.000"
+
+bad_prefixes_by_grain:
+  minute:
+    - "un "
 
 person_name_month_words:
   - julio

@@ -248,15 +248,19 @@ def test_temporal_loads_spanish_rules():
     assert "mar" in rules.bad_single_words
     assert "mil" in rules.bad_year_surfaces
     assert "julio" in rules.person_name_month_words
+    assert "SEP" in rules.bad_exact_surfaces
 
 
 def test_temporal_unknown_language_uses_empty_rules():
     rules = get_temporal_rules("xx")
 
+    assert rules.bad_exact_surfaces == set()
     assert rules.bad_starts == set()
     assert rules.bad_single_words == set()
+    assert rules.bad_prepositional_time_starts == set()
     assert rules.bad_prepositional_time_words == set()
     assert rules.bad_year_surfaces == set()
+    assert rules.bad_prefixes_by_grain == {}
     assert rules.person_name_month_words == set()
 
 
@@ -267,3 +271,32 @@ def test_temporal_bad_surface_can_use_explicit_rules():
         "ahora",
         rules=rules,
     )
+
+
+def test_temporal_loads_spanish_bad_prefixes_by_grain():
+    rules = get_temporal_rules("es")
+
+    assert rules.bad_prefixes_by_grain["minute"] == ("un ",)
+
+
+def test_temporal_empty_rules_do_not_filter_spanish_specific_cases():
+    rules = get_temporal_rules("xx")
+
+    assert not is_bad_temporal_surface(
+        "a cuatro",
+        rules=rules,
+    )
+
+    assert not is_bad_temporal_surface(
+        "un 30",
+        grain="minute",
+        rules=rules,
+    )
+
+
+def test_temporal_filters_bad_exact_surface_sep():
+    assert is_bad_temporal_surface("SEP")
+
+
+def test_temporal_does_not_filter_lowercase_sep_as_exact_surface():
+    assert not is_bad_temporal_surface("sep")

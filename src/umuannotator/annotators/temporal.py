@@ -18,6 +18,9 @@ def is_bad_temporal_surface(
     normalized = surface.lower().strip()
     words = normalized.split()
 
+    if surface.strip() in rules.bad_exact_surfaces:
+        return True
+
     if not words:
         return True
 
@@ -27,23 +30,45 @@ def is_bad_temporal_surface(
     if normalized in rules.bad_year_surfaces and grain == "year":
         return True
 
-    if len(words) == 2 and words[0] in rules.bad_starts and words[1] in rules.bad_single_words:
+    if (
+        len(words) == 2
+        and words[0] in rules.bad_starts
+        and words[1] in rules.bad_single_words
+    ):
         return True
 
     if (
         len(words) == 2
-        and words[0] == "a"
+        and words[0] in rules.bad_prepositional_time_starts
         and words[1] in rules.bad_prepositional_time_words
     ):
         return True
 
-    if normalized.startswith("un ") and grain == "minute":
+    if grain is not None and _starts_with_bad_prefix_for_grain(
+        normalized,
+        grain=grain,
+        rules=rules,
+    ):
         return True
 
     if dim == "duration" and len(words) == 1 and words[0].isdigit():
         return True
 
     return False
+
+
+def _starts_with_bad_prefix_for_grain(
+    surface: str,
+    *,
+    grain: str,
+    rules: TemporalLanguageRules,
+) -> bool:
+    prefixes = rules.bad_prefixes_by_grain.get(grain, ())
+
+    return any(
+        surface.startswith(prefix)
+        for prefix in prefixes
+    )
 
 
 class TemporalAnnotator(DucklingAnnotator):

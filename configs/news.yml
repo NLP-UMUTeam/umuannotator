@@ -43,6 +43,9 @@ annotators:
     conflict_strategy: longest_priority
     color: "#e2f7d4"
 
+  - name: stanza-ner
+    color: "#eadcf8"
+
   - name: temporal
     layer: temporal
     color: "#d6e4ff"

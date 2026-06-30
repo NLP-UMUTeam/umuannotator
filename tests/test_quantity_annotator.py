@@ -202,3 +202,5 @@ def test_quantity_unknown_language_uses_empty_rules():
     assert rules.determiner_number_words == set()
     assert rules.multipliers == {}
     assert rules.multiplier_after_number_re is None
+
+
