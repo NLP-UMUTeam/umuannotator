@@ -1,0 +1,18 @@
+language: es
+
+determiner_number_words:
+  - un
+  - una
+  - uno
+
+multipliers:
+  mil: 1000
+  millón: 1000000
+  millon: 1000000
+  millones: 1000000
+  billón: 1000000000000
+  billon: 1000000000000
+  billones: 1000000000000
+
+patterns:
+  multiplier_after_number: '^\s+(mil|millones?|billones?)\b'

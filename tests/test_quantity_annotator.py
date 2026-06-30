@@ -1,5 +1,6 @@
 from umuannotator.annotators.quantity import QuantityAnnotator
 from umuannotator.document import Annotation, Document
+from umuannotator.lang.quantity import get_quantity_rules
 
 
 def annotate(text: str):
@@ -185,3 +186,19 @@ def test_quantity_label_for_supported_dimensions():
     assert annotator._quantity_label({"dim": "ordinal"}) == "ORDINAL"
     assert annotator._quantity_label({"dim": "quantity"}) == "QUANTITY"
     assert annotator._quantity_label({"dim": "unknown"}) == "QUANTITY"
+
+
+def test_quantity_loads_spanish_rules():
+    rules = get_quantity_rules("es")
+
+    assert "un" in rules.determiner_number_words
+    assert rules.multipliers["millones"] == 1_000_000
+    assert rules.multiplier_after_number_re is not None
+
+
+def test_quantity_unknown_language_uses_empty_rules():
+    rules = get_quantity_rules("xx")
+
+    assert rules.determiner_number_words == set()
+    assert rules.multipliers == {}
+    assert rules.multiplier_after_number_re is None

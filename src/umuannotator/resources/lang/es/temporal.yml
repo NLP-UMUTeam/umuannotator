@@ -1,0 +1,47 @@
+language: es
+
+bad_starts:
+  - a
+  - en
+  - de
+  - del
+  - por
+  - para
+  - con
+  - sin
+
+bad_single_words:
+  - una
+  - un
+  - uno
+  - unos
+  - unas
+  - ya
+  - ahora
+  - primero
+  - mar
+
+bad_prepositional_time_words:
+  - una
+  - un
+  - uno
+  - dos
+  - tres
+  - cuatro
+  - cinco
+  - seis
+  - siete
+  - ocho
+  - nueve
+  - diez
+  - once
+  - doce
+
+bad_year_surfaces:
+  - mil
+  - "1.000"
+  - "1000"
+  - "2.000"
+
+person_name_month_words:
+  - julio

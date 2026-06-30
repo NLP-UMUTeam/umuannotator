@@ -1,47 +1,9 @@
 from __future__ import annotations
 
 from umuannotator.annotators.duckling import DucklingAnnotator
-from umuannotator.document.model import Annotation, Document
 from umuannotator.annotators.stanza_utils import find_stanza_entity_containing
-
-
-BAD_STARTS = {"a", "en", "de", "del", "por", "para", "con", "sin"}
-
-BAD_SINGLE_WORDS = {
-    "una",
-    "un",
-    "uno",
-    "unos",
-    "unas",
-    "ya",
-    "ahora",
-    "primero",
-    "mar",
-}
-
-BAD_PREPOSITIONAL_TIME_WORDS = {
-    "una",
-    "un",
-    "uno",
-    "dos",
-    "tres",
-    "cuatro",
-    "cinco",
-    "seis",
-    "siete",
-    "ocho",
-    "nueve",
-    "diez",
-    "once",
-    "doce",
-}
-
-BAD_YEAR_SURFACES = {
-    "mil",
-    "1.000",
-    "1000",
-    "2.000",
-}
+from umuannotator.document.model import Annotation, Document
+from umuannotator.lang.temporal import TemporalLanguageRules, get_temporal_rules
 
 
 def is_bad_temporal_surface(
@@ -49,26 +11,29 @@ def is_bad_temporal_surface(
     *,
     dim: str | None = None,
     grain: str | None = None,
+    rules: TemporalLanguageRules | None = None,
 ) -> bool:
+    rules = rules or get_temporal_rules("es")
+
     normalized = surface.lower().strip()
     words = normalized.split()
 
     if not words:
         return True
 
-    if normalized in BAD_SINGLE_WORDS:
+    if normalized in rules.bad_single_words:
         return True
 
-    if normalized in BAD_YEAR_SURFACES and grain == "year":
+    if normalized in rules.bad_year_surfaces and grain == "year":
         return True
 
-    if len(words) == 2 and words[0] in BAD_STARTS and words[1] in BAD_SINGLE_WORDS:
+    if len(words) == 2 and words[0] in rules.bad_starts and words[1] in rules.bad_single_words:
         return True
 
     if (
         len(words) == 2
         and words[0] == "a"
-        and words[1] in BAD_PREPOSITIONAL_TIME_WORDS
+        and words[1] in rules.bad_prepositional_time_words
     ):
         return True
 
@@ -89,6 +54,8 @@ class TemporalAnnotator(DucklingAnnotator):
         timezone: str = "Europe/Madrid",
         layer: str = "temporal",
     ):
+        self.rules = get_temporal_rules(language)
+
         super().__init__(
             dimensions=["time", "time-grain", "duration"],
             language=language,
@@ -114,6 +81,7 @@ class TemporalAnnotator(DucklingAnnotator):
             annotation.text,
             dim=result.get("dim"),
             grain=grain,
+            rules=self.rules,
         ):
             return None
 
@@ -172,7 +140,7 @@ class TemporalAnnotator(DucklingAnnotator):
     ) -> bool:
         surface = annotation.text.lower().strip()
 
-        if surface not in {"julio"}:
+        if surface not in self.rules.person_name_month_words:
             return False
 
         entity = find_stanza_entity_containing(
@@ -187,4 +155,3 @@ class TemporalAnnotator(DucklingAnnotator):
         entity_type = entity.get("type") or entity.get("label")
 
         return entity_type in {"PER", "PERSON"}
-

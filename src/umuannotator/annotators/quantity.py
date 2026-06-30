@@ -1,29 +1,10 @@
 from __future__ import annotations
 
-import re
-
 from umuannotator.annotators.duckling import DucklingAnnotator
-from umuannotator.document.model import Annotation, Document
 from umuannotator.annotators.overlap import resolve_layer_overlaps
 from umuannotator.annotators.stanza_utils import find_stanza_token
-
-
-DET_NUMBER_WORDS = {"un", "una", "uno"}
-
-MULTIPLIERS = {
-    "mil": 1_000,
-    "millón": 1_000_000,
-    "millon": 1_000_000,
-    "millones": 1_000_000,
-    "billón": 1_000_000_000_000,
-    "billon": 1_000_000_000_000,
-    "billones": 1_000_000_000_000,
-}
-
-MULTIPLIER_AFTER_NUMBER_RE = re.compile(
-    r"^\s+(mil|millones?|billones?)\b",
-    flags=re.IGNORECASE,
-)
+from umuannotator.document.model import Annotation, Document
+from umuannotator.lang.quantity import get_quantity_rules
 
 
 class QuantityAnnotator(DucklingAnnotator):
@@ -34,6 +15,8 @@ class QuantityAnnotator(DucklingAnnotator):
         timezone: str = "Europe/Madrid",
         layer: str = "cantidades",
     ):
+        self.rules = get_quantity_rules(language)
+
         super().__init__(
             dimensions=[
                 "number",
@@ -90,6 +73,7 @@ class QuantityAnnotator(DucklingAnnotator):
             start=annotation.start,
             end=annotation.end,
         )
+
         if stanza_token is not None:
             annotation.metadata["stanza"] = {
                 "lemma": stanza_token.get("lemma"),
@@ -158,7 +142,7 @@ class QuantityAnnotator(DucklingAnnotator):
     ) -> bool:
         surface = annotation.text.lower().strip()
 
-        if surface not in DET_NUMBER_WORDS:
+        if surface not in self.rules.determiner_number_words:
             return False
 
         token = find_stanza_token(
@@ -172,7 +156,6 @@ class QuantityAnnotator(DucklingAnnotator):
 
         return token.get("upos") == "DET"
 
-
     def _expand_number_multiplier(
         self,
         annotation: Annotation,
@@ -181,15 +164,18 @@ class QuantityAnnotator(DucklingAnnotator):
         if annotation.label != "NUMBER":
             return
 
+        if self.rules.multiplier_after_number_re is None:
+            return
+
         tail = document.text[annotation.end:]
-        match = MULTIPLIER_AFTER_NUMBER_RE.match(tail)
+        match = self.rules.multiplier_after_number_re.match(tail)
 
         if not match:
             return
 
         multiplier_text = match.group(1)
         multiplier_key = multiplier_text.lower()
-        multiplier_value = MULTIPLIERS.get(multiplier_key)
+        multiplier_value = self.rules.multipliers.get(multiplier_key)
 
         extension_end = annotation.end + match.end()
 
@@ -210,4 +196,3 @@ class QuantityAnnotator(DucklingAnnotator):
                 )
             except (TypeError, ValueError):
                 pass
-

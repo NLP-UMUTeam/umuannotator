@@ -1,5 +1,6 @@
 from umuannotator.annotators.temporal import TemporalAnnotator, is_bad_temporal_surface
 from umuannotator.document.model import Annotation, Document
+from umuannotator.lang.temporal import get_temporal_rules
 
 def assert_annotation(result, *, text: str, label: str | None = None):
     matches = [
@@ -240,3 +241,29 @@ def test_temporal_does_not_filter_julio_inside_non_person_entity():
     assert not annotator._is_false_positive_person_name(annotation, document)
 
 
+def test_temporal_loads_spanish_rules():
+    rules = get_temporal_rules("es")
+
+    assert "ahora" in rules.bad_single_words
+    assert "mar" in rules.bad_single_words
+    assert "mil" in rules.bad_year_surfaces
+    assert "julio" in rules.person_name_month_words
+
+
+def test_temporal_unknown_language_uses_empty_rules():
+    rules = get_temporal_rules("xx")
+
+    assert rules.bad_starts == set()
+    assert rules.bad_single_words == set()
+    assert rules.bad_prepositional_time_words == set()
+    assert rules.bad_year_surfaces == set()
+    assert rules.person_name_month_words == set()
+
+
+def test_temporal_bad_surface_can_use_explicit_rules():
+    rules = get_temporal_rules("es")
+
+    assert is_bad_temporal_surface(
+        "ahora",
+        rules=rules,
+    )
