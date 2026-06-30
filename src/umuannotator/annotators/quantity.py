@@ -1,10 +1,29 @@
 from __future__ import annotations
 
+import re
+
 from umuannotator.annotators.duckling import DucklingAnnotator
 from umuannotator.document.model import Annotation, Document
+from umuannotator.annotators.overlap import resolve_layer_overlaps
+from umuannotator.annotators.stanza_utils import find_stanza_token
 
 
 DET_NUMBER_WORDS = {"un", "una", "uno"}
+
+MULTIPLIERS = {
+    "mil": 1_000,
+    "millón": 1_000_000,
+    "millon": 1_000_000,
+    "millones": 1_000_000,
+    "billón": 1_000_000_000_000,
+    "billon": 1_000_000_000_000,
+    "billones": 1_000_000_000_000,
+}
+
+MULTIPLIER_AFTER_NUMBER_RE = re.compile(
+    r"^\s+(mil|millones?|billones?)\b",
+    flags=re.IGNORECASE,
+)
 
 
 class QuantityAnnotator(DucklingAnnotator):
@@ -32,6 +51,16 @@ class QuantityAnnotator(DucklingAnnotator):
             source="duckling-quantity",
         )
 
+    def annotate(self, document: Document) -> Document:
+        super().annotate(document)
+
+        document.annotations = resolve_layer_overlaps(
+            document.annotations,
+            layer=self.layer,
+        )
+
+        return document
+
     def result_to_annotation(
         self,
         document: Document,
@@ -50,8 +79,17 @@ class QuantityAnnotator(DucklingAnnotator):
 
         annotation.metadata["normalized"] = self._normalized_value(result)
         annotation.metadata["raw_value"] = result.get("value", {})
+        annotation.metadata["duckling_dim"] = result.get("dim")
+        annotation.metadata["duckling_body"] = result.get("body")
+        annotation.metadata["unit"] = self._unit(result)
 
-        stanza_token = self._find_stanza_token(annotation, document)
+        self._expand_number_multiplier(annotation, document)
+
+        stanza_token = find_stanza_token(
+            document,
+            start=annotation.start,
+            end=annotation.end,
+        )
         if stanza_token is not None:
             annotation.metadata["stanza"] = {
                 "lemma": stanza_token.get("lemma"),
@@ -100,6 +138,19 @@ class QuantityAnnotator(DucklingAnnotator):
 
         return value
 
+    def _unit(self, result: dict) -> str | None:
+        value = result.get("value", {})
+
+        if not isinstance(value, dict):
+            return None
+
+        normalized = value.get("normalized", {})
+
+        if isinstance(normalized, dict):
+            return value.get("unit") or normalized.get("unit")
+
+        return value.get("unit")
+
     def _is_false_positive_determiner(
         self,
         annotation: Annotation,
@@ -110,28 +161,53 @@ class QuantityAnnotator(DucklingAnnotator):
         if surface not in DET_NUMBER_WORDS:
             return False
 
-        token = self._find_stanza_token(annotation, document)
+        token = find_stanza_token(
+            document,
+            start=annotation.start,
+            end=annotation.end,
+        )
 
         if token is None:
             return False
 
         return token.get("upos") == "DET"
 
-    def _find_stanza_token(
+
+    def _expand_number_multiplier(
         self,
         annotation: Annotation,
         document: Document,
-    ) -> dict | None:
-        stanza = document.metadata.get("stanza")
+    ) -> None:
+        if annotation.label != "NUMBER":
+            return
 
-        if not stanza:
-            return None
+        tail = document.text[annotation.end:]
+        match = MULTIPLIER_AFTER_NUMBER_RE.match(tail)
 
-        for token in stanza.get("tokens", []):
-            if (
-                token.get("start") == annotation.start
-                and token.get("end") == annotation.end
-            ):
-                return token
+        if not match:
+            return
 
-        return None
+        multiplier_text = match.group(1)
+        multiplier_key = multiplier_text.lower()
+        multiplier_value = MULTIPLIERS.get(multiplier_key)
+
+        extension_end = annotation.end + match.end()
+
+        annotation.end = extension_end
+        annotation.text = document.text[annotation.start:annotation.end]
+        annotation.label = "QUANTITY"
+        annotation.subtype = "multiplier"
+
+        annotation.metadata["multiplier"] = multiplier_key
+        annotation.metadata["multiplier_value"] = multiplier_value
+
+        normalized = annotation.metadata.get("normalized")
+
+        if normalized is not None and multiplier_value is not None:
+            try:
+                annotation.metadata["normalized"] = (
+                    float(normalized) * multiplier_value
+                )
+            except (TypeError, ValueError):
+                pass
+

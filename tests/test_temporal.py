@@ -1,5 +1,20 @@
-from umuannotator.annotators.temporal import TemporalAnnotator
-from umuannotator.document.model import Document
+from umuannotator.annotators.temporal import TemporalAnnotator, is_bad_temporal_surface
+from umuannotator.document.model import Annotation, Document
+
+def assert_annotation(result, *, text: str, label: str | None = None):
+    matches = [
+        annotation
+        for annotation in result.annotations
+        if annotation.text == text
+        and (label is None or annotation.label == label)
+    ]
+
+    assert matches, (
+        f"Expected annotation text={text!r}, label={label!r}. "
+        f"Got: {[(a.text, a.label) for a in result.annotations]}"
+    )
+
+    return matches[0]
 
 
 def annotate(text: str):
@@ -72,3 +87,156 @@ def test_temporal_annotator_has_value_metadata():
     assert "value" in annotation.metadata
     assert "locale" in annotation.metadata
     assert "timezone" in annotation.metadata
+
+
+def test_filters_bad_single_temporal_surface():
+    assert is_bad_temporal_surface("una")
+    assert is_bad_temporal_surface("un")
+    assert is_bad_temporal_surface("unos")
+    assert is_bad_temporal_surface("ya")
+    assert is_bad_temporal_surface("ahora")
+    assert is_bad_temporal_surface("primero")
+    assert is_bad_temporal_surface("mar")
+
+
+def test_filters_bad_preposition_plus_single_surface():
+    assert is_bad_temporal_surface("en una")
+    assert is_bad_temporal_surface("de un")
+    assert is_bad_temporal_surface("para uno")
+
+
+def test_keeps_valid_temporal_surface():
+    assert not is_bad_temporal_surface("mañana")
+    assert not is_bad_temporal_surface("el lunes")
+    assert not is_bad_temporal_surface("en 2024")
+    assert not is_bad_temporal_surface("durante una semana")
+    assert not is_bad_temporal_surface("hoy", grain="day")
+    assert not is_bad_temporal_surface("Navidad", grain="day")
+    assert not is_bad_temporal_surface("julio", grain="month")
+    assert not is_bad_temporal_surface("2025", grain="year")
+    assert not is_bad_temporal_surface("24 horas", dim="duration")
+    assert not is_bad_temporal_surface("10 años", dim="duration")
+
+
+def test_filters_bare_numeric_duration():
+    assert is_bad_temporal_surface("3", dim="duration")
+
+
+def test_filters_bad_year_surfaces_only_when_grain_is_year():
+    assert is_bad_temporal_surface("mil", grain="year")
+    assert is_bad_temporal_surface("1.000", grain="year")
+    assert is_bad_temporal_surface("1000", grain="year")
+    assert is_bad_temporal_surface("2.000", grain="year")
+
+    assert not is_bad_temporal_surface("mil")
+    assert not is_bad_temporal_surface("1.000")
+
+
+def test_filters_a_plus_time_word():
+    assert is_bad_temporal_surface("a cuatro")
+    assert is_bad_temporal_surface("a cinco")
+
+
+def test_filters_un_minute_expression():
+    assert is_bad_temporal_surface("un 30", grain="minute")
+
+
+def test_temporal_filters_julio_inside_person_entity():
+    annotator = TemporalAnnotator(language="es")
+
+    document = Document(text="Julio Iglesias actuará mañana.")
+    document.metadata["stanza"] = {
+        "entities": [
+            {
+                "text": "Julio Iglesias",
+                "type": "PER",
+                "start": 0,
+                "end": 15,
+            }
+        ]
+    }
+
+    annotation = Annotation(
+        start=0,
+        end=5,
+        text="Julio",
+        label="DATE",
+        layer="temporal",
+        source="duckling-temporal",
+        type="temporal",
+        metadata={},
+    )
+
+    assert annotator._is_false_positive_person_name(annotation, document)
+
+
+def test_temporal_keeps_julio_when_not_inside_person_entity():
+    annotator = TemporalAnnotator(language="es")
+
+    document = Document(text="El empleo sube en julio.")
+    document.metadata["stanza"] = {
+        "entities": []
+    }
+
+    annotation = Annotation(
+        start=18,
+        end=23,
+        text="julio",
+        label="DATE",
+        layer="temporal",
+        source="duckling-temporal",
+        type="temporal",
+        metadata={},
+    )
+
+    assert not annotator._is_false_positive_person_name(annotation, document)
+
+
+def test_temporal_keeps_julio_without_stanza_metadata():
+    annotator = TemporalAnnotator(language="es")
+
+    document = Document(text="El empleo sube en julio.")
+
+    annotation = Annotation(
+        start=18,
+        end=23,
+        text="julio",
+        label="DATE",
+        layer="temporal",
+        source="duckling-temporal",
+        type="temporal",
+        metadata={},
+    )
+
+    assert not annotator._is_false_positive_person_name(annotation, document)
+
+
+def test_temporal_does_not_filter_julio_inside_non_person_entity():
+    annotator = TemporalAnnotator(language="es")
+
+    document = Document(text="Barcelona tendrá obras en julio.")
+    document.metadata["stanza"] = {
+        "entities": [
+            {
+                "text": "Barcelona",
+                "type": "LOC",
+                "start": 0,
+                "end": 9,
+            }
+        ]
+    }
+
+    annotation = Annotation(
+        start=25,
+        end=30,
+        text="julio",
+        label="DATE",
+        layer="temporal",
+        source="duckling-temporal",
+        type="temporal",
+        metadata={},
+    )
+
+    assert not annotator._is_false_positive_person_name(annotation, document)
+
+

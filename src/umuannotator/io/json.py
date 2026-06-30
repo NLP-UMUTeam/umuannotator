@@ -25,3 +25,20 @@ def write_json_output(
     finally:
         if output_path != "-":
             f.close()
+
+def read_jsonl_render_input(input_path: str) -> dict:
+    documents = []
+
+    with _open_input(input_path) as f:
+        for line in f:
+            line = line.strip()
+
+            if not line:
+                continue
+
+            documents.append(json.loads(line))
+
+    return {
+        "documents": documents,
+        "metadata": {},
+    }
