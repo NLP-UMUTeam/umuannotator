@@ -4,6 +4,7 @@ from typing import Any
 from umuannotator.io.json import write_json_output
 from umuannotator.io.jsonl import write_jsonl_output
 from umuannotator.io.text import write_text_output
+from umuannotator.serialization.profiles import apply_output_profile
 
 
 def infer_output_format(output_path: str, output_format: str | None = None) -> str:
@@ -32,19 +33,25 @@ def write_output(
     output_path: str,
     *,
     output_format: str | None = None,
+    output_profile: str = "compact",
 ) -> None:
     output_format = infer_output_format(output_path, output_format)
 
+    serialized_data = apply_output_profile(
+        data,
+        profile=output_profile,
+    )
+
     if output_format == "json":
-        write_json_output(data, output_path)
+        write_json_output(serialized_data, output_path)
         return
 
     if output_format == "jsonl":
-        write_jsonl_output(data, output_path)
+        write_jsonl_output(serialized_data, output_path)
         return
 
     if output_format == "text":
-        write_text_output(data, output_path)
+        write_text_output(serialized_data, output_path)
         return
 
     raise ValueError(f"Unsupported output format: {output_format}")

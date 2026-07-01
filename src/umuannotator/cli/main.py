@@ -61,6 +61,11 @@ def run(
         "--progress/--no-progress",
         help="Show progress bars.",
     ),
+    output_profile: str = typer.Option(
+        "compact",
+        "--output-profile",
+        help="Output profile: compact or full.",
+    ),    
 ):
     data = run_from_config(
         config_path=config_path,
@@ -76,4 +81,5 @@ def run(
         data,
         output_path,
         output_format=output_format,
+        output_profile=output_profile,
     )
