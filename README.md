@@ -60,14 +60,17 @@ Or run and render in a single pipeline:
 umuannotator run \
   --config configs/pizza_rich.yml \
   --input datasets/pizza_es.csv \
+  --input-format csv \
   --text-column text \
   --output - \
-  --output-format json \
+  --output-format jsonl \
+  --output-profile full \
   --no-progress \
 | umuannotator render html \
-  --input - \
-  --output outputs/pizza_rich.html \
-  --title "Pizza Rich"
+    --input - \
+    --input-format jsonl \
+    --output outputs/pizza_rich.html \
+    --title "Pizza Rich"
 ```
 
 ## Input and output formats

@@ -48,7 +48,7 @@ annotators:
 
   - name: duckling
     layer: dinero
-    color: "#d6fff6"
+    color: "#fff2cc"
     dimensions:
       - amount-of-money
 
@@ -59,10 +59,7 @@ annotators:
 
 resolver:
   enabled: true
-  strategy: longest_match
-  layers:
-    - ontology
-    - pedido
+  strategy: longest_non_overlapping
 
 metrics:
   tfidf:
