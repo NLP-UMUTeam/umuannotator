@@ -1,6 +1,6 @@
 import typer
 
-from umuannotator.cli import ontology, preprocess, render
+from umuannotator.cli import metrics, ontology, preprocess, render
 from umuannotator.io.output import write_output
 from umuannotator.pipeline.runner import run_from_config
 
@@ -27,6 +27,12 @@ app.add_typer(
     help="Preprocessing commands.",
 )
 
+app.add_typer(
+    metrics.app,
+    name="metrics",
+    help="Metrics and corpus summary commands.",
+)
+
 
 @app.command()
 def run(
@@ -48,7 +54,7 @@ def run(
         "id",
         "--id-column",
         help="Document id column for structured inputs.",
-    ),  
+    ),
     sep: str = typer.Option(",", "--sep"),
     show_progress: bool = typer.Option(
         True,
@@ -56,7 +62,6 @@ def run(
         help="Show progress bars.",
     ),
 ):
-
     data = run_from_config(
         config_path=config_path,
         input_path=input_path,
@@ -66,7 +71,6 @@ def run(
         sep=sep,
         show_progress=show_progress,
     )
-
 
     write_output(
         data,

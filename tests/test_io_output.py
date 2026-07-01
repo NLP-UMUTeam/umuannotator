@@ -111,3 +111,13 @@ def test_write_text_output(tmp_path):
     )
 
     assert path.read_text(encoding="utf-8") == "Pizza\nPasta\n"
+
+from umuannotator.io.output import infer_output_format
+
+
+def test_infer_output_format_stdout_defaults_to_jsonl():
+    assert infer_output_format("-") == "jsonl"
+
+
+def test_infer_output_format_explicit_overrides_stdout_default():
+    assert infer_output_format("-", "json") == "json"

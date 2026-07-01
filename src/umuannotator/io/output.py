@@ -11,7 +11,7 @@ def infer_output_format(output_path: str, output_format: str | None = None) -> s
         return output_format
 
     if output_path == "-":
-        return "json"
+        return "jsonl"
 
     suffix = Path(output_path).suffix.lower()
 
