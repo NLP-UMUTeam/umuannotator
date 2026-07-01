@@ -309,21 +309,30 @@ def render_salience(salience_data: dict) -> None:
     console.print()
     console.print("[bold]Annotation salience[/bold]")
     console.print()
+
+    method = salience_data.get("method", "tfidf")
+
     console.print(f"Documents: {salience_data['documents']}")
+    console.print(f"Method: {method}")
+
+    if method == "tfidf-e":
+        console.print(f"Layer: {salience_data.get('layer', '')}")
+        console.print(f"Max distance: {salience_data.get('max_distance', '')}")
+        console.print(f"Decay: {salience_data.get('decay', '')}")
+        console.print(f"Direction: {salience_data.get('direction', '')}")
+
     console.print()
 
-    has_extended_scores = any(
-        "observed_score" in item or "expanded_score" in item
-        for item in salience_data["items"]
-    )
+    if method == "tfidf-e":
+        _render_extended_salience_table(salience_data)
+        return
 
+    _render_basic_salience_table(salience_data)
+
+
+def _render_basic_salience_table(salience_data: dict) -> None:
     table = Table(title="Top salient annotations")
     table.add_column("Score", justify="right")
-
-    if has_extended_scores:
-        table.add_column("Observed", justify="right")
-        table.add_column("Expanded", justify="right")
-
     table.add_column("TF", justify="right")
     table.add_column("DF", justify="right")
     table.add_column("IDF", justify="right")
@@ -333,30 +342,93 @@ def render_salience(salience_data: dict) -> None:
     table.add_column("Canonical")
 
     for item in salience_data["items"]:
-        row = [
-            f"{item['score']:.3f}",
-        ]
-
-        if has_extended_scores:
-            row.extend(
-                [
-                    f"{item.get('observed_score', 0.0):.3f}",
-                    f"{item.get('expanded_score', 0.0):.3f}",
-                ]
-            )
-
-        row.extend(
-            [
-                str(item.get("tf", "")),
-                str(item.get("df", "")),
-                f"{item.get('idf', 0.0):.3f}",
-                str(item.get("layer", "")),
-                str(item.get("label", "")),
-                str(item.get("display", "")),
-                str(item.get("canonical", "")),
-            ]
+        table.add_row(
+            _format_float(item.get("score")),
+            str(item.get("tf", "")),
+            str(item.get("df", "")),
+            _format_float(item.get("idf")),
+            str(item.get("layer", "")),
+            str(item.get("label", "")),
+            str(item.get("display", "")),
+            _shorten_uri(str(item.get("canonical", ""))),
         )
 
-        table.add_row(*row)
+    console.print(table)
+
+
+def _render_extended_salience_table(salience_data: dict) -> None:
+    table = Table(title="Top TF-IDF-e concepts")
+    table.add_column("Score", justify="right")
+    table.add_column("Observed", justify="right")
+    table.add_column("Expanded", justify="right")
+    table.add_column("Exp%", justify="right")
+    table.add_column("TF", justify="right")
+    table.add_column("DF", justify="right")
+    table.add_column("IDF", justify="right")
+    table.add_column("Label")
+    table.add_column("Display")
+    table.add_column("Concept")
+
+    for item in salience_data["items"]:
+        score = float(item.get("score", 0.0) or 0.0)
+        expanded_score = float(item.get("expanded_score", 0.0) or 0.0)
+
+        table.add_row(
+            _format_float(score),
+            _format_float(item.get("observed_score")),
+            _format_float(expanded_score),
+            _format_percent(
+                expanded_score,
+                score,
+            ),
+            str(item.get("tf", "")),
+            str(item.get("df", "")),
+            _format_float(item.get("idf")),
+            str(item.get("label", "")),
+            str(item.get("display", "")),
+            _shorten_uri(str(item.get("concept_uri", ""))),
+        )
 
     console.print(table)
+
+
+def _format_float(
+    value,
+    *,
+    digits: int = 3,
+) -> str:
+    if value is None:
+        return ""
+
+    try:
+        return f"{float(value):.{digits}f}"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _format_percent(
+    part: float,
+    total: float,
+) -> str:
+    if total <= 0:
+        return "0.0%"
+
+    return f"{(part / total) * 100:.1f}%"
+
+
+def _shorten_uri(value: str) -> str:
+    if not value:
+        return ""
+
+    if "#" in value:
+        return value.rsplit("#", 1)[-1]
+
+    if "/" in value:
+        return value.rstrip("/").rsplit("/", 1)[-1]
+
+    if value.startswith("concept_uri:"):
+        return _shorten_uri(
+            value.removeprefix("concept_uri:"),
+        )
+
+    return value
