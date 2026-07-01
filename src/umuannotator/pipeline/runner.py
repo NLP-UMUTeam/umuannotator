@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-import sys
-
 from umuannotator.io.loader import load_corpus_input
 from umuannotator.annotators.registry import build_annotators
 from umuannotator.config.loader import load_config
-from umuannotator.document import AnnotationResolver
 from umuannotator.metrics import ExtendedTfidfScorer, TfidfScorer
 from umuannotator.ontology.graph import build_graph
 from umuannotator.ontology.loader import load_ontology
@@ -13,6 +10,10 @@ from umuannotator.pipeline import AnnotationPipeline
 from umuannotator.preprocessors.registry import build_preprocessors
 from umuannotator.renderers.colors import collect_layer_colors
 from umuannotator.renderers.json import corpus_to_dict
+from umuannotator.resolution.resolver import (
+    apply_resolver_if_enabled,
+    resolver_config_from_dict,
+)
 from umuannotator.utils.profiling import timed
 
 
@@ -31,18 +32,15 @@ def run_from_config(
     with timed("load_config", timings):
         config = load_config(config_path)
 
-
     ontology_config = config.get("ontology", {})
     ontology_path = ontology_config.get("path")
     language = ontology_config.get("language", "es")
-
 
     with timed("build_preprocessors", timings):
         preprocessors = build_preprocessors(
             config.get("preprocessors", []),
             language=language,
         )
-
 
     with timed("build_annotators", timings):
         annotators = build_annotators(
@@ -51,7 +49,6 @@ def run_from_config(
             ontology_path=ontology_path,
             config=config,
         )
-
 
     with timed("load_input", timings):
         corpus = load_corpus_input(
@@ -73,12 +70,17 @@ def run_from_config(
             show_progress=show_progress,
         )
 
-    resolver_config = config.get("resolver", {})
-    if resolver_config.get("enabled", True):
+    resolver_config = resolver_config_from_dict(
+        config.get("resolver"),
+    )
+
+    if resolver_config.enabled:
         with timed("resolver", timings):
-            corpus = AnnotationResolver(
-                layer=resolver_config.get("layer", "ontology"),
-            ).resolve_corpus(corpus)
+            for document in corpus.documents:
+                document.annotations = apply_resolver_if_enabled(
+                    document.annotations,
+                    config=resolver_config,
+                )
 
     metrics_config = config.get("metrics", {})
 
@@ -104,7 +106,10 @@ def run_from_config(
         "timings": timings,
         "annotator_timings": pipeline.timings,
         "documents": len(corpus.documents),
-        "annotations": sum(len(doc.annotations) for doc in corpus.documents),
+        "annotations": sum(
+            len(document.annotations)
+            for document in corpus.documents
+        ),
         "preprocessors": [
             type(preprocessor).__name__
             for preprocessor in preprocessors

@@ -1,3 +1,7 @@
+resolver:
+  enabled: true
+  strategy: longest_non_overlapping
+
 preprocessors:
   - name: stanza
     processors: tokenize,pos,lemma,ner

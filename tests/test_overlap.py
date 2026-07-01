@@ -1,4 +1,4 @@
-from umuannotator.annotators.overlap import (
+from umuannotator.resolution.overlap import (
     overlaps,
     resolve_layer_overlaps,
     select_non_overlapping,

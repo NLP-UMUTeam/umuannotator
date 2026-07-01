@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from umuannotator.annotators.duckling import DucklingAnnotator
-from umuannotator.annotators.overlap import resolve_layer_overlaps
+from umuannotator.resolution.overlap import resolve_layer_overlaps
 from umuannotator.annotators.stanza_utils import find_stanza_token
 from umuannotator.document.model import Annotation, Document
 from umuannotator.lang.quantity import get_quantity_rules

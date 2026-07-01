@@ -8,6 +8,13 @@ from umuannotator.io.render import read_render_input
 from umuannotator.metrics.summary import summarize_annotations
 from umuannotator.metrics.salience import compute_salience
 from umuannotator.metrics.output import write_metrics_json
+from umuannotator.metrics.extended_salience import compute_extended_salience
+from umuannotator.metrics.ontology_expansion import graph_to_distance_map
+from umuannotator.metrics.ontology_expansion import (
+    graph_to_distance_map,
+    rdf_to_expansion_graph,
+)
+from umuannotator.ontology.loader import load_ontology
 
 
 app = typer.Typer(help="Metric and corpus summary commands.")
@@ -210,18 +217,78 @@ def salience(
         "--output-format",
         help="Output format: console or json.",
     ),
+    method: str = typer.Option(
+        "tfidf",
+        "--method",
+        help="Salience method: tfidf or tfidf-e.",
+    ),
+    ontology_path: str | None = typer.Option(
+        None,
+        "--ontology",
+        help="Ontology path. Required for --method tfidf-e.",
+    ),
+    max_distance: int = typer.Option(
+        2,
+        "--max-distance",
+        help="Maximum ontology graph distance for tfidf-e.",
+    ),
+    decay: float = typer.Option(
+        0.5,
+        "--decay",
+        help="Decay factor for tfidf-e expansion.",
+    ),
+    direction: str = typer.Option(
+        "outgoing",
+        "--direction",
+        help="Ontology expansion direction for tfidf-e: outgoing, incoming or both.",
+    ),   
 ):
     data = read_render_input(
         input_path,
         input_format=input_format,
     )
 
-    salience_data = compute_salience(
-        data,
-        top=top,
-        layer=layer,
-        label=label,
-    )
+    if method == "tfidf":
+        salience_data = compute_salience(
+            data,
+            top=top,
+            layer=layer,
+            label=label,
+        )
+
+    elif method == "tfidf-e":
+        if ontology_path is None:
+            raise ValueError("--ontology is required when --method tfidf-e")
+
+        if label is not None:
+            raise ValueError("--label is not supported with --method tfidf-e yet")
+
+        rdf_graph = load_ontology(ontology_path)
+
+        expansion_graph = rdf_to_expansion_graph(
+            rdf_graph,
+            include_subclass=True,
+            include_type=True,
+        )
+
+        distance_map = graph_to_distance_map(
+            expansion_graph,
+            max_distance=max_distance,
+            direction=direction,
+        )
+
+        salience_data = compute_extended_salience(
+            data,
+            ontology_graph=distance_map,
+            top=top,
+            layer=layer or "ontology",
+            max_distance=max_distance,
+            decay=decay,
+            direction=direction,
+        )
+
+    else:
+        raise ValueError(f"Unsupported salience method: {method}")
 
     if output_format == "console":
         render_salience(salience_data)
@@ -245,8 +312,18 @@ def render_salience(salience_data: dict) -> None:
     console.print(f"Documents: {salience_data['documents']}")
     console.print()
 
+    has_extended_scores = any(
+        "observed_score" in item or "expanded_score" in item
+        for item in salience_data["items"]
+    )
+
     table = Table(title="Top salient annotations")
     table.add_column("Score", justify="right")
+
+    if has_extended_scores:
+        table.add_column("Observed", justify="right")
+        table.add_column("Expanded", justify="right")
+
     table.add_column("TF", justify="right")
     table.add_column("DF", justify="right")
     table.add_column("IDF", justify="right")
@@ -256,15 +333,30 @@ def render_salience(salience_data: dict) -> None:
     table.add_column("Canonical")
 
     for item in salience_data["items"]:
-        table.add_row(
+        row = [
             f"{item['score']:.3f}",
-            str(item["tf"]),
-            str(item["df"]),
-            f"{item['idf']:.3f}",
-            str(item["layer"]),
-            str(item["label"]),
-            str(item["display"]),
-            str(item["canonical"]),
+        ]
+
+        if has_extended_scores:
+            row.extend(
+                [
+                    f"{item.get('observed_score', 0.0):.3f}",
+                    f"{item.get('expanded_score', 0.0):.3f}",
+                ]
+            )
+
+        row.extend(
+            [
+                str(item.get("tf", "")),
+                str(item.get("df", "")),
+                f"{item.get('idf', 0.0):.3f}",
+                str(item.get("layer", "")),
+                str(item.get("label", "")),
+                str(item.get("display", "")),
+                str(item.get("canonical", "")),
+            ]
         )
+
+        table.add_row(*row)
 
     console.print(table)

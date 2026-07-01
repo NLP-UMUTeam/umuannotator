@@ -1,5 +1,6 @@
 from typing import Any
 
+from umuannotator.resolution.overlap import annotation_overlaps
 
 LAYER_PRIORITY = {
     "contact": 100,
@@ -61,23 +62,9 @@ def _render_priority(annotation: Any) -> tuple[int, int, int]:
 
 def _overlaps_any(annotation: Any, selected: list[Any]) -> bool:
     return any(
-        _overlaps(
-            _get(annotation, "start"),
-            _get(annotation, "end"),
-            _get(existing, "start"),
-            _get(existing, "end"),
-        )
+        annotation_overlaps(annotation, existing)
         for existing in selected
     )
-
-
-def _overlaps(
-    start_a: int,
-    end_a: int,
-    start_b: int,
-    end_b: int,
-) -> bool:
-    return start_a < end_b and start_b < end_a
 
 
 def _get(annotation: Any, key: str, default: Any = None) -> Any:
