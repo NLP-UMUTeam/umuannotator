@@ -242,7 +242,16 @@ def salience(
         "--direction",
         help="Ontology expansion direction for tfidf-e: outgoing, incoming or both.",
     ),   
+    explain: str | None = typer.Option(
+        None,
+        "--explain",
+        help="Explain one concept in TF-IDF-e output by full URI or short name.",
+    ),    
 ):
+    
+    if explain is not None and method != "tfidf-e":
+        raise ValueError("--explain is only supported with --method tfidf-e")
+
     data = read_render_input(
         input_path,
         input_format=input_format,
@@ -287,22 +296,34 @@ def salience(
             direction=direction,
         )
 
-    else:
-        raise ValueError(f"Unsupported salience method: {method}")
-
     if output_format == "console":
+        if explain is not None:
+            render_salience_explanation(
+                salience_data,
+                explain,
+            )
+            return
         render_salience(salience_data)
         return
-
+    
     if output_format == "json":
+        if explain is not None:
+            write_metrics_json(
+                explain_salience_item(
+                    salience_data,
+                    explain,
+                ),
+                output_path,
+            )
+            return
+
         write_metrics_json(
             salience_data,
             output_path,
         )
-        return
+        return    
 
     raise ValueError(f"Unsupported output format: {output_format}")
-
 
 
 def render_salience(salience_data: dict) -> None:
@@ -430,5 +451,176 @@ def _shorten_uri(value: str) -> str:
         return _shorten_uri(
             value.removeprefix("concept_uri:"),
         )
+
+    return value
+
+
+def explain_salience_item(
+    salience_data: dict,
+    target: str,
+) -> dict:
+    item = find_salience_item(
+        salience_data,
+        target,
+    )
+
+    return {
+        "documents": salience_data.get("documents", 0),
+        "method": salience_data.get("method", ""),
+        "layer": salience_data.get("layer", ""),
+        "max_distance": salience_data.get("max_distance"),
+        "decay": salience_data.get("decay"),
+        "direction": salience_data.get("direction"),
+        "item": item,
+    }
+
+
+def find_salience_item(
+    salience_data: dict,
+    target: str,
+) -> dict:
+    normalized_target = _normalize_explain_target(target)
+
+    for item in salience_data.get("items", []):
+        if _matches_explain_target(
+            item,
+            normalized_target,
+        ):
+            return item
+
+    raise ValueError(f"Concept not found in salience results: {target}")
+
+
+def render_salience_explanation(
+    salience_data: dict,
+    target: str,
+) -> None:
+    explanation = explain_salience_item(
+        salience_data,
+        target,
+    )
+
+    item = explanation["item"]
+
+    console.print()
+    console.print("[bold]TF-IDF-e explanation[/bold]")
+    console.print()
+
+    console.print(f"Documents: {explanation['documents']}")
+    console.print(f"Layer: {explanation.get('layer', '')}")
+    console.print(f"Max distance: {explanation.get('max_distance', '')}")
+    console.print(f"Decay: {explanation.get('decay', '')}")
+    console.print(f"Direction: {explanation.get('direction', '')}")
+    console.print()
+
+    overview = Table(show_header=False)
+    overview.add_column("Metric", style="bold")
+    overview.add_column("Value", justify="right")
+
+    score = float(item.get("score", 0.0) or 0.0)
+    observed_score = float(item.get("observed_score", 0.0) or 0.0)
+    expanded_score = float(item.get("expanded_score", 0.0) or 0.0)
+
+    overview.add_row(
+        "Concept",
+        _shorten_uri(str(item.get("concept_uri", ""))),
+    )
+    overview.add_row(
+        "Display",
+        str(item.get("display", "")),
+    )
+    overview.add_row(
+        "Label",
+        str(item.get("label", "")),
+    )
+    overview.add_row(
+        "Score",
+        _format_float(score),
+    )
+    overview.add_row(
+        "Observed",
+        _format_float(observed_score),
+    )
+    overview.add_row(
+        "Expanded",
+        _format_float(expanded_score),
+    )
+    overview.add_row(
+        "Expanded %",
+        _format_percent(
+            expanded_score,
+            score,
+        ),
+    )
+    overview.add_row(
+        "TF",
+        str(item.get("tf", "")),
+    )
+    overview.add_row(
+        "DF",
+        str(item.get("df", "")),
+    )
+    overview.add_row(
+        "IDF",
+        _format_float(item.get("idf")),
+    )
+
+    console.print(overview)
+
+    _render_expanded_from_table(
+        item.get("expanded_from", []),
+    )
+
+
+def _render_expanded_from_table(
+    expanded_from: list[dict],
+) -> None:
+    if not expanded_from:
+        console.print()
+        console.print("[dim]No expanded contributions.[/dim]")
+        return
+
+    table = Table(title="Expanded from")
+    table.add_column("Source")
+    table.add_column("Distance", justify="right")
+    table.add_column("Contribution", justify="right")
+
+    for contribution in expanded_from:
+        table.add_row(
+            _shorten_uri(str(contribution.get("source", ""))),
+            str(contribution.get("distance", "")),
+            _format_float(contribution.get("contribution")),
+        )
+
+    console.print()
+    console.print(table)
+
+
+def _matches_explain_target(
+    item: dict,
+    normalized_target: str,
+) -> bool:
+    concept_uri = str(item.get("concept_uri", ""))
+    canonical = str(item.get("canonical", ""))
+    short_concept = _shorten_uri(concept_uri)
+    short_canonical = _shorten_uri(canonical)
+
+    candidates = {
+        _normalize_explain_target(concept_uri),
+        _normalize_explain_target(canonical),
+        _normalize_explain_target(short_concept),
+        _normalize_explain_target(short_canonical),
+    }
+
+    return normalized_target in candidates
+
+
+def _normalize_explain_target(
+    value: str,
+) -> str:
+    value = value.strip()
+
+    if value.startswith("concept_uri:"):
+        value = value.removeprefix("concept_uri:")
 
     return value
