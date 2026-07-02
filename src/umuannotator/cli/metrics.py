@@ -51,6 +51,15 @@ def summary(
         "--output-format",
         help="Output format: console or json.",
     ),    
+    section: str | None = typer.Option(
+        None,
+        "--section",
+        help=(
+            "Summary section to output. "
+            "Useful for CSV: overview, by_layer, by_label, "
+            "by_layer_label or top_annotations."
+        ),
+    ),    
 ):
     data = read_render_input(
         input_path,
@@ -67,9 +76,12 @@ def summary(
         metric="summary",
         output_format=output_format,
         output_path=output_path,
-        view=MetricOutputView(),
+        view=MetricOutputView(
+            section=section,
+        ),
         console_writer=render_summary,
     )
+    return
 
 
 def render_summary(summary_data: dict) -> None:

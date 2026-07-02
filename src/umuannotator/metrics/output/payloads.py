@@ -9,6 +9,14 @@ from umuannotator.metrics.output.helpers import (
 from umuannotator.metrics.output.views import MetricOutputView
 
 
+SUMMARY_OVERVIEW_KEYS = [
+    "documents",
+    "documents_with_annotations",
+    "documents_without_annotations",
+    "annotations",
+    "annotations_per_document",
+]
+
 def prepare_metric_payload(
     data: dict[str, Any],
     *,
@@ -48,6 +56,20 @@ def summary_section_payload(
     data: dict[str, Any],
     section: str,
 ) -> dict[str, Any]:
+    if section == "overview":
+        return {
+            "metric": "summary",
+            "section": section,
+            "rows": [
+                {
+                    "metric": key,
+                    "value": data.get(key),
+                }
+                for key in SUMMARY_OVERVIEW_KEYS
+                if key in data
+            ],
+        }
+
     if section not in data:
         raise ValueError(f"Unknown summary section: {section}")
 
@@ -66,7 +88,6 @@ def summary_section_payload(
         "section": section,
         "rows": rows,
     }
-
 
 def prepare_salience_payload(
     data: dict[str, Any],

@@ -163,3 +163,45 @@ def test_prepare_metric_payload_rejects_unknown_metric():
             metric="unknown",
             view=MetricOutputView(),
         )
+
+def test_summary_section_payload_builds_overview_rows():
+    data = {
+        "documents": 10,
+        "documents_with_annotations": 8,
+        "documents_without_annotations": 2,
+        "annotations": 25,
+        "annotations_per_document": 2.5,
+        "by_layer": [],
+    }
+
+    payload = summary_section_payload(
+        data,
+        "overview",
+    )
+
+    assert payload == {
+        "metric": "summary",
+        "section": "overview",
+        "rows": [
+            {
+                "metric": "documents",
+                "value": 10,
+            },
+            {
+                "metric": "documents_with_annotations",
+                "value": 8,
+            },
+            {
+                "metric": "documents_without_annotations",
+                "value": 2,
+            },
+            {
+                "metric": "annotations",
+                "value": 25,
+            },
+            {
+                "metric": "annotations_per_document",
+                "value": 2.5,
+            },
+        ],
+    }
