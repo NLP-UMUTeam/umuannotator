@@ -1,19 +1,17 @@
-from __future__ import annotations
-
-import typer
-from rich.console import Console
-from rich.table import Table
-
-from umuannotator.io.render import read_render_input
 from umuannotator.metrics.summary import summarize_annotations
 from umuannotator.metrics.salience import compute_salience
-from umuannotator.metrics.output import write_metrics_json
 from umuannotator.metrics.extended_salience import compute_extended_salience
-from umuannotator.metrics.ontology_expansion import graph_to_distance_map
 from umuannotator.metrics.ontology_expansion import (
     graph_to_distance_map,
     rdf_to_expansion_graph,
 )
+from umuannotator.metrics.output.helpers import (
+    format_float,
+    format_percent,
+    shorten_uri,
+)
+from umuannotator.metrics.output.views import MetricOutputView
+from umuannotator.metrics.output.writer import write_metric_output
 from umuannotator.ontology.loader import load_ontology
 
 
@@ -56,16 +54,14 @@ def summary(
         top=top,
     )
 
-    if output_format == "console":
-        render_summary(summary_data)
-        return
-
-    if output_format == "json":
-        write_metrics_json(
-            summary_data,
-            output_path,
-        )
-        return
+    write_metric_output(
+        summary_data,
+        metric="summary",
+        output_format=output_format,
+        output_path=output_path,
+        view=MetricOutputView(),
+        console_writer=render_summary,
+    )
 
     raise ValueError(f"Unsupported output format: {output_format}")
 
@@ -296,34 +292,20 @@ def salience(
             direction=direction,
         )
 
-    if output_format == "console":
-        if explain is not None:
-            render_salience_explanation(
-                salience_data,
-                explain,
-            )
-            return
-        render_salience(salience_data)
-        return
-    
-    if output_format == "json":
-        if explain is not None:
-            write_metrics_json(
-                explain_salience_item(
-                    salience_data,
-                    explain,
-                ),
-                output_path,
-            )
-            return
-
-        write_metrics_json(
-            salience_data,
-            output_path,
-        )
-        return    
-
-    raise ValueError(f"Unsupported output format: {output_format}")
+    write_metric_output(
+        salience_data,
+        metric="salience",
+        output_format=output_format,
+        output_path=output_path,
+        view=MetricOutputView(
+            explain=explain,
+        ),
+        console_writer=(
+            render_salience_explanation
+            if explain is not None
+            else render_salience
+        ),
+    )
 
 
 def render_salience(salience_data: dict) -> None:
@@ -364,14 +346,14 @@ def _render_basic_salience_table(salience_data: dict) -> None:
 
     for item in salience_data["items"]:
         table.add_row(
-            _format_float(item.get("score")),
+            format_float(item.get("score")),
             str(item.get("tf", "")),
             str(item.get("df", "")),
-            _format_float(item.get("idf")),
+            format_float(item.get("idf")),
             str(item.get("layer", "")),
             str(item.get("label", "")),
             str(item.get("display", "")),
-            _shorten_uri(str(item.get("canonical", ""))),
+            shorten_uri(str(item.get("canonical", ""))),
         )
 
     console.print(table)
@@ -395,111 +377,28 @@ def _render_extended_salience_table(salience_data: dict) -> None:
         expanded_score = float(item.get("expanded_score", 0.0) or 0.0)
 
         table.add_row(
-            _format_float(score),
-            _format_float(item.get("observed_score")),
-            _format_float(expanded_score),
-            _format_percent(
+            format_float(score),
+            format_float(item.get("observed_score")),
+            format_float(expanded_score),
+            format_percent(
                 expanded_score,
                 score,
             ),
             str(item.get("tf", "")),
             str(item.get("df", "")),
-            _format_float(item.get("idf")),
+            format_float(item.get("idf")),
             str(item.get("label", "")),
             str(item.get("display", "")),
-            _shorten_uri(str(item.get("concept_uri", ""))),
+            shorten_uri(str(item.get("concept_uri", ""))),
         )
 
     console.print(table)
 
 
-def _format_float(
-    value,
-    *,
-    digits: int = 3,
-) -> str:
-    if value is None:
-        return ""
-
-    try:
-        return f"{float(value):.{digits}f}"
-    except (TypeError, ValueError):
-        return str(value)
-
-
-def _format_percent(
-    part: float,
-    total: float,
-) -> str:
-    if total <= 0:
-        return "0.0%"
-
-    return f"{(part / total) * 100:.1f}%"
-
-
-def _shorten_uri(value: str) -> str:
-    if not value:
-        return ""
-
-    if "#" in value:
-        return value.rsplit("#", 1)[-1]
-
-    if "/" in value:
-        return value.rstrip("/").rsplit("/", 1)[-1]
-
-    if value.startswith("concept_uri:"):
-        return _shorten_uri(
-            value.removeprefix("concept_uri:"),
-        )
-
-    return value
-
-
-def explain_salience_item(
-    salience_data: dict,
-    target: str,
-) -> dict:
-    item = find_salience_item(
-        salience_data,
-        target,
-    )
-
-    return {
-        "documents": salience_data.get("documents", 0),
-        "method": salience_data.get("method", ""),
-        "layer": salience_data.get("layer", ""),
-        "max_distance": salience_data.get("max_distance"),
-        "decay": salience_data.get("decay"),
-        "direction": salience_data.get("direction"),
-        "item": item,
-    }
-
-
-def find_salience_item(
-    salience_data: dict,
-    target: str,
-) -> dict:
-    normalized_target = _normalize_explain_target(target)
-
-    for item in salience_data.get("items", []):
-        if _matches_explain_target(
-            item,
-            normalized_target,
-        ):
-            return item
-
-    raise ValueError(f"Concept not found in salience results: {target}")
-
 
 def render_salience_explanation(
-    salience_data: dict,
-    target: str,
+    explanation: dict,
 ) -> None:
-    explanation = explain_salience_item(
-        salience_data,
-        target,
-    )
-
     item = explanation["item"]
 
     console.print()
@@ -523,7 +422,7 @@ def render_salience_explanation(
 
     overview.add_row(
         "Concept",
-        _shorten_uri(str(item.get("concept_uri", ""))),
+        shorten_uri(str(item.get("concept_uri", ""))),
     )
     overview.add_row(
         "Display",
@@ -535,19 +434,19 @@ def render_salience_explanation(
     )
     overview.add_row(
         "Score",
-        _format_float(score),
+        format_float(score),
     )
     overview.add_row(
         "Observed",
-        _format_float(observed_score),
+        format_float(observed_score),
     )
     overview.add_row(
         "Expanded",
-        _format_float(expanded_score),
+        format_float(expanded_score),
     )
     overview.add_row(
         "Expanded %",
-        _format_percent(
+        format_percent(
             expanded_score,
             score,
         ),
@@ -562,7 +461,7 @@ def render_salience_explanation(
     )
     overview.add_row(
         "IDF",
-        _format_float(item.get("idf")),
+        format_float(item.get("idf")),
     )
 
     console.print(overview)
@@ -587,40 +486,10 @@ def _render_expanded_from_table(
 
     for contribution in expanded_from:
         table.add_row(
-            _shorten_uri(str(contribution.get("source", ""))),
+            shorten_uri(str(contribution.get("source", ""))),
             str(contribution.get("distance", "")),
-            _format_float(contribution.get("contribution")),
+            format_float(contribution.get("contribution")),
         )
 
     console.print()
     console.print(table)
-
-
-def _matches_explain_target(
-    item: dict,
-    normalized_target: str,
-) -> bool:
-    concept_uri = str(item.get("concept_uri", ""))
-    canonical = str(item.get("canonical", ""))
-    short_concept = _shorten_uri(concept_uri)
-    short_canonical = _shorten_uri(canonical)
-
-    candidates = {
-        _normalize_explain_target(concept_uri),
-        _normalize_explain_target(canonical),
-        _normalize_explain_target(short_concept),
-        _normalize_explain_target(short_canonical),
-    }
-
-    return normalized_target in candidates
-
-
-def _normalize_explain_target(
-    value: str,
-) -> str:
-    value = value.strip()
-
-    if value.startswith("concept_uri:"):
-        value = value.removeprefix("concept_uri:")
-
-    return value

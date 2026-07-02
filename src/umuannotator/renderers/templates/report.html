@@ -59,9 +59,7 @@
           <td>{{ annotation.start }}</td>
           <td>{{ annotation.end }}</td>
           <td class="score">
-            {% if annotation.score is not none %}
-              {{ "%.4f"|format(annotation.score) }}
-            {% endif %}
+            {{ annotation.score | default("-") }}
           </td>
         </tr>
       {% endfor %}

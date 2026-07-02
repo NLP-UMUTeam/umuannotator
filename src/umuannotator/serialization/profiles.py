@@ -17,6 +17,7 @@ COMPACT_ANNOTATION_KEYS = {
     "source",
     "type",
     "subtype",
+    "score",
 }
 
 COMPACT_ANNOTATION_METADATA_KEYS = {
