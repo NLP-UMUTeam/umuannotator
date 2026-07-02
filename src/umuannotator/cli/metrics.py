@@ -1,3 +1,10 @@
+from __future__ import annotations
+
+import typer
+from rich.console import Console
+from rich.table import Table
+
+from umuannotator.io.render import read_render_input
 from umuannotator.metrics.summary import summarize_annotations
 from umuannotator.metrics.salience import compute_salience
 from umuannotator.metrics.extended_salience import compute_extended_salience
@@ -13,6 +20,7 @@ from umuannotator.metrics.output.helpers import (
 from umuannotator.metrics.output.views import MetricOutputView
 from umuannotator.metrics.output.writer import write_metric_output
 from umuannotator.ontology.loader import load_ontology
+
 
 
 app = typer.Typer(help="Metric and corpus summary commands.")
@@ -62,8 +70,6 @@ def summary(
         view=MetricOutputView(),
         console_writer=render_summary,
     )
-
-    raise ValueError(f"Unsupported output format: {output_format}")
 
 
 def render_summary(summary_data: dict) -> None:
