@@ -54,7 +54,7 @@ annotators:
 
   - name: pattern
     layer: pedido
-    source: resources/pizza_regex.yml
+    source: resources/patterns/pizza_es.yml
     color: "#ffe0b2"
 
 resolver:

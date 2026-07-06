@@ -210,7 +210,7 @@
   <owl:NamedIndividual rdf:about="http://example.org/news-es#RealMadrid">
     <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
     <rdfs:label>Real Madrid</rdfs:label>
-    <regex>Real Madrid|Madrid</regex>
+    <regex>Real Madrid|R\.?\s+Madrid|Real Madrid C\.?\s*F\.?|Real Madrid Club de Fútbol</regex>
     <category>team</category>
     <priority>20</priority>
   </owl:NamedIndividual>
@@ -218,7 +218,7 @@
   <owl:NamedIndividual rdf:about="http://example.org/news-es#BarcelonaFC">
     <rdf:type rdf:resource="http://example.org/news-es#Sports"/>
     <rdfs:label>Barcelona</rdfs:label>
-    <regex>FC Barcelona|Bar[cç]a|Barcelona</regex>
+    <regex>FC Barcelona|F\.?\s*C\.?\s+Barcelona|Barça|Barcelona FC</regex>
     <category>team</category>
     <priority>20</priority>
   </owl:NamedIndividual>

@@ -86,8 +86,14 @@ class PatternAnnotator:
             return yaml.safe_load(f) or {}
 
     def _load_rules(self, config: dict[str, Any]) -> list[PatternRule]:
-        raw_patterns = config.get("patterns", [])
+        raw_patterns = config.get("patterns")
         defaults = config.get("defaults", {}) or {}
+
+        if raw_patterns is None:
+            raise ValueError("Pattern config requires a 'patterns' section")
+
+        if not isinstance(raw_patterns, list):
+            raise ValueError("'patterns' section must be a list")
 
         return [
             self._build_rule(raw, defaults, index)
@@ -100,11 +106,19 @@ class PatternAnnotator:
         defaults: dict[str, Any],
         index: int,
     ) -> PatternRule:
+        if "label" not in raw:
+            raise ValueError(f"Pattern rule without 'label': {raw}")
+
         match_type = raw.get("match", defaults.get("match", "phrase"))
         patterns = self._extract_patterns(raw)
 
         if match_type not in {"regex", "phrase"}:
             raise ValueError(f"Unsupported match type: {match_type}")
+
+        metadata = {
+            **(defaults.get("metadata", {}) or {}),
+            **(raw.get("metadata", {}) or {}),
+        }
 
         return PatternRule(
             id=raw.get("id", f"rule_{index}"),
@@ -115,7 +129,7 @@ class PatternAnnotator:
             type=raw.get("type", defaults.get("type", match_type)),
             subtype=raw.get("subtype", defaults.get("subtype")),
             priority=int(raw.get("priority", defaults.get("priority", 0))),
-            metadata=raw.get("metadata", {}) or {},
+            metadata=metadata,
             exceptions=raw.get("exceptions", []) or [],
             case_sensitive=raw.get(
                 "case_sensitive",
@@ -126,18 +140,39 @@ class PatternAnnotator:
                 defaults.get("word_boundaries"),
             ),
         )
-
+    
+    
     def _extract_patterns(self, raw: dict[str, Any]) -> list[str]:
         if "pattern" in raw:
-            return [str(raw["pattern"])]
+            return self._normalize_patterns(raw["pattern"])
 
         if "patterns" in raw:
-            values = raw["patterns"]
-            if isinstance(values, str):
-                return [values]
-            return [str(value) for value in values]
+            return self._normalize_patterns(raw["patterns"])
 
-        raise ValueError(f"Pattern rule without 'pattern' or 'patterns': {raw}")
+        raise ValueError(
+            f"Pattern rule without 'pattern' or 'patterns': {raw}"
+        )
+
+    def _normalize_patterns(self, value: Any) -> list[str]:
+        if isinstance(value, str):
+            patterns = [value]
+        elif isinstance(value, list):
+            patterns = [str(item) for item in value]
+        else:
+            raise ValueError(
+                "'pattern' or 'patterns' must be a string or a list"
+            )
+
+        patterns = [
+            pattern
+            for pattern in patterns
+            if pattern.strip()
+        ]
+
+        if not patterns:
+            raise ValueError("Pattern rule has no non-empty patterns")
+
+        return patterns
 
     def _compile_rules(
         self,

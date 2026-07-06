@@ -8,6 +8,8 @@ defaults:
   case_sensitive: false
   word_boundaries: false
   priority: 0
+  metadata:
+    domain: pizza
 
 patterns:
   - id: size_small
