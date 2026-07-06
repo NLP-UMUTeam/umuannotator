@@ -32,23 +32,11 @@ def run_from_config(
     with timed("load_config", timings):
         config = load_config(config_path)
 
-    ontology_config = config.get("ontology", {})
-    ontology_path = ontology_config.get("path")
-    language = ontology_config.get("language", "es")
+    with timed("build_pipeline", timings):
+        pipeline, pipeline_context = build_pipeline_from_config(config)
 
-    with timed("build_preprocessors", timings):
-        preprocessors = build_preprocessors(
-            config.get("preprocessors", []),
-            language=language,
-        )
-
-    with timed("build_annotators", timings):
-        annotators = build_annotators(
-            config.get("annotators", []),
-            language=language,
-            ontology_path=ontology_path,
-            config=config,
-        )
+    preprocessors = pipeline_context["preprocessors"]
+    ontology_path = pipeline_context["ontology_path"]
 
     with timed("load_input", timings):
         corpus = load_corpus_input(
@@ -59,10 +47,6 @@ def run_from_config(
             sep=sep,
         )
 
-    pipeline = AnnotationPipeline(
-        annotators=annotators,
-        preprocessors=preprocessors,
-    )
 
     with timed("annotation", timings):
         corpus = pipeline.run_corpus(
@@ -117,6 +101,38 @@ def run_from_config(
     }
 
     return data
+
+
+def build_pipeline_from_config(
+    config: dict,
+) -> tuple[AnnotationPipeline, dict]:
+    ontology_config = config.get("ontology", {})
+    ontology_path = ontology_config.get("path")
+    language = ontology_config.get("language", "es")
+
+    preprocessors = build_preprocessors(
+        config.get("preprocessors", []),
+        language=language,
+    )
+
+    annotators = build_annotators(
+        config.get("annotators", []),
+        language=language,
+        ontology_path=ontology_path,
+        config=config,
+    )
+
+    pipeline = AnnotationPipeline(
+        annotators=annotators,
+        preprocessors=preprocessors,
+    )
+
+    return pipeline, {
+        "preprocessors": preprocessors,
+        "annotators": annotators,
+        "language": language,
+        "ontology_path": ontology_path,
+    }
 
 
 def _run_tfidf(

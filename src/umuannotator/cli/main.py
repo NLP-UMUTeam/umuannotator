@@ -1,6 +1,6 @@
 import typer
 
-from umuannotator.cli import metrics, ontology, preprocess, render
+from umuannotator.cli import metrics, ontology, preprocess, render, shell
 from umuannotator.io.output import write_output
 from umuannotator.pipeline.runner import run_from_config
 
@@ -9,29 +9,11 @@ app = typer.Typer(
     help="UMU Annotator: modular annotation toolkit."
 )
 
-app.add_typer(
-    ontology.app,
-    name="ontology",
-    help="Ontology-related commands.",
-)
-
-app.add_typer(
-    render.app,
-    name="render",
-    help="Render annotated results.",
-)
-
-app.add_typer(
-    preprocess.app,
-    name="preprocess",
-    help="Preprocessing commands.",
-)
-
-app.add_typer(
-    metrics.app,
-    name="metrics",
-    help="Metrics and corpus summary commands.",
-)
+app.add_typer(metrics.app, name="metrics")
+app.add_typer(ontology.app, name="ontology")
+app.add_typer(preprocess.app, name="preprocess")
+app.add_typer(render.app, name="render")
+app.add_typer(shell.app, name="shell")
 
 
 @app.command()
