@@ -31,12 +31,6 @@ class AnnotationResolver:
 
         return document
 
-    def resolve_corpus(self, corpus):
-        corpus.documents = [
-            self.resolve_document(document)
-            for document in corpus.documents
-        ]
-        return corpus
 
     def _longest_match_wins(
         self,

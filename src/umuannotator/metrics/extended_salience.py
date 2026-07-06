@@ -7,13 +7,6 @@ from typing import Any
 
 
 @dataclass(frozen=True)
-class ExtendedSalienceKey:
-    layer: str
-    label: str
-    canonical: str
-
-
-@dataclass(frozen=True)
 class ExpandedContribution:
     source: str
     target: str
