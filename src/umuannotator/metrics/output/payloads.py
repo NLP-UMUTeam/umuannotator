@@ -17,6 +17,7 @@ SUMMARY_OVERVIEW_KEYS = [
     "annotations_per_document",
 ]
 
+
 def prepare_metric_payload(
     data: dict[str, Any],
     *,
@@ -50,6 +51,23 @@ def prepare_summary_payload(
         data,
         view.section,
     )
+
+
+def prepare_salience_payload(
+    data: dict[str, Any],
+    *,
+    view: MetricOutputView,
+) -> dict[str, Any]:
+    if view.explain is not None:
+        return salience_explanation_payload(
+            data,
+            view.explain,
+        )
+
+    if view.tabular:
+        return salience_items_payload(data)
+
+    return data
 
 
 def summary_section_payload(
@@ -89,18 +107,57 @@ def summary_section_payload(
         "rows": rows,
     }
 
-def prepare_salience_payload(
-    data: dict[str, Any],
-    *,
-    view: MetricOutputView,
-) -> dict[str, Any]:
-    if view.explain is None:
-        return data
 
-    return salience_explanation_payload(
-        data,
-        view.explain,
-    )
+def salience_items_payload(
+    data: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "metric": "salience",
+        "method": data.get("method", "tfidf"),
+        "layer": data.get("layer"),
+        "max_distance": data.get("max_distance"),
+        "decay": data.get("decay"),
+        "direction": data.get("direction"),
+        "rows": [
+            salience_item_to_row(item)
+            for item in data.get("items", [])
+        ],
+    }
+
+
+def salience_item_to_row(
+    item: dict[str, Any],
+) -> dict[str, Any]:
+    row = {
+        "score": item.get("score"),
+        "tf": item.get("tf"),
+        "df": item.get("df"),
+        "idf": item.get("idf"),
+        "layer": item.get("layer"),
+        "label": item.get("label"),
+        "display": item.get("display"),
+        "canonical": item.get("canonical"),
+    }
+
+    if "concept_uri" in item:
+        row["concept_uri"] = item.get("concept_uri")
+
+    if "observed_score" in item:
+        row["observed_score"] = item.get("observed_score")
+
+    if "expanded_score" in item:
+        row["expanded_score"] = item.get("expanded_score")
+
+    if "expanded_from" in item:
+        row["expanded_from_count"] = len(
+            item.get("expanded_from") or [],
+        )
+
+    return {
+        key: value
+        for key, value in row.items()
+        if value is not None
+    }
 
 
 def salience_explanation_payload(

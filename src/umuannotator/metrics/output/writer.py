@@ -6,9 +6,9 @@ import csv
 from pathlib import Path
 from typing import Any, Callable
 
+from umuannotator.metrics.output.html import render_html_metric_output
 from umuannotator.metrics.output.payloads import prepare_metric_payload
 from umuannotator.metrics.output.views import MetricOutputView
-
 
 ConsoleWriter = Callable[[dict[str, Any]], None]
 
@@ -22,10 +22,19 @@ def write_metric_output(
     view: MetricOutputView | None = None,
     console_writer: ConsoleWriter | None = None,
 ) -> None:
+    resolved_view = view or MetricOutputView()
+
+    if output_format == "csv":
+        resolved_view = MetricOutputView(
+            section=resolved_view.section,
+            explain=resolved_view.explain,
+            tabular=True,
+        )
+
     payload = prepare_metric_payload(
         data,
         metric=metric,
-        view=view or MetricOutputView(),
+        view=resolved_view,
     )
 
     if output_format == "console":
@@ -46,6 +55,13 @@ def write_metric_output(
     
     if output_format == "csv":
         write_csv_metric_output(
+            payload,
+            output_path,
+        )
+        return
+    
+    if output_format == "html":
+        write_html_metric_output(
             payload,
             output_path,
         )
@@ -123,3 +139,20 @@ def _fieldnames_from_rows(
                 fieldnames.append(key)
 
     return fieldnames
+
+
+def write_html_metric_output(
+    data: dict[str, Any],
+    output_path: str | None = None,
+) -> None:
+    html = render_html_metric_output(data)
+
+    if output_path is None or output_path == "-":
+        sys.stdout.write(html)
+        sys.stdout.write("\n")
+        return
+
+    Path(output_path).write_text(
+        html + "\n",
+        encoding="utf-8",
+    )

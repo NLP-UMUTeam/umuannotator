@@ -205,3 +205,99 @@ def test_summary_section_payload_builds_overview_rows():
             },
         ],
     }
+
+def test_salience_items_payload_builds_rows():
+    from umuannotator.metrics.output.payloads import salience_items_payload
+
+    data = {
+        "documents": 2,
+        "method": "tfidf",
+        "items": [
+            {
+                "score": 3.5,
+                "tf": 2,
+                "df": 1,
+                "idf": 1.75,
+                "layer": "ontology",
+                "label": "Politics",
+                "display": "Gobierno",
+                "canonical": "concept_uri:http://example.org#Politics",
+            }
+        ],
+    }
+
+    payload = salience_items_payload(data)
+
+    assert payload == {
+        "metric": "salience",
+        "method": "tfidf",
+        "layer": None,
+        "max_distance": None,
+        "decay": None,
+        "direction": None,
+        "rows": [
+            {
+                "score": 3.5,
+                "tf": 2,
+                "df": 1,
+                "idf": 1.75,
+                "layer": "ontology",
+                "label": "Politics",
+                "display": "Gobierno",
+                "canonical": "concept_uri:http://example.org#Politics",
+            }
+        ],
+    }
+
+
+def test_salience_items_payload_includes_tfidfe_columns():
+    from umuannotator.metrics.output.payloads import salience_items_payload
+
+    data = {
+        "method": "tfidf-e",
+        "layer": "ontology",
+        "max_distance": 2,
+        "decay": 0.5,
+        "direction": "both",
+        "items": [
+            {
+                "score": 10.0,
+                "observed_score": 2.0,
+                "expanded_score": 8.0,
+                "tf": 1,
+                "df": 1,
+                "idf": 2.0,
+                "layer": "ontology",
+                "label": "TrafficAccident",
+                "display": "carretera",
+                "canonical": "concept_uri:http://example.org#TrafficAccident",
+                "concept_uri": "http://example.org#TrafficAccident",
+                "expanded_from": [
+                    {
+                        "source": "http://example.org#CrimeAndEvents",
+                        "distance": 1,
+                        "contribution": 8.0,
+                    }
+                ],
+            }
+        ],
+    }
+
+    payload = salience_items_payload(data)
+
+    assert payload["rows"] == [
+        {
+            "score": 10.0,
+            "tf": 1,
+            "df": 1,
+            "idf": 2.0,
+            "layer": "ontology",
+            "label": "TrafficAccident",
+            "display": "carretera",
+            "canonical": "concept_uri:http://example.org#TrafficAccident",
+            "concept_uri": "http://example.org#TrafficAccident",
+            "observed_score": 2.0,
+            "expanded_score": 8.0,
+            "expanded_from_count": 1,
+        }
+    ]

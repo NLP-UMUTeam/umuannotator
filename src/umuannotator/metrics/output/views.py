@@ -7,3 +7,9 @@ from dataclasses import dataclass
 class MetricOutputView:
     section: str | None = None
     explain: str | None = None
+
+@dataclass(frozen=True)
+class MetricOutputView:
+    section: str | None = None
+    explain: str | None = None
+    tabular: bool = False

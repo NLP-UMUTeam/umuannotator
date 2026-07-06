@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bar: #dbeafe;
+      --bar-fill: #60a5fa;
+      --header: #f9fafb;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --card: #1f2937;
+        --text: #f9fafb;
+        --muted: #9ca3af;
+        --border: #374151;
+        --bar: #1e3a8a;
+        --bar-fill: #60a5fa;
+        --header: #111827;
+      }
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      line-height: 1.45;
+    }
+
+    h1,
+    h2 {
+      margin-top: 0;
+    }
+
+    .header,
+    .card {
+      max-width: 1400px;
+      margin: 0 auto 1.5rem auto;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .metadata {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 1rem 0 0 0;
+    }
+
+    .metadata div {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.5rem 0.75rem;
+      background: var(--card);
+    }
+
+    .metadata dt {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.15rem;
+    }
+
+    .metadata dd {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 0.55rem 0.65rem;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--header);
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:hover td {
+      background: rgba(127, 127, 127, 0.06);
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .strong {
+      font-weight: 700;
+    }
+
+    .concept {
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      font-size: 0.85rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .score-bar {
+      position: relative;
+      min-width: 130px;
+      height: 1.4rem;
+      background: var(--bar);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      background: var(--bar-fill);
+    }
+
+    .score-bar span {
+      position: relative;
+      display: block;
+      padding: 0.15rem 0.55rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+
+    details summary {
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nested {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .nested th,
+    .nested td {
+      padding: 0.35rem 0.45rem;
+    }
+
+    .empty {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <section class="header">
+    <h1>{{ title }}</h1>
+
+    {% if metadata %}
+      <dl class="metadata">
+        {% for item in metadata %}
+          <div>
+            <dt>{{ item.key }}</dt>
+            <dd>{{ item.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <h2>Top salient annotations</h2>
+
+    {% if not items %}
+      <p class="empty">No salience items.</p>
+    {% else %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Score</th>
+
+              {% if extended %}
+                <th>Observed</th>
+                <th>Expanded</th>
+                <th>Exp%</th>
+              {% endif %}
+
+              <th>TF</th>
+              <th>DF</th>
+              <th>IDF</th>
+              <th>Label</th>
+              <th>Display</th>
+              <th>Concept</th>
+
+              {% if extended %}
+                <th>Contributions</th>
+              {% endif %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td class="num">{{ loop.index }}</td>
+                <td class="num strong">{{ item.score | fmt_float }}</td>
+
+                {% if extended %}
+                  <td class="bar-cell">
+                    {{ score_bar(item.observed_score, item.score) | safe }}
+                  </td>
+                  <td class="bar-cell">
+                    {{ score_bar(item.expanded_score, item.score) | safe }}
+                  </td>
+                  <td class="num">
+                    {{ item.expanded_score | fmt_percent(item.score) }}
+                  </td>
+                {% endif %}
+
+                <td class="num">{{ item.tf | default("", true) }}</td>
+                <td class="num">{{ item.df | default("", true) }}</td>
+                <td class="num">{{ item.idf | fmt_float }}</td>
+                <td>{{ item.label | default("", true) }}</td>
+                <td>{{ item.display | default("", true) }}</td>
+                <td class="concept">{{ item.concept }}</td>
+
+                {% if extended %}
+                  <td>
+                    {% if item.expanded_from %}
+                      <details>
+                        <summary>
+                          {{ item.expanded_from | length }} contributions
+                        </summary>
+
+                        <table class="nested">
+                          <thead>
+                            <tr>
+                              <th>Source</th>
+                              <th>Distance</th>
+                              <th>Contribution</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for source in item.expanded_from %}
+                              <tr>
+                                <td>{{ source.source_label }}</td>
+                                <td class="num">{{ source.distance }}</td>
+                                <td class="num">
+                                  {{ source.contribution | fmt_float }}
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                      </details>
+                    {% else %}
+                      <span class="muted">—</span>
+                    {% endif %}
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </section>
+</body>
+</html>
