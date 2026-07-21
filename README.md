@@ -798,6 +798,75 @@ umuannotator ontology relations \
 
 ---
 
+
+## Python usage
+
+UMUAnnotator can also be used from Python. The programmatic API is currently oriented to research and experimentation, and may still evolve.
+
+For most use cases, prefer `run_from_config`, which mirrors the CLI behavior.
+
+### Ejemplo 1: usar run_from_config
+Este es el más estable porque reutiliza exactamente el CLI:
+
+```
+from umuannotator.pipeline.runner import run_from_config
+from umuannotator.io.output import write_output
+
+data = run_from_config(
+    config_path="configs/news.yml",
+    input_path="headlines.csv",
+    input_format="csv",
+    text_column="headline",
+    show_progress=False,
+)
+
+write_output(
+    data,
+    "outputs/news.jsonl",
+    output_format="jsonl",
+    output_profile="compact",
+)
+```
+
+### Ejemplo 2: anotar un texto suelto
+
+```
+from umuannotator.config.loader import load_config
+from umuannotator.document.model import Document
+from umuannotator.pipeline.runner import build_pipeline_from_config
+from umuannotator.resolution.resolver import (
+    apply_resolver_if_enabled,
+    resolver_config_from_dict,
+)
+from umuannotator.serialization.documents import serialize_document
+
+config = load_config("configs/news.yml")
+pipeline, _context = build_pipeline_from_config(config)
+resolver_config = resolver_config_from_dict(config.get("resolver"))
+
+document = Document(
+    text="El Real Madrid ganó al Barcelona.",
+    metadata={},
+)
+
+document = pipeline.run_document(document)
+
+document.annotations = apply_resolver_if_enabled(
+    document.annotations,
+    config=resolver_config,
+)
+
+serialized = serialize_document(
+    document,
+    output_profile="compact",
+)
+
+print(serialized)
+```
+
+---
+
+
 ## Project structure
 
 ```text
