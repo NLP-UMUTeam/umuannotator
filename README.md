@@ -2,34 +2,57 @@
   <img src="docs/umuannotator-logo.png" alt="UMUAnnotator logo" width="500"/>
 </p>
 
-
 # UMUAnnotator
 
 UMUAnnotator is a modular annotation framework for enriching text with semantic, linguistic and structured information.
 
-The project is designed around independent annotators that can be combined into annotation pipelines and executed from the command line, Python code or future web services.
+It is designed around configurable annotation pipelines: preprocessors, annotators, conflict resolution, metrics, serialization and rendering can be combined from YAML configuration files and executed from the command line.
+
+The project is mainly intended for research workflows, corpus exploration, annotation prototyping and ontology-based text analysis.
+
+---
 
 ## Features
 
-* Configuration-driven annotation pipelines using YAML
-* Ontology-based semantic annotation with OWL/RDF
-* Temporal annotation using Duckling
-* Quantity annotation using Duckling + optional Stanza preprocessing
-* Linguistic preprocessing with Stanza and local cache
-* Named Entity Recognition with Stanza
-* Dictionary and regex-based annotation
-* Annotation conflict resolution
-* TF-IDF and ontology-aware TF-IDF expansion
-* Input formats: CSV, JSONL and plain text
-* Output formats: JSON, JSONL and text
-* Console and HTML rendering
-* Unix-style pipelines using stdin/stdout
+- Configuration-driven annotation pipelines using YAML.
+- Ontology-based semantic annotation with OWL/RDF.
+- Pattern-based annotation using YAML rules, regexes and phrases.
+- Temporal annotation using Duckling.
+- Quantity annotation using Duckling and optional Stanza preprocessing.
+- Linguistic preprocessing with Stanza and local cache.
+- Named Entity Recognition with Stanza.
+- Global annotation conflict resolution.
+- Output profiles: `compact` and `full`.
+- Input formats: CSV, JSONL and plain text.
+- Annotation output formats: JSON, JSONL and text.
+- Metrics:
+  - corpus summary
+  - TF-IDF annotation salience
+  - ontology-aware TF-IDF-e salience
+  - salience explanation for individual concepts
+- Metrics output formats:
+  - console
+  - JSON
+  - CSV
+  - HTML
+- Console and HTML rendering for annotated documents.
+- Interactive shell for testing configurations on individual texts.
+- Unix-style pipelines using stdin/stdout.
+
+---
 
 ## Installation
 
 ```bash
 pip install -e .
 ```
+
+Some optional annotators require external services or models. For example:
+
+- Duckling must be available when using temporal, quantity or Duckling-based annotators.
+- Stanza models must be installed when using Stanza preprocessing or Stanza NER.
+
+---
 
 ## Quick start
 
@@ -41,22 +64,17 @@ mkdir -p outputs
 umuannotator run \
   --config configs/pizza_rich.yml \
   --input datasets/pizza_es.csv \
+  --input-format csv \
   --text-column text \
-  --output outputs/pizza_rich.json
+  --output outputs/pizza_rich.jsonl \
+  --output-format jsonl \
+  --output-profile compact \
+  --no-progress
 ```
 
-Render the result as HTML:
+Render annotated documents as HTML:
 
-```
-umuannotator render html \
-  --input outputs/pizza_rich.json \
-  --output outputs/pizza_rich.html \
-  --title "Pizza Rich"
-```
-
-Or run and render in a single pipeline:
-
-```
+```bash
 umuannotator run \
   --config configs/pizza_rich.yml \
   --input datasets/pizza_es.csv \
@@ -73,91 +91,433 @@ umuannotator run \
     --title "Pizza Rich"
 ```
 
-## Input and output formats
-UMUAnnotator can read from files or from standard input: CSV, JSONL y plain text.
+For metrics, JSONL compact output is usually enough:
 
-When input or output formats are omitted, they are inferred from file extensions when possible.
-
-
-## Annotation Salience
-
-`metrics salience` calcula un ranking global de anotaciones relevantes dentro de un corpus anotado.
-
-A diferencia de `metrics summary`, que muestra conteos descriptivos, `salience` intenta responder a la pregunta:
-
-> ¿Qué anotaciones son más informativas o características dentro de este corpus?
-
-La primera versión usa una métrica sencilla basada en **TF**, **DF**, **IDF** y **TF-IDF** sobre anotaciones.
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input ~/umuannotator-runs/news_10k/headlines_10k.csv \
+  --input-format csv \
+  --text-column headline \
+  --output ~/umuannotator-runs/news_10k/full_compact.jsonl \
+  --output-format jsonl \
+  --output-profile compact \
+  --no-progress
+```
 
 ---
 
-### Qué mide
+## Interactive shell
 
-Para cada anotación se calcula una clave canónica y se agregan sus apariciones en el corpus.
+The shell is useful for testing a configuration quickly without creating input files.
 
-Las métricas son:
+```bash
+umuannotator shell --config configs/pizza_rich.yml
+```
 
-| Métrica | Significado |
+Example session:
+
+```text
+UMUAnnotator shell
+Type text to annotate.
+Commands: :quit, :exit, :json, :table
+
+umuannotator> Quiero una pizza familiar con masa fina y doble queso, sin piña.
+```
+
+Switch output mode inside the shell:
+
+```text
+:json
+:table
+:quit
+```
+
+The shell uses the same configuration, preprocessors, annotators and resolver as `umuannotator run`.
+
+---
+
+## Input formats
+
+UMUAnnotator can read from files or from standard input.
+
+Supported input formats:
+
+```text
+csv
+jsonl
+text
+```
+
+When possible, formats are inferred from file extensions. When reading from stdin, specify the input format explicitly.
+
+Example with stdin:
+
+```bash
+echo '{"text":"El Gobierno anuncia ayudas hoy."}' \
+| umuannotator run \
+    --config configs/news.yml \
+    --input - \
+    --input-format jsonl \
+    --output - \
+    --output-format jsonl \
+    --no-progress
+```
+
+---
+
+## Output formats
+
+For annotated corpora, `umuannotator run` supports:
+
+```text
+json
+jsonl
+text
+```
+
+Examples:
+
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input headlines.csv \
+  --input-format csv \
+  --text-column headline \
+  --output outputs/news.jsonl \
+  --output-format jsonl
+```
+
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input headlines.csv \
+  --input-format csv \
+  --text-column headline \
+  --output outputs/news.json \
+  --output-format json
+```
+
+### Output profiles
+
+UMUAnnotator supports two output profiles:
+
+```text
+compact
+full
+```
+
+`compact` keeps the most useful fields for downstream processing and metrics.
+
+`full` keeps all available metadata, including richer preprocessor and annotator data.
+
+Example:
+
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input headlines.csv \
+  --input-format csv \
+  --text-column headline \
+  --output outputs/news_full.jsonl \
+  --output-format jsonl \
+  --output-profile full
+```
+
+---
+
+## Configuration overview
+
+A typical configuration has this structure:
+
+```yaml
+preprocessors:
+  - name: stanza
+    processors: tokenize,pos,lemma,ner
+    cache_dir: .cache/stanza
+    use_cache: true
+    metadata_key: stanza
+
+ontology:
+  path: resources/news_es.owl
+  language: es
+
+annotators:
+  - name: ontology
+    color: "#ffd6d6"
+
+  - name: pattern
+    layer: pattern
+    source: resources/patterns/news_es.yml
+    color: "#e2f7d4"
+
+  - name: stanza-ner
+    layer: ner
+    color: "#eadcf8"
+
+  - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+
+  - name: quantity
+    layer: cantidades
+    color: "#fff2cc"
+
+resolver:
+  enabled: true
+  strategy: longest_non_overlapping
+```
+
+---
+
+## PatternAnnotator
+
+`PatternAnnotator` loads YAML rule files and supports regex and phrase matching.
+
+Example resource:
+
+```yaml
+name: pizza_order_patterns
+language: es
+
+defaults:
+  layer: pedido
+  type: order_attribute
+  match: regex
+  case_sensitive: false
+  word_boundaries: false
+  priority: 0
+  metadata:
+    domain: pizza
+
+patterns:
+  - id: size_small
+    label: SIZE_SMALL
+    pattern: '\b(pequeña|pequeño|individual)\b'
+    metadata:
+      category: size
+
+  - id: size_large
+    label: SIZE_LARGE
+    pattern: '\b(grande|familiar|tamaño familiar)\b'
+    priority: 5
+    metadata:
+      category: size
+
+  - id: extra_cheese
+    label: EXTRA_CHEESE
+    match: phrase
+    pattern:
+      - extra de queso
+      - doble queso
+      - mucho queso
+    metadata:
+      category: modifier
+```
+
+The official pattern format supports:
+
+```text
+name
+language
+defaults
+patterns
+pattern / patterns
+regex / phrase
+priority
+metadata
+exceptions
+case_sensitive
+word_boundaries
+```
+
+Use it from a pipeline configuration:
+
+```yaml
+annotators:
+  - name: pattern
+    layer: pedido
+    source: resources/patterns/pizza_es.yml
+    color: "#ffe0b2"
+```
+
+---
+
+## Annotation conflict resolution
+
+The resolver is an explicit phase after annotation.
+
+Example:
+
+```yaml
+resolver:
+  enabled: true
+  strategy: longest_non_overlapping
+```
+
+The current resolver strategy keeps a non-overlapping set of annotations, preferring longer spans according to the selected strategy.
+
+This is useful when several annotators or rules produce overlapping candidates.
+
+---
+
+## Metrics
+
+UMUAnnotator provides corpus-level metrics over annotated documents.
+
+The two main commands are:
+
+```bash
+umuannotator metrics summary
+umuannotator metrics salience
+```
+
+Metrics can read annotated JSON or JSONL files, including stdin.
+
+---
+
+## Corpus summary
+
+`metrics summary` gives descriptive counts over an annotated corpus.
+
+Example:
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --top 20
+```
+
+Typical sections include:
+
+```text
+overview
+by_layer
+by_label
+by_layer_label
+top_annotations
+```
+
+### Summary as JSON
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --top 20 \
+  --output-format json \
+  --output outputs/summary.json
+```
+
+### Summary as CSV
+
+CSV output is section-based:
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --top 20 \
+  --section by_layer \
+  --output-format csv \
+  --output outputs/summary_by_layer.csv
+```
+
+Overview CSV:
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --section overview \
+  --output-format csv \
+  --output outputs/summary_overview.csv
+```
+
+### Summary as HTML
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --top 20 \
+  --output-format html \
+  --output outputs/summary.html
+```
+
+Single-section HTML:
+
+```bash
+umuannotator metrics summary \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --top 20 \
+  --section by_layer \
+  --output-format html \
+  --output outputs/summary_by_layer.html
+```
+
+---
+
+## Annotation salience
+
+`metrics salience` computes a global ranking of relevant annotations in an annotated corpus.
+
+It tries to answer:
+
+```text
+Which annotations are most informative or characteristic in this corpus?
+```
+
+It supports two methods:
+
+```text
+tfidf
+tfidf-e
+```
+
+---
+
+## TF-IDF salience
+
+The default method uses TF, DF, IDF and TF-IDF over annotations.
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf \
+  --top 20
+```
+
+The metrics are:
+
+| Metric | Meaning |
 |---|---|
-| `TF` | Número total de veces que aparece una anotación en el corpus |
-| `DF` | Número de documentos distintos en los que aparece |
-| `IDF` | Rareza documental de la anotación |
+| `TF` | Total number of occurrences in the corpus |
+| `DF` | Number of documents containing the annotation |
+| `IDF` | Document-level rarity |
 | `score` | `TF * IDF` |
 
-La fórmula usada para `IDF` es suavizada:
+The smoothed IDF formula is:
 
 ```text
 idf = log((N + 1) / (df + 1)) + 1
 ```
 
-donde:
+where:
 
 ```text
-N  = número total de documentos
-df = documentos donde aparece la anotación
+N  = total number of documents
+df = documents containing the annotation
 ```
-
----
-
-### Diferencia entre `summary` y `salience`
-
-`summary` responde:
-
-```text
-¿Qué hay en este corpus?
-```
-
-Ejemplo:
-
-```bash
-umuannotator metrics summary \
-  --input annotations.jsonl \
-  --input-format jsonl \
-  --top 20
-```
-
-`salience` responde:
-
-```text
-¿Qué anotaciones parecen más relevantes?
-```
-
-Ejemplo:
-
-```bash
-umuannotator metrics salience \
-  --input annotations.jsonl \
-  --input-format jsonl \
-  --top 20
-```
-
----
 
 ### Canonical key
 
-Para no contar sólo formas superficiales de texto, cada anotación se convierte en una clave canónica.
+Annotations are grouped using a canonical key.
 
-La prioridad actual es:
+The current priority is:
 
 ```text
 1. metadata.concept_uri
@@ -165,10 +525,10 @@ La prioridad actual es:
 3. metadata.normalized + metadata.unit
 4. metadata.normalized + metadata.grain
 5. metadata.normalized
-6. text normalizado en minúsculas
+6. lowercased surface text
 ```
 
-Ejemplos:
+Example:
 
 ```json
 {
@@ -176,195 +536,196 @@ Ejemplos:
   "layer": "ontology",
   "label": "Government",
   "metadata": {
-    "concept_uri": "http://example.org/Government"
+    "concept_uri": "http://example.org/news-es#Government"
   }
 }
 ```
 
-genera:
+Canonical key:
 
 ```text
-concept_uri:http://example.org/Government
-```
-
-```json
-{
-  "text": "España",
-  "layer": "entity",
-  "label": "COUNTRY",
-  "metadata": {
-    "wikidata": "Q29"
-  }
-}
-```
-
-genera:
-
-```text
-wikidata:Q29
-```
-
-```json
-{
-  "text": "2500 euros",
-  "layer": "cantidades",
-  "label": "MONEY",
-  "metadata": {
-    "normalized": 2500,
-    "unit": "EUR"
-  }
-}
-```
-
-genera:
-
-```text
-normalized:2500|unit:EUR
-```
-
-```json
-{
-  "text": "2026",
-  "layer": "temporal",
-  "label": "DATE",
-  "metadata": {
-    "normalized": "2026-01-01",
-    "grain": "year"
-  }
-}
-```
-
-genera:
-
-```text
-normalized:2026-01-01|grain:year
+concept_uri:http://example.org/news-es#Government
 ```
 
 ---
 
-### Ejemplo auto-contenido
+## TF-IDF-e salience
 
-Crea un fichero de ejemplo:
+`tfidf-e` extends TF-IDF using ontology relations.
 
-```bash
-cat > /tmp/umu_salience_example.jsonl <<'JSONL'
-{"text":"El Gobierno anuncia ayudas hoy.","annotations":[{"start":3,"end":11,"text":"Gobierno","label":"Government","layer":"ontology","source":"ontology","metadata":{"concept_uri":"http://example.org/Government"}},{"start":26,"end":29,"text":"hoy","label":"DATE","layer":"temporal","source":"duckling-temporal","metadata":{"normalized":"2026-06-30","grain":"day"}}]}
-{"text":"El Gobierno confirma nuevas medidas.","annotations":[{"start":3,"end":11,"text":"Gobierno","label":"Government","layer":"ontology","source":"ontology","metadata":{"concept_uri":"http://example.org/Government"}}]}
-{"text":"España invertirá 2500 euros en el proyecto.","annotations":[{"start":0,"end":6,"text":"España","label":"COUNTRY","layer":"entity","source":"pattern","metadata":{"wikidata":"Q29"}},{"start":17,"end":27,"text":"2500 euros","label":"MONEY","layer":"cantidades","source":"duckling-quantity","metadata":{"normalized":2500,"unit":"EUR"}}]}
-JSONL
-```
+It can propagate salience through an ontology graph using a configurable maximum distance, decay and direction.
 
-Ejecuta `summary`:
-
-```bash
-umuannotator metrics summary \
-  --input /tmp/umu_salience_example.jsonl \
-  --input-format jsonl \
-  --top 10
-```
-
-Ejecuta `salience`:
+Example:
 
 ```bash
 umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
+  --input outputs/news.jsonl \
   --input-format jsonl \
-  --top 10
+  --method tfidf-e \
+  --ontology resources/news_es.owl \
+  --max-distance 2 \
+  --decay 0.5 \
+  --direction both \
+  --top 20
 ```
 
-Salida esperada aproximada:
+The output includes:
 
 ```text
-Annotation salience
+score
+observed_score
+expanded_score
+expanded_from
+```
 
-Documents: 3
+Meaning:
 
-Top salient annotations
-┏━━━━━━━┳━━━━┳━━━━┳━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Score ┃ TF ┃ DF ┃ IDF   ┃ Layer      ┃ Label      ┃ Display     ┃ Canonical                            ┃
-┡━━━━━━━╇━━━━╇━━━━╇━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ 2.575 │ 2  │ 2  │ 1.288 │ ontology   │ Government │ Gobierno    │ concept_uri:http://example.org/...   │
-│ 1.693 │ 1  │ 1  │ 1.693 │ temporal   │ DATE       │ hoy         │ normalized:2026-06-30|grain:day     │
-│ 1.693 │ 1  │ 1  │ 1.693 │ entity     │ COUNTRY    │ España      │ wikidata:Q29                         │
-│ 1.693 │ 1  │ 1  │ 1.693 │ cantidades │ MONEY      │ 2500 euros  │ normalized:2500|unit:EUR             │
-└───────┴────┴────┴───────┴────────────┴────────────┴─────────────┴──────────────────────────────────────┘
+| Field | Meaning |
+|---|---|
+| `observed_score` | Direct TF-IDF score from observed annotations |
+| `expanded_score` | Score received from related ontology concepts |
+| `score` | Total score |
+| `expanded_from` | Concepts that contributed through expansion |
+
+Available directions:
+
+```text
+outgoing
+incoming
+both
 ```
 
 ---
 
-### Filtrar por capa
+## Explain salience
 
-Para analizar sólo ontología:
+For TF-IDF-e, individual concepts can be inspected with `--explain`.
 
 ```bash
 umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf-e \
+  --ontology resources/news_es.owl \
+  --max-distance 2 \
+  --decay 0.5 \
+  --direction both \
+  --explain TrafficAccident
+```
+
+JSON output:
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf-e \
+  --ontology resources/news_es.owl \
+  --max-distance 2 \
+  --decay 0.5 \
+  --direction both \
+  --explain TrafficAccident \
+  --output-format json \
+  --output outputs/explain_traffic_accident.json
+```
+
+---
+
+## Salience output formats
+
+### Console
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf \
+  --top 20
+```
+
+### JSON
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf \
+  --top 20 \
+  --output-format json \
+  --output outputs/salience.json
+```
+
+### CSV
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf \
+  --top 20 \
+  --output-format csv \
+  --output outputs/salience.csv
+```
+
+### HTML
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf \
+  --top 50 \
+  --output-format html \
+  --output outputs/salience.html
+```
+
+TF-IDF-e HTML:
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
+  --input-format jsonl \
+  --method tfidf-e \
+  --ontology resources/news_es.owl \
+  --max-distance 2 \
+  --decay 0.5 \
+  --direction both \
+  --top 50 \
+  --output-format html \
+  --output outputs/salience_tfidfe.html
+```
+
+---
+
+## Filtering salience
+
+Filter by layer:
+
+```bash
+umuannotator metrics salience \
+  --input outputs/news.jsonl \
   --input-format jsonl \
   --layer ontology \
-  --top 10
+  --top 20
 ```
 
-Para analizar sólo temporales:
+Filter by label:
 
 ```bash
 umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
-  --input-format jsonl \
-  --layer temporal \
-  --top 10
-```
-
-Para analizar sólo cantidades:
-
-```bash
-umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
-  --input-format jsonl \
-  --layer cantidades \
-  --top 10
-```
-
----
-
-### Filtrar por etiqueta
-
-Por ejemplo, sólo fechas:
-
-```bash
-umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
+  --input outputs/news.jsonl \
   --input-format jsonl \
   --label DATE \
-  --top 10
-```
-
-Sólo dinero:
-
-```bash
-umuannotator metrics salience \
-  --input /tmp/umu_salience_example.jsonl \
-  --input-format jsonl \
-  --label MONEY \
-  --top 10
+  --top 20
 ```
 
 ---
 
-### Uso con pipes
+## Unix-style pipelines
 
-`metrics salience` puede leer desde `stdin`.
+`run`, `render` and `metrics` can be combined using stdin/stdout.
 
-Ejemplo con un fichero JSONL ya anotado:
-
-```bash
-cat /tmp/umu_salience_example.jsonl \
-| umuannotator metrics salience \
-    --input - \
-    --input-format jsonl \
-    --top 10
-```
-
-Ejemplo encadenado con `run`:
+Run and calculate salience:
 
 ```bash
 umuannotator run \
@@ -374,62 +735,35 @@ umuannotator run \
   --text-column headline \
   --output - \
   --output-format jsonl \
+  --output-profile compact \
   --no-progress \
 | umuannotator metrics salience \
     --input - \
     --input-format jsonl \
+    --method tfidf \
     --top 20
 ```
 
----
+Run and render HTML:
 
-### Interpretación
-
-Un valor alto de `score` puede deberse a dos razones:
-
-```text
-- La anotación aparece muchas veces.
-- La anotación aparece en pocos documentos y por tanto es más específica.
+```bash
+umuannotator run \
+  --config configs/pizza_rich.yml \
+  --input datasets/pizza_es.csv \
+  --input-format csv \
+  --text-column text \
+  --output - \
+  --output-format jsonl \
+  --output-profile full \
+  --no-progress \
+| umuannotator render html \
+    --input - \
+    --input-format jsonl \
+    --output outputs/pizza_rich.html \
+    --title "Pizza Rich"
 ```
 
-Por ejemplo, `Gobierno` puede tener un `TF` alto porque aparece en muchos titulares.
-
-En cambio, `2500 euros` puede tener un `DF` bajo pero un `IDF` alto porque aparece en pocos documentos.
-
 ---
-
-### Limitaciones actuales
-
-La primera versión de `salience` no corrige anotaciones ni resuelve falsos positivos.
-
-Si una ontología anota:
-
-```text
-Madrid → RealMadrid
-```
-
-`salience` lo contará como tal. Esto es útil como feedback para revisar la ontología o las reglas de matching, pero no es responsabilidad de esta métrica corregirlo.
-
-Tampoco aplica todavía pesos por capa, confianza, posición en el documento ni resolución semántica entre capas.
-
----
-
-### Relación con futuras mejoras
-
-`salience` empieza usando TF-IDF general sobre anotaciones, pero puede crecer hacia una métrica más rica incorporando:
-
-```text
-- pesos por capa
-- confidence
-- evidence
-- posición en el documento
-- resolución semántica
-- canonicalización avanzada
-- expansión ontológica tipo TF-IDF-e
-```
-
-Por ahora, el objetivo es ofrecer un ranking global simple, explicable y útil para explorar corpus anotados.
-
 
 ## Ontology utilities
 
@@ -462,27 +796,73 @@ umuannotator ontology relations \
   --config configs/pizza_rich.yml
 ```
 
+---
+
 ## Project structure
 
 ```text
 umuannotator/
 ├── annotators/
-├── preprocessors/
-├── ontology/
-├── metrics/
-├── renderers/
+├── cli/
+├── config/
 ├── document/
-├── pipeline/
 ├── io/
-└── cli/
+├── lang/
+├── metrics/
+│   └── output/
+├── ontology/
+├── pipeline/
+├── preprocessors/
+├── renderers/
+├── resolution/
+├── resources/
+└── serialization/
 ```
 
+---
 
-## Status
+## Development checks
+
+Run tests:
+
+```bash
+pytest -q
+```
+
+Check for likely unused code:
+
+```bash
+vulture src/umuannotator --min-confidence 80 --exclude "*/__pycache__/*"
+```
+
+Remove Python caches:
+
+```bash
+find . -type d -name "__pycache__" -prune -exec rm -rf {} +
+find . -name "*.pyc" -delete
+```
+
+---
+
+## Current status
 
 UMUAnnotator is under active development.
 
-The architecture is stable enough for experimentation and research workflows, while additional annotators, metrics and ontology features continue to be added.
+The architecture is stable enough for experimentation and research workflows. The tool is suitable for iterative annotation experiments, ontology prototyping, corpus exploration and metrics generation.
+
+It should still be considered a research-oriented tool rather than a fully stable public API.
+
+Current priorities include:
+
+```text
+- clearer configuration validation
+- more regression tests with real corpora
+- improved documentation
+- better handling of raw vs resolved annotations
+- larger-scale streaming workflows
+```
+
+---
 
 ## License
 
