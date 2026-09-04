@@ -736,3 +736,356 @@ def test_extract_coordinated_verbs_with_inherited_subject():
 
     assert first.metadata["polarity"] == "positive"
     assert second.metadata["polarity"] == "positive"
+
+
+def test_extract_xcomp_with_inherited_subject():
+    text = "El Gobierno quiere aprobar la ley."
+
+    document = Document(
+        text=text,
+        metadata={
+            "stanza": {
+                "sentences": [
+                    {
+                        "id": 0,
+                        "words": [
+                            {
+                                "id": 1,
+                                "text": "El",
+                                "start": 0,
+                                "end": 2,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 2,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 2,
+                                "text": "Gobierno",
+                                "start": 3,
+                                "end": 11,
+                                "lemma": "gobierno",
+                                "upos": "PROPN",
+                                "head": 3,
+                                "deprel": "nsubj",
+                            },
+                            {
+                                "id": 3,
+                                "text": "quiere",
+                                "start": 12,
+                                "end": 18,
+                                "lemma": "querer",
+                                "upos": "VERB",
+                                "head": 0,
+                                "deprel": "root",
+                            },
+                            {
+                                "id": 4,
+                                "text": "aprobar",
+                                "start": 19,
+                                "end": 26,
+                                "lemma": "aprobar",
+                                "upos": "VERB",
+                                "head": 3,
+                                "deprel": "xcomp",
+                            },
+                            {
+                                "id": 5,
+                                "text": "la",
+                                "start": 27,
+                                "end": 29,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 6,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 6,
+                                "text": "ley",
+                                "start": 30,
+                                "end": 33,
+                                "lemma": "ley",
+                                "upos": "NOUN",
+                                "head": 4,
+                                "deprel": "obj",
+                            },
+                            {
+                                "id": 7,
+                                "text": ".",
+                                "start": 33,
+                                "end": 34,
+                                "lemma": ".",
+                                "upos": "PUNCT",
+                                "head": 3,
+                                "deprel": "punct",
+                            },
+                        ],
+                    }
+                ]
+            }
+        },
+    )
+
+    extractor = StanzaDependencyRelationExtractor()
+
+    result = extractor.extract(document)
+
+    assert len(result.relations) == 1
+
+    relation = result.relations[0]
+
+    assert relation.predicate.text == "aprobar"
+    assert relation.predicate.lemma == "aprobar"
+
+    assert len(relation.arguments) == 2
+
+    subject = relation.arguments[0]
+    object_ = relation.arguments[1]
+
+    assert subject.role == "subject"
+    assert subject.text == "El Gobierno"
+
+    assert object_.role == "object"
+    assert object_.text == "la ley"
+
+    assert relation.metadata["subject_inherited"] is True
+    assert relation.metadata["subject_inherited_from_word_id"] == 3
+    assert relation.metadata["subject_inheritance"] == "xcomp_control"
+    assert relation.metadata["polarity"] == "positive"
+
+def test_extract_ccomp_relation_without_subject_inheritance():
+    text = "El ministro afirma que aprobarán la reforma."
+
+    document = Document(
+        text=text,
+        metadata={
+            "stanza": {
+                "sentences": [
+                    {
+                        "id": 0,
+                        "words": [
+                            {
+                                "id": 1,
+                                "text": "El",
+                                "start": 0,
+                                "end": 2,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 2,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 2,
+                                "text": "ministro",
+                                "start": 3,
+                                "end": 11,
+                                "lemma": "ministro",
+                                "upos": "NOUN",
+                                "head": 3,
+                                "deprel": "nsubj",
+                            },
+                            {
+                                "id": 3,
+                                "text": "afirma",
+                                "start": 12,
+                                "end": 18,
+                                "lemma": "afirmar",
+                                "upos": "VERB",
+                                "head": 0,
+                                "deprel": "root",
+                            },
+                            {
+                                "id": 4,
+                                "text": "que",
+                                "start": 19,
+                                "end": 22,
+                                "lemma": "que",
+                                "upos": "SCONJ",
+                                "head": 5,
+                                "deprel": "mark",
+                            },
+                            {
+                                "id": 5,
+                                "text": "aprobarán",
+                                "start": 23,
+                                "end": 32,
+                                "lemma": "aprobar",
+                                "upos": "VERB",
+                                "head": 3,
+                                "deprel": "ccomp",
+                            },
+                            {
+                                "id": 6,
+                                "text": "la",
+                                "start": 33,
+                                "end": 35,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 7,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 7,
+                                "text": "reforma",
+                                "start": 36,
+                                "end": 43,
+                                "lemma": "reforma",
+                                "upos": "NOUN",
+                                "head": 5,
+                                "deprel": "obj",
+                            },
+                            {
+                                "id": 8,
+                                "text": ".",
+                                "start": 43,
+                                "end": 44,
+                                "lemma": ".",
+                                "upos": "PUNCT",
+                                "head": 3,
+                                "deprel": "punct",
+                            },
+                        ],
+                    }
+                ]
+            }
+        },
+    )
+
+    extractor = StanzaDependencyRelationExtractor()
+
+    result = extractor.extract(document)
+
+    assert len(result.relations) == 1
+
+    relation = result.relations[0]
+
+    assert relation.predicate.text == "afirma"
+    assert relation.predicate.lemma == "afirmar"
+
+    assert len(relation.arguments) == 2
+
+    subject = relation.arguments[0]
+    complement = relation.arguments[1]
+
+    assert subject.role == "subject"
+    assert subject.text == "El ministro"
+
+    assert complement.role == "clausal_complement"
+    assert complement.text == "que aprobarán la reforma"
+
+    assert relation.metadata["rule"] == "verb_nsubj_ccomp"
+    assert relation.metadata["polarity"] == "positive"
+
+    assert "subject_inherited" not in relation.metadata
+
+def test_ccomp_does_not_inherit_matrix_subject():
+    text = "El ministro afirma que aprobarán la reforma."
+
+    document = Document(
+        text=text,
+        metadata={
+            "stanza": {
+                "sentences": [
+                    {
+                        "id": 0,
+                        "words": [
+                            {
+                                "id": 1,
+                                "text": "El",
+                                "start": 0,
+                                "end": 2,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 2,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 2,
+                                "text": "ministro",
+                                "start": 3,
+                                "end": 11,
+                                "lemma": "ministro",
+                                "upos": "NOUN",
+                                "head": 3,
+                                "deprel": "nsubj",
+                            },
+                            {
+                                "id": 3,
+                                "text": "afirma",
+                                "start": 12,
+                                "end": 18,
+                                "lemma": "afirmar",
+                                "upos": "VERB",
+                                "head": 0,
+                                "deprel": "root",
+                            },
+                            {
+                                "id": 4,
+                                "text": "que",
+                                "start": 19,
+                                "end": 22,
+                                "lemma": "que",
+                                "upos": "SCONJ",
+                                "head": 5,
+                                "deprel": "mark",
+                            },
+                            {
+                                "id": 5,
+                                "text": "aprobarán",
+                                "start": 23,
+                                "end": 32,
+                                "lemma": "aprobar",
+                                "upos": "VERB",
+                                "head": 3,
+                                "deprel": "ccomp",
+                            },
+                            {
+                                "id": 6,
+                                "text": "la",
+                                "start": 33,
+                                "end": 35,
+                                "lemma": "el",
+                                "upos": "DET",
+                                "head": 7,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 7,
+                                "text": "reforma",
+                                "start": 36,
+                                "end": 43,
+                                "lemma": "reforma",
+                                "upos": "NOUN",
+                                "head": 5,
+                                "deprel": "obj",
+                            },
+                            {
+                                "id": 8,
+                                "text": ".",
+                                "start": 43,
+                                "end": 44,
+                                "lemma": ".",
+                                "upos": "PUNCT",
+                                "head": 3,
+                                "deprel": "punct",
+                            },
+                        ],
+                    }
+                ]
+            }
+        },
+    )
+
+    extractor = StanzaDependencyRelationExtractor()
+
+    result = extractor.extract(document)
+
+    assert not any(
+        relation.predicate.lemma == "aprobar"
+        and any(
+            argument.role == "subject"
+            and argument.text == "El ministro"
+            for argument in relation.arguments
+        )
+        for relation in result.relations
+    )
