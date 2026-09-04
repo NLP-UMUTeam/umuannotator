@@ -78,6 +78,7 @@ def test_write_json_output_compact_by_default(tmp_path):
             {
                 "text": "Pizza",
                 "annotations": [],
+                "relations": [],
                 "metadata": {
                     "doc_id": "doc-1",
                 },
@@ -99,6 +100,7 @@ def test_write_json_output_full_profile(tmp_path):
             {
                 "text": "Pizza",
                 "annotations": [],
+                "relations": [],
             }
         ],
         "metadata": {
@@ -116,6 +118,7 @@ def test_write_json_output_full_profile(tmp_path):
     loaded = json.loads(path.read_text(encoding="utf-8"))
 
     assert loaded["documents"][0]["text"] == "Pizza"
+    assert loaded["documents"][0]["relations"] == []
     assert loaded["metadata"]["documents"] == 1
 
 
@@ -166,6 +169,7 @@ def test_write_jsonl_output_one_line_per_document_compact_by_default(tmp_path):
     assert first == {
         "text": "Pizza",
         "annotations": [],
+        "relations": [],
         "metadata": {
             "doc_id": "doc-1",
         },
@@ -174,6 +178,7 @@ def test_write_jsonl_output_one_line_per_document_compact_by_default(tmp_path):
     assert second == {
         "text": "Pasta",
         "annotations": [],
+        "relations": [],
         "metadata": {
             "doc_id": "doc-2",
         },
@@ -198,6 +203,7 @@ def test_write_jsonl_output_full_profile_one_line_per_document(tmp_path):
                     },
                 },
                 "annotations": [],
+                "relations": [],
             },
             {
                 "text": "Pasta",
@@ -205,6 +211,7 @@ def test_write_jsonl_output_full_profile_one_line_per_document(tmp_path):
                     "doc_id": "doc-2",
                 },
                 "annotations": [],
+                "relations": [],
             },
         ],
         "metadata": {
@@ -227,6 +234,7 @@ def test_write_jsonl_output_full_profile_one_line_per_document(tmp_path):
     second = json.loads(lines[1])
 
     assert first["text"] == "Pizza"
+    assert first["relations"] == []
     assert first["metadata"]["doc_id"] == "doc-1"
     assert first["metadata"]["stanza"] == {
         "tokens": [
@@ -237,6 +245,7 @@ def test_write_jsonl_output_full_profile_one_line_per_document(tmp_path):
     }
 
     assert second["text"] == "Pasta"
+    assert second["relations"] == []
     assert second["metadata"]["doc_id"] == "doc-2"
 
 

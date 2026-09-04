@@ -1,5 +1,6 @@
 from umuannotator.document import Corpus
 
+
 def annotation_to_dict(annotation):
     return {
         "start": annotation.start,
@@ -15,6 +16,44 @@ def annotation_to_dict(annotation):
     }
 
 
+def relation_predicate_to_dict(predicate):
+    return {
+        "start": predicate.start,
+        "end": predicate.end,
+        "text": predicate.text,
+        "lemma": predicate.lemma,
+        "metadata": predicate.metadata,
+    }
+
+
+def relation_argument_to_dict(argument):
+    return {
+        "role": argument.role,
+        "start": argument.start,
+        "end": argument.end,
+        "text": argument.text,
+        "annotation_id": argument.annotation_id,
+        "metadata": argument.metadata,
+    }
+
+
+def relation_to_dict(relation):
+    return {
+        "id": relation.id,
+        "type": relation.type,
+        "predicate": relation_predicate_to_dict(
+            relation.predicate
+        ),
+        "arguments": [
+            relation_argument_to_dict(argument)
+            for argument in relation.arguments
+        ],
+        "source": relation.source,
+        "score": relation.score,
+        "metadata": relation.metadata,
+    }
+
+
 def document_to_dict(document):
     return {
         "text": document.text,
@@ -22,6 +61,10 @@ def document_to_dict(document):
         "annotations": [
             annotation_to_dict(annotation)
             for annotation in document.annotations
+        ],
+        "relations": [
+            relation_to_dict(relation)
+            for relation in document.relations
         ],
     }
 

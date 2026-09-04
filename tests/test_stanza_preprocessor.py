@@ -17,6 +17,7 @@ def test_stanza_preprocessor_loads_cached_metadata(tmp_path):
         text,
         language=language,
         processors=processors,
+        tokenize_no_ssplit=True,
     )
 
     cache_path = (
@@ -184,3 +185,91 @@ def test_stanza_preprocessor_uses_custom_metadata_key(tmp_path, monkeypatch):
 
     assert "nlp" in result.metadata
     assert "stanza" not in result.metadata
+
+
+def test_stanza_preprocessor_keeps_sentence_splitting_option():
+    preprocessor = StanzaPreprocessor(
+        language="es",
+        processors="tokenize,mwt,pos,lemma,depparse,ner",
+        use_cache=False,
+        tokenize_no_ssplit=False,
+    )
+
+    assert preprocessor.tokenize_no_ssplit is False
+
+
+def test_stanza_preprocessor_supports_sentence_metadata(
+    tmp_path,
+    monkeypatch,
+):
+    preprocessor = StanzaPreprocessor(
+        language="es",
+        processors="tokenize,mwt,pos,lemma,depparse,ner",
+        cache_dir=str(tmp_path / "stanza"),
+        use_cache=False,
+        tokenize_no_ssplit=False,
+    )
+
+    monkeypatch.setattr(
+        preprocessor,
+        "_run_stanza",
+        lambda value: {
+            "tokens": [],
+            "entities": [],
+            "sentences": [
+                {
+                    "id": 0,
+                    "start": 0,
+                    "end": len(value),
+                    "text": value,
+                    "tokens": [],
+                    "words": [
+                        {
+                            "id": 1,
+                            "text": "Gobierno",
+                            "start": 3,
+                            "end": 11,
+                            "lemma": "gobierno",
+                            "upos": "NOUN",
+                            "xpos": None,
+                            "feats": None,
+                            "head": 2,
+                            "deprel": "nsubj",
+                        },
+                        {
+                            "id": 2,
+                            "text": "convoca",
+                            "start": 12,
+                            "end": 19,
+                            "lemma": "convocar",
+                            "upos": "VERB",
+                            "xpos": None,
+                            "feats": None,
+                            "head": 0,
+                            "deprel": "root",
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+
+    document = Document(
+        text="El Gobierno convoca."
+    )
+
+    result = preprocessor.process_document(
+        document
+    )
+
+    stanza_data = result.metadata["stanza"]
+
+    assert len(stanza_data["sentences"]) == 1
+
+    words = stanza_data["sentences"][0]["words"]
+
+    assert words[0]["deprel"] == "nsubj"
+    assert words[0]["head"] == 2
+
+    assert words[1]["lemma"] == "convocar"
+    assert words[1]["head"] == 0

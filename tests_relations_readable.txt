@@ -1,0 +1,83 @@
+TEXT: El Gobierno entrega ayudas a las familias.
+1	El	DET	head=2	det
+2	Gobierno	PROPN	head=3	nsubj
+3	entrega	VERB	head=0	root
+4	ayudas	NOUN	head=3	obj
+5	a	ADP	head=7	case
+6	las	DET	head=7	det
+7	familias	NOUN	head=3	obl:arg
+8	.	PUNCT	head=3	punct
+RELATIONS:
+[{"id":null,"type":"predicate_argument","predicate":{"start":12,"end":19,"text":"entrega","lemma":"entregar","metadata":{"word_id":3}},"arguments":[{"role":"subject","start":0,"end":11,"text":"El Gobierno","annotation_id":null,"metadata":{"head_word_id":2,"deprel":"nsubj"}},{"role":"object","start":20,"end":26,"text":"ayudas","annotation_id":null,"metadata":{"head_word_id":4,"deprel":"obj"}}],"source":"stanza-dependency","score":null,"metadata":{"sentence_id":0,"rule":"verb_nsubj_obj"}}]
+
+TEXT: El Gobierno no aprobará la ley.
+1	El	DET	head=2	det
+2	Gobierno	PROPN	head=4	nsubj
+3	no	ADV	head=4	advmod
+4	aprobará	VERB	head=0	root
+5	la	DET	head=6	det
+6	ley	NOUN	head=4	obj
+7	.	PUNCT	head=4	punct
+RELATIONS:
+[{"id":null,"type":"predicate_argument","predicate":{"start":15,"end":23,"text":"aprobará","lemma":"aprobar","metadata":{"word_id":4}},"arguments":[{"role":"subject","start":0,"end":11,"text":"El Gobierno","annotation_id":null,"metadata":{"head_word_id":2,"deprel":"nsubj"}},{"role":"object","start":24,"end":30,"text":"la ley","annotation_id":null,"metadata":{"head_word_id":6,"deprel":"obj"}}],"source":"stanza-dependency","score":null,"metadata":{"sentence_id":0,"rule":"verb_nsubj_obj"}}]
+
+TEXT: La ley fue aprobada por el Congreso.
+1	La	DET	head=2	det
+2	ley	NOUN	head=4	nsubj:pass
+3	fue	AUX	head=4	aux:pass
+4	aprobada	VERB	head=0	root
+5	por	ADP	head=7	case
+6	el	DET	head=7	det
+7	Congreso	PROPN	head=4	obl:agent
+8	.	PUNCT	head=4	punct
+RELATIONS:
+[]
+
+TEXT: El Gobierno anuncia ayudas y reduce impuestos.
+1	El	DET	head=2	det
+2	Gobierno	PROPN	head=3	nsubj
+3	anuncia	VERB	head=0	root
+4	ayudas	NOUN	head=3	obj
+5	y	CCONJ	head=6	cc
+6	reduce	VERB	head=3	conj
+7	impuestos	NOUN	head=6	obj
+8	.	PUNCT	head=3	punct
+RELATIONS:
+[{"id":null,"type":"predicate_argument","predicate":{"start":12,"end":19,"text":"anuncia","lemma":"anunciar","metadata":{"word_id":3}},"arguments":[{"role":"subject","start":0,"end":11,"text":"El Gobierno","annotation_id":null,"metadata":{"head_word_id":2,"deprel":"nsubj"}},{"role":"object","start":20,"end":26,"text":"ayudas","annotation_id":null,"metadata":{"head_word_id":4,"deprel":"obj"}}],"source":"stanza-dependency","score":null,"metadata":{"sentence_id":0,"rule":"verb_nsubj_obj"}}]
+
+TEXT: El Gobierno quiere aprobar la ley.
+1	El	DET	head=2	det
+2	Gobierno	PROPN	head=3	nsubj
+3	quiere	VERB	head=0	root
+4	aprobar	VERB	head=3	xcomp
+5	la	DET	head=6	det
+6	ley	NOUN	head=4	obj
+7	.	PUNCT	head=3	punct
+RELATIONS:
+[]
+
+TEXT: El ministro afirma que aprobarán la reforma.
+1	El	DET	head=2	det
+2	ministro	NOUN	head=3	nsubj
+3	afirma	VERB	head=0	root
+4	que	SCONJ	head=5	mark
+5	aprobarán	VERB	head=3	ccomp
+6	la	DET	head=7	det
+7	reforma	NOUN	head=5	obj
+8	.	PUNCT	head=3	punct
+RELATIONS:
+[]
+
+TEXT: Pedro Sánchez y la ministra presentan el plan.
+1	Pedro	PROPN	head=6	nsubj
+2	Sánchez	PROPN	head=1	flat
+3	y	CCONJ	head=5	cc
+4	la	DET	head=5	det
+5	ministra	NOUN	head=1	conj
+6	presentan	VERB	head=0	root
+7	el	DET	head=8	det
+8	plan	NOUN	head=6	obj
+9	.	PUNCT	head=6	punct
+RELATIONS:
+[{"id":null,"type":"predicate_argument","predicate":{"start":28,"end":37,"text":"presentan","lemma":"presentar","metadata":{"word_id":6}},"arguments":[{"role":"subject","start":0,"end":27,"text":"Pedro Sánchez y la ministra","annotation_id":null,"metadata":{"head_word_id":1,"deprel":"nsubj"}},{"role":"object","start":38,"end":45,"text":"el plan","annotation_id":null,"metadata":{"head_word_id":8,"deprel":"obj"}}],"source":"stanza-dependency","score":null,"metadata":{"sentence_id":0,"rule":"verb_nsubj_obj"}}]
+

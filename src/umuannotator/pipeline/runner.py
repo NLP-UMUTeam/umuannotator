@@ -6,7 +6,14 @@ from umuannotator.config.loader import load_config
 from umuannotator.metrics import ExtendedTfidfScorer, TfidfScorer
 from umuannotator.ontology.graph import build_graph
 from umuannotator.ontology.loader import load_ontology
-from umuannotator.pipeline import AnnotationPipeline
+from umuannotator.pipeline import (
+    AnnotationPipeline,
+    RelationExtractionPipeline,
+)
+from umuannotator.relation_extractors.registry import (
+    build_relation_extractors,
+)
+
 from umuannotator.preprocessors.registry import build_preprocessors
 from umuannotator.renderers.colors import collect_layer_colors
 from umuannotator.renderers.json import corpus_to_dict
@@ -37,6 +44,8 @@ def run_from_config(
 
     preprocessors = pipeline_context["preprocessors"]
     ontology_path = pipeline_context["ontology_path"]
+    relation_extractors = pipeline_context["relation_extractors"]
+    relation_pipeline = pipeline_context["relation_pipeline"]
 
     with timed("load_input", timings):
         corpus = load_corpus_input(
@@ -66,6 +75,13 @@ def run_from_config(
                     config=resolver_config,
                 )
 
+    if relation_extractors:
+        with timed("relation_extraction", timings):
+            corpus = relation_pipeline.run_corpus(
+                corpus,
+                show_progress=show_progress,
+            )
+
     metrics_config = config.get("metrics", {})
 
     corpus = _run_tfidf(
@@ -89,14 +105,25 @@ def run_from_config(
         "layer_colors": collect_layer_colors(config),
         "timings": timings,
         "annotator_timings": pipeline.timings,
+        "relation_extractor_timings": (
+            relation_pipeline.timings
+        ),
         "documents": len(corpus.documents),
         "annotations": sum(
             len(document.annotations)
             for document in corpus.documents
         ),
+        "relations": sum(
+            len(document.relations)
+            for document in corpus.documents
+        ),
         "preprocessors": [
             type(preprocessor).__name__
             for preprocessor in preprocessors
+        ],
+        "relation_extractors": [
+            type(extractor).__name__
+            for extractor in relation_extractors
         ],
     }
 
@@ -127,9 +154,20 @@ def build_pipeline_from_config(
         preprocessors=preprocessors,
     )
 
+    relation_extractors = build_relation_extractors(
+        config.get("relation_extractors", []),
+        language=language,
+    )
+
+    relation_pipeline = RelationExtractionPipeline(
+        extractors=relation_extractors,
+    )
+
     return pipeline, {
         "preprocessors": preprocessors,
         "annotators": annotators,
+        "relation_extractors": relation_extractors,
+        "relation_pipeline": relation_pipeline,
         "language": language,
         "ontology_path": ontology_path,
     }

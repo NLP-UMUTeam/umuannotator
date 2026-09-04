@@ -33,6 +33,29 @@ COMPACT_ANNOTATION_METADATA_KEYS = {
     "duckling_dim",
 }
 
+COMPACT_RELATION_KEYS = {
+    "id",
+    "type",
+    "predicate",
+    "arguments",
+    "source",
+    "score",
+}
+
+COMPACT_RELATION_PREDICATE_KEYS = {
+    "start",
+    "end",
+    "text",
+    "lemma",
+}
+
+COMPACT_RELATION_ARGUMENT_KEYS = {
+    "role",
+    "start",
+    "end",
+    "text",
+    "annotation_id",
+}
 
 def apply_output_profile(
     data: dict[str, Any],
@@ -88,6 +111,10 @@ def compact_document(
             compact_annotation(annotation)
             for annotation in document.get("annotations", [])
         ],
+        "relations": [
+            compact_relation(relation)
+            for relation in document.get("relations", [])
+        ],
     }
 
     metadata = compact_document_metadata(
@@ -137,5 +164,51 @@ def compact_annotation_metadata(
         key: value
         for key, value in metadata.items()
         if key in COMPACT_ANNOTATION_METADATA_KEYS
+        and value is not None
+    }
+
+def compact_relation(
+    relation: dict[str, Any],
+) -> dict[str, Any]:
+    result = {
+        key: value
+        for key, value in relation.items()
+        if key in COMPACT_RELATION_KEYS
+        and value is not None
+    }
+
+    predicate = relation.get("predicate")
+
+    if predicate is not None:
+        result["predicate"] = compact_relation_predicate(
+            predicate
+        )
+
+    result["arguments"] = [
+        compact_relation_argument(argument)
+        for argument in relation.get("arguments", [])
+    ]
+
+    return result
+
+
+def compact_relation_predicate(
+    predicate: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in predicate.items()
+        if key in COMPACT_RELATION_PREDICATE_KEYS
+        and value is not None
+    }
+
+
+def compact_relation_argument(
+    argument: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        key: value
+        for key, value in argument.items()
+        if key in COMPACT_RELATION_ARGUMENT_KEYS
         and value is not None
     }

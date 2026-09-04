@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from umuannotator.document.model import Document
+from umuannotator.renderers.json import document_to_dict
 from umuannotator.serialization.profiles import apply_output_profile
 
 
@@ -13,7 +14,7 @@ def serialize_document(
 ) -> dict[str, Any]:
     data = {
         "documents": [
-            document.to_dict(),
+            document_to_dict(document),
         ],
         "metadata": {},
     }
