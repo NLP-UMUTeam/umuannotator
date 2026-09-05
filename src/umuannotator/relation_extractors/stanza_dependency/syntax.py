@@ -21,6 +21,22 @@ def find_dependent(
     return None
 
 
+def find_dependents(
+    words: list[dict[str, Any]],
+    *,
+    head: int,
+    deprel: str,
+) -> list[dict[str, Any]]:
+    return [
+        word
+        for word in words
+        if (
+            word.get("head") == head
+            and word.get("deprel") == deprel
+        )
+    ]
+
+
 def build_children_index(
     words: list[dict[str, Any]],
 ) -> dict[int, list[int]]:
@@ -205,3 +221,11 @@ def find_inherited_subject(
         parent_id,
         inheritance_type,
     )
+
+
+def is_finite_predicate(
+    word: dict[str, Any],
+) -> bool:
+    feats = word.get("feats") or ""
+
+    return "VerbForm=Fin" in feats

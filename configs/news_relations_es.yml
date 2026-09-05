@@ -13,6 +13,11 @@ preprocessors:
 relation_extractors:
   - name: stanza-dependency
 
+  - name: copular-predication
+
+  - name: reported-speech
+    source: resources/relation_extractors/reported_speech_es.yml
+
 ontology:
   path: resources/news_es.owl
   language: es

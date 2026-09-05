@@ -29,6 +29,36 @@ class RelationExtractorFactory:
                 ),
             )
 
+        if name == "reported-speech":
+            from umuannotator.relation_extractors.reported_speech import (
+                ReportedSpeechRelationExtractor,
+            )
+
+            source = kwargs.get("source")
+
+            if source is None:
+                raise ValueError(
+                    "reported-speech relation extractor "
+                    "requires source"
+                )
+
+            return ReportedSpeechRelationExtractor(
+                source=source,
+            )
+
+        if name == "copular-predication":
+
+            from umuannotator.relation_extractors.copular_predication import (
+                CopularPredicationRelationExtractor,
+            )
+
+            return CopularPredicationRelationExtractor(
+                metadata_key=kwargs.get(
+                    "metadata_key",
+                    "stanza",
+                ),
+            )
+
         raise ValueError(
             f"Unknown relation extractor: {name}"
         )
