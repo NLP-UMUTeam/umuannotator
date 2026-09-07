@@ -1,20 +1,23 @@
 from __future__ import annotations
 
-from umuannotator.io.loader import load_corpus_input
 from umuannotator.annotators.registry import build_annotators
 from umuannotator.config.loader import load_config
+from umuannotator.io.loader import load_corpus_input
 from umuannotator.metrics import ExtendedTfidfScorer, TfidfScorer
 from umuannotator.ontology.graph import build_graph
 from umuannotator.ontology.loader import load_ontology
 from umuannotator.pipeline import (
     AnnotationPipeline,
+    RelationEnrichmentPipeline,
     RelationExtractionPipeline,
+)
+from umuannotator.preprocessors.registry import build_preprocessors
+from umuannotator.relation_enrichers.registry import (
+    build_relation_enrichers,
 )
 from umuannotator.relation_extractors.registry import (
     build_relation_extractors,
 )
-
-from umuannotator.preprocessors.registry import build_preprocessors
 from umuannotator.renderers.colors import collect_layer_colors
 from umuannotator.renderers.json import corpus_to_dict
 from umuannotator.resolution.resolver import (
@@ -43,9 +46,22 @@ def run_from_config(
         pipeline, pipeline_context = build_pipeline_from_config(config)
 
     preprocessors = pipeline_context["preprocessors"]
+
     ontology_path = pipeline_context["ontology_path"]
-    relation_extractors = pipeline_context["relation_extractors"]
-    relation_pipeline = pipeline_context["relation_pipeline"]
+
+    relation_extractors = pipeline_context[
+        "relation_extractors"
+    ]
+    relation_pipeline = pipeline_context[
+        "relation_pipeline"
+    ]
+
+    relation_enrichers = pipeline_context[
+        "relation_enrichers"
+    ]
+    relation_enrichment_pipeline = pipeline_context[
+        "relation_enrichment_pipeline"
+    ]
 
     with timed("load_input", timings):
         corpus = load_corpus_input(
@@ -55,7 +71,6 @@ def run_from_config(
             id_column=id_column,
             sep=sep,
         )
-
 
     with timed("annotation", timings):
         corpus = pipeline.run_corpus(
@@ -78,6 +93,13 @@ def run_from_config(
     if relation_extractors:
         with timed("relation_extraction", timings):
             corpus = relation_pipeline.run_corpus(
+                corpus,
+                show_progress=show_progress,
+            )
+
+    if relation_enrichers:
+        with timed("relation_enrichment", timings):
+            corpus = relation_enrichment_pipeline.run_corpus(
                 corpus,
                 show_progress=show_progress,
             )
@@ -108,6 +130,9 @@ def run_from_config(
         "relation_extractor_timings": (
             relation_pipeline.timings
         ),
+        "relation_enricher_timings": (
+            relation_enrichment_pipeline.timings
+        ),
         "documents": len(corpus.documents),
         "annotations": sum(
             len(document.annotations)
@@ -124,6 +149,10 @@ def run_from_config(
         "relation_extractors": [
             type(extractor).__name__
             for extractor in relation_extractors
+        ],
+        "relation_enrichers": [
+            type(enricher).__name__
+            for enricher in relation_enrichers
         ],
     }
 
@@ -163,11 +192,26 @@ def build_pipeline_from_config(
         extractors=relation_extractors,
     )
 
+    relation_enrichers = build_relation_enrichers(
+        config.get("relation_enrichers", []),
+        language=language,
+    )
+
+    relation_enrichment_pipeline = (
+        RelationEnrichmentPipeline(
+            enrichers=relation_enrichers,
+        )
+    )
+
     return pipeline, {
         "preprocessors": preprocessors,
         "annotators": annotators,
         "relation_extractors": relation_extractors,
         "relation_pipeline": relation_pipeline,
+        "relation_enrichers": relation_enrichers,
+        "relation_enrichment_pipeline": (
+            relation_enrichment_pipeline
+        ),
         "language": language,
         "ontology_path": ontology_path,
     }
@@ -198,13 +242,18 @@ def _run_extended_tfidf(
     config: dict,
     timings: dict[str, float],
 ):
-    extended_config = metrics_config.get("extended_tfidf", {})
+    extended_config = metrics_config.get(
+        "extended_tfidf",
+        {},
+    )
 
     if not extended_config.get("enabled", False):
         return corpus
 
     if ontology_path is None:
-        raise ValueError("extended_tfidf requires ontology.path")
+        raise ValueError(
+            "extended_tfidf requires ontology.path"
+        )
 
     with timed("extended_tfidf", timings):
         rdf_graph = load_ontology(ontology_path)
@@ -214,12 +263,24 @@ def _run_extended_tfidf(
             config,
         )
 
-        decay_config = extended_config.get("decay", {})
+        decay_config = extended_config.get(
+            "decay",
+            {},
+        )
 
         return ExtendedTfidfScorer(
             ontology_graph=ontology_graph,
             decay=decay_config.get("value", 0.5),
-            decay_function=decay_config.get("type", "exponential"),
-            max_distance=extended_config.get("max_distance", 5),
-            layer=extended_config.get("layer", "ontology"),
+            decay_function=decay_config.get(
+                "type",
+                "exponential",
+            ),
+            max_distance=extended_config.get(
+                "max_distance",
+                5,
+            ),
+            layer=extended_config.get(
+                "layer",
+                "ontology",
+            ),
         ).score(corpus)
