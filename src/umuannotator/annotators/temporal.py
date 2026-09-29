@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import re
+
+import pendulum
+
 from umuannotator.annotators.duckling import DucklingAnnotator
 from umuannotator.annotators.stanza_utils import find_stanza_entity_containing
 from umuannotator.document.model import Annotation, Document
@@ -123,10 +127,30 @@ class TemporalAnnotator(DucklingAnnotator):
         if self._is_false_positive_person_name(annotation, document):
             return None
 
-        annotation.type = "temporal"
-        annotation.label = self._temporal_label(result)
+        is_clock_time_only = self._is_clock_time_only(
+            annotation.text,
+            result,
+        )
 
-        annotation.metadata["normalized"] = self._normalized_value(result)
+        annotation.type = "temporal"
+        annotation.label = self._temporal_label(
+            result,
+            is_clock_time_only=is_clock_time_only,
+        )
+
+        if is_clock_time_only:
+            clock = self._extract_clock_time(annotation.text)
+
+            annotation.metadata["normalized"] = clock
+            annotation.metadata["date_resolved"] = False
+        else:
+            annotation.metadata["normalized"] = (
+                self._normalized_temporal_value(
+                    annotation.text,
+                    result,
+                )
+            )
+
         annotation.metadata["grain"] = grain
         annotation.metadata["raw_value"] = result.get("value", {})
         annotation.metadata["duckling_dim"] = result.get("dim")
@@ -134,10 +158,18 @@ class TemporalAnnotator(DucklingAnnotator):
 
         return annotation
 
-    def _temporal_label(self, result: dict) -> str:
+    def _temporal_label(
+        self,
+        result: dict,
+        *,
+        is_clock_time_only: bool = False,
+    ) -> str:
         dim = result.get("dim")
 
         if dim == "time":
+            if is_clock_time_only:
+                return "TIME"
+
             return "DATE"
 
         if dim == "duration":
@@ -147,6 +179,34 @@ class TemporalAnnotator(DucklingAnnotator):
             return "TIME_GRAIN"
 
         return "TEMPORAL"
+
+    def _is_clock_time_only(
+        self,
+        surface: str,
+        result: dict,
+    ) -> bool:
+        if result.get("dim") != "time":
+            return False
+
+        normalized = surface.lower().strip()
+
+        return any(
+            re.fullmatch(pattern, normalized)
+            for pattern in self.rules.clock_time_only_patterns
+        )
+
+    def _extract_clock_time(
+        self,
+        surface: str,
+    ) -> str:
+        clock = self._extract_clock_components(surface)
+
+        if clock is None:
+            return surface.strip()
+
+        hour, minute = clock
+
+        return f"{hour:02d}:{minute:02d}"
 
     def _normalized_value(self, result: dict):
         value = result.get("value", {})
@@ -190,3 +250,70 @@ class TemporalAnnotator(DucklingAnnotator):
         entity_type = entity.get("type") or entity.get("label")
 
         return entity_type in {"PER", "PERSON"}
+
+    def _normalized_temporal_value(
+        self,
+        surface: str,
+        result: dict,
+    ):
+        normalized = self._normalized_value(result)
+
+        if result.get("dim") != "time":
+            return normalized
+
+        clock = self._extract_clock_components(surface)
+
+        if clock is None:
+            return normalized
+
+        value = result.get("value", {})
+
+        if not isinstance(value, dict):
+            return normalized
+
+        candidates = value.get("values", [])
+
+        if not isinstance(candidates, list):
+            return normalized
+
+        hour, minute = clock
+
+        for candidate in candidates:
+            if not isinstance(candidate, dict):
+                continue
+
+            candidate_value = candidate.get("value")
+
+            if not isinstance(candidate_value, str):
+                continue
+
+            try:
+                parsed = pendulum.parse(candidate_value)
+            except (ValueError, TypeError):
+                continue
+
+            if (
+                parsed.hour == hour
+                and parsed.minute == minute
+            ):
+                return candidate_value
+
+        return normalized
+
+
+    def _extract_clock_components(
+        self,
+        surface: str,
+    ) -> tuple[int, int] | None:
+        match = re.search(
+            r"\b(\d{1,2}):(\d{2})\b",
+            surface,
+        )
+
+        if match is None:
+            return None
+
+        return (
+            int(match.group(1)),
+            int(match.group(2)),
+        )

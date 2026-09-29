@@ -249,6 +249,11 @@ def test_temporal_loads_spanish_rules():
     assert "mil" in rules.bad_year_surfaces
     assert "julio" in rules.person_name_month_words
     assert "SEP" in rules.bad_exact_surfaces
+    assert rules.clock_time_only_patterns == (
+        r"^\d{1,2}:\d{2}$",
+        r"^a las \d{1,2}:\d{2}$",
+        r"^a la \d{1,2}:\d{2}$",
+    )
 
 
 def test_temporal_unknown_language_uses_empty_rules():
@@ -262,6 +267,7 @@ def test_temporal_unknown_language_uses_empty_rules():
     assert rules.bad_year_surfaces == set()
     assert rules.bad_prefixes_by_grain == {}
     assert rules.person_name_month_words == set()
+    assert rules.clock_time_only_patterns == ()
 
 
 def test_temporal_bad_surface_can_use_explicit_rules():
@@ -412,3 +418,105 @@ def test_temporal_ayer_uses_document_reference_date():
     assert ayer.metadata[
         "reference_datetime_source"
     ] == "source.publication_date"
+
+def test_temporal_clock_time_only_is_unresolved_time():
+    result = annotate("El apagón comenzó a las 12:33.")
+
+    annotation = assert_annotation(
+        result,
+        text="a las 12:33",
+        label="TIME",
+    )
+
+    assert annotation.metadata["normalized"] == "12:33"
+    assert annotation.metadata["date_resolved"] is False
+    assert annotation.metadata["grain"] == "minute"
+    assert annotation.metadata["duckling_dim"] == "time"
+
+
+def test_temporal_bare_clock_time_is_unresolved_time():
+    result = annotate("El apagón comenzó 12:33.")
+
+    annotation = assert_annotation(
+        result,
+        text="12:33",
+        label="TIME",
+    )
+
+    assert annotation.metadata["normalized"] == "12:33"
+    assert annotation.metadata["date_resolved"] is False
+
+
+def test_temporal_explicit_date_and_time_remains_date():
+    result = annotate(
+        "El apagón comenzó el 28 de abril a las 12:33."
+    )
+
+    annotation = assert_annotation(
+        result,
+        text="el 28 de abril a las 12:33",
+        label="DATE",
+    )
+
+    assert annotation.metadata["normalized"] != "12:33"
+    assert "date_resolved" not in annotation.metadata
+
+
+def test_temporal_relative_date_and_time_remains_date():
+    result = annotate(
+        "El apagón comenzó ayer a las 12:33."
+    )
+
+    annotation = assert_annotation(
+        result,
+        text="ayer a las 12:33",
+        label="DATE",
+    )
+
+    assert annotation.metadata["normalized"] != "12:33"
+    assert "date_resolved" not in annotation.metadata
+
+
+def test_temporal_weekday_and_time_remains_date():
+    result = annotate(
+        "El apagón comenzó el lunes a las 12:33."
+    )
+
+    annotation = assert_annotation(
+        result,
+        text="el lunes a las 12:33",
+        label="DATE",
+    )
+
+    assert annotation.metadata["normalized"] != "12:33"
+    assert "date_resolved" not in annotation.metadata
+
+def test_temporal_date_with_clock_selects_matching_candidate():
+    result = annotate(
+        "El apagón comenzó ayer a las 08:30."
+    )
+
+    annotation = assert_annotation(
+        result,
+        text="ayer a las 08:30",
+        label="DATE",
+    )
+
+    assert "T08:30:00" in annotation.metadata["normalized"]
+
+
+def test_temporal_date_with_noon_clock_selects_12_not_00():
+    result = annotate(
+        "El apagón comenzó ayer a las 12:33."
+    )
+
+    annotation = assert_annotation(
+        result,
+        text="ayer a las 12:33",
+        label="DATE",
+    )
+
+    normalized = annotation.metadata["normalized"]
+
+    assert "T12:33:00" in normalized
+    assert "T00:33:00" not in normalized

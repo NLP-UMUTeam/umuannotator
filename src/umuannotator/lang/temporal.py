@@ -15,6 +15,7 @@ class TemporalLanguageRules:
     bad_year_surfaces: set[str]
     bad_prefixes_by_grain: dict[str, tuple[str, ...]]
     person_name_month_words: set[str]
+    clock_time_only_patterns: tuple[str, ...]
 
 
 EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
@@ -26,6 +27,7 @@ EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
     bad_year_surfaces=set(),
     bad_prefixes_by_grain={},
     person_name_month_words=set(),
+    clock_time_only_patterns=(),
 )
 
 
@@ -54,6 +56,10 @@ def get_temporal_rules(language: str) -> TemporalLanguageRules:
         ),
         person_name_month_words=set(
             data.get("person_name_month_words", []),
+        ),
+        clock_time_only_patterns=tuple(
+            str(pattern)
+            for pattern in data.get("clock_time_only_patterns", [])
         ),
     )
 
