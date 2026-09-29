@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import date, datetime
+from typing import Any
+
 import pendulum
 
 from duckling import (
@@ -25,6 +28,7 @@ class DucklingAnnotator:
         timezone: str = "Europe/Madrid",
         layer: str = "duckling",
         source: str = "duckling",
+        reference_datetime_metadata_key: str | None = None,
     ):
         self.dimensions_names = dimensions
         self.language = language
@@ -32,12 +36,31 @@ class DucklingAnnotator:
         self.timezone = timezone
         self.layer = layer
         self.source = source
+        self.reference_datetime_metadata_key = (
+            reference_datetime_metadata_key
+        )
 
-        self.time_zones = load_time_zones("/usr/share/zoneinfo")
-        self.dimensions = parse_dimensions(dimensions)
+        self.time_zones = load_time_zones(
+            "/usr/share/zoneinfo"
+        )
+        self.dimensions = parse_dimensions(
+            dimensions
+        )
 
-    def annotate(self, document: Document) -> Document:
-        context = self._build_context()
+    def annotate(
+        self,
+        document: Document,
+    ) -> Document:
+        (
+            reference_datetime,
+            reference_source,
+        ) = self._resolve_reference_datetime(
+            document
+        )
+
+        context = self._build_context(
+            reference_datetime
+        )
 
         results = parse(
             document.text,
@@ -47,10 +70,24 @@ class DucklingAnnotator:
         )
 
         for result in results:
-            annotation = self.result_to_annotation(document, result)
+            annotation = self.result_to_annotation(
+                document,
+                result,
+            )
 
-            if annotation is not None:
-                document.add_annotation(annotation)
+            if annotation is None:
+                continue
+
+            if reference_source is not None:
+                annotation.metadata[
+                    "reference_datetime"
+                ] = reference_datetime.isoformat()
+
+                annotation.metadata[
+                    "reference_datetime_source"
+                ] = reference_source
+
+            document.add_annotation(annotation)
 
         return document
 
@@ -78,40 +115,202 @@ class DucklingAnnotator:
             subtype=result.get("dim"),
             metadata={
                 "dim": result.get("dim"),
-                "value": result.get("value", {}),
-                "body": result.get("body"),
+                "value": result.get(
+                    "value",
+                    {},
+                ),
+                "body": surface,
                 "locale": self.locale_code,
                 "timezone": self.timezone,
             },
         )
 
-    def _build_context(self) -> Context:
-        now = pendulum.now(self.timezone).replace(microsecond=0)
+    def _resolve_reference_datetime(
+        self,
+        document: Document,
+    ) -> tuple[pendulum.DateTime, str | None]:
+        if self.reference_datetime_metadata_key:
+            raw_value = self._get_metadata_value(
+                document.metadata,
+                self.reference_datetime_metadata_key,
+            )
 
+            if raw_value is not None:
+                reference_datetime = (
+                    self._parse_reference_datetime(
+                        raw_value
+                    )
+                )
+
+                return (
+                    reference_datetime,
+                    self.reference_datetime_metadata_key,
+                )
+
+        return (
+            pendulum.now(
+                self.timezone
+            ).replace(
+                microsecond=0
+            ),
+            None,
+        )
+
+    def _parse_reference_datetime(
+        self,
+        value: Any,
+    ) -> pendulum.DateTime:
+        if isinstance(
+            value,
+            pendulum.DateTime,
+        ):
+            return value.in_timezone(
+                self.timezone
+            )
+
+        if isinstance(
+            value,
+            datetime,
+        ):
+            if value.tzinfo is None:
+                return pendulum.datetime(
+                    value.year,
+                    value.month,
+                    value.day,
+                    value.hour,
+                    value.minute,
+                    value.second,
+                    value.microsecond,
+                    tz=self.timezone,
+                )
+
+            return pendulum.instance(
+                value
+            ).in_timezone(
+                self.timezone
+            )
+
+        if isinstance(
+            value,
+            date,
+        ):
+            return pendulum.datetime(
+                value.year,
+                value.month,
+                value.day,
+                tz=self.timezone,
+            )
+
+        if isinstance(
+            value,
+            str,
+        ):
+            stripped = value.strip()
+
+            if not stripped:
+                raise ValueError(
+                    "Reference datetime cannot be empty"
+                )
+
+            parsed = pendulum.parse(
+                stripped,
+                tz=self.timezone,
+            )
+
+            return parsed.in_timezone(
+                self.timezone
+            )
+
+        raise ValueError(
+            "Unsupported reference datetime value: "
+            f"{value!r}"
+        )
+
+    @staticmethod
+    def _get_metadata_value(
+        metadata: dict[str, Any],
+        path: str,
+    ) -> Any:
+        current: Any = metadata
+
+        for part in path.split("."):
+            if not isinstance(
+                current,
+                dict,
+            ):
+                return None
+
+            if part not in current:
+                return None
+
+            current = current[part]
+
+        return current
+
+    def _build_context(
+        self,
+        reference_datetime: pendulum.DateTime,
+    ) -> Context:
         ref_time = parse_ref_time(
             self.time_zones,
             self.timezone,
-            now.int_timestamp,
+            reference_datetime.int_timestamp,
         )
 
-        lang = parse_lang(self._duckling_language(self.language))
-        default_locale = default_locale_lang(lang)
-        locale = parse_locale(self.locale_code, default_locale)
+        lang = parse_lang(
+            self._duckling_language(
+                self.language
+            )
+        )
 
-        return Context(ref_time, locale)
+        default_locale = default_locale_lang(
+            lang
+        )
 
-    def _label_for(self, result: dict) -> str:
-        dim = result.get("dim", "duckling")
-        return dim.upper().replace("-", "_")
+        locale = parse_locale(
+            self.locale_code,
+            default_locale,
+        )
 
-    def _locale_from_language(self, language: str) -> str:
+        return Context(
+            ref_time,
+            locale,
+        )
+
+    def _label_for(
+        self,
+        result: dict,
+    ) -> str:
+        dim = result.get(
+            "dim",
+            "duckling",
+        )
+
+        return dim.upper().replace(
+            "-",
+            "_",
+        )
+
+    def _locale_from_language(
+        self,
+        language: str,
+    ) -> str:
         return {
             "es": "ES_ES",
             "en": "EN_US",
-        }.get(language, language.upper())
+        }.get(
+            language,
+            language.upper(),
+        )
 
-    def _duckling_language(self, language: str) -> str:
+    def _duckling_language(
+        self,
+        language: str,
+    ) -> str:
         return {
             "es": "ES",
             "en": "EN",
-        }.get(language, language.upper())
+        }.get(
+            language,
+            language.upper(),
+        )

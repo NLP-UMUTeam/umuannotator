@@ -12,11 +12,8 @@ from umuannotator.config.loader import load_config
 from umuannotator.document.model import Document
 from umuannotator.pipeline.runner import build_pipeline_from_config
 from umuannotator.renderers.tables import document_annotations_table
-from umuannotator.resolution.resolver import (
-    apply_resolver_if_enabled,
-    resolver_config_from_dict,
-)
 from umuannotator.serialization.documents import serialize_document
+
 
 app = typer.Typer()
 console = Console()
@@ -45,7 +42,6 @@ def shell(
     """Start an interactive shell to annotate one text at a time."""
     config = load_config(config_path)
     pipeline, pipeline_context = build_pipeline_from_config(config)
-    resolver_config = resolver_config_from_dict(config.get("resolver"))
 
     current_output_format = output_format
 
@@ -91,7 +87,7 @@ def shell(
         document = _annotate_text(
             text,
             pipeline=pipeline,
-            resolver_config=resolver_config,
+            pipeline_context=pipeline_context,
         )
 
         _render_document(
@@ -116,31 +112,59 @@ def _print_banner(
 
     preprocessors = pipeline_context.get("preprocessors", [])
     annotators = pipeline_context.get("annotators", [])
+    annotation_enrichers = pipeline_context.get(
+        "annotation_enrichers",
+        [],
+    )
+    relation_extractors = pipeline_context.get(
+        "relation_extractors",
+        [],
+    )
+    relation_enrichers = pipeline_context.get(
+        "relation_enrichers",
+        [],
+    )
 
-    if preprocessors:
-        console.print(
-            "[dim]Preprocessors:[/dim] "
-            + ", ".join(type(item).__name__ for item in preprocessors)
-        )
-    else:
-        console.print("[dim]Preprocessors: none[/dim]")
-
-    if annotators:
-        console.print(
-            "[dim]Annotators:[/dim] "
-            + ", ".join(type(item).__name__ for item in annotators)
-        )
-    else:
-        console.print("[dim]Annotators: none[/dim]")
+    _print_components("Preprocessors", preprocessors)
+    _print_components("Annotators", annotators)
+    _print_components(
+        "Annotation enrichers",
+        annotation_enrichers,
+    )
+    _print_components(
+        "Relation extractors",
+        relation_extractors,
+    )
+    _print_components(
+        "Relation enrichers",
+        relation_enrichers,
+    )
 
     console.print()
+
+
+def _print_components(
+    label: str,
+    components: list,
+) -> None:
+    if components:
+        console.print(
+            f"[dim]{label}:[/dim] "
+            + ", ".join(
+                type(item).__name__
+                for item in components
+            )
+        )
+        return
+
+    console.print(f"[dim]{label}: none[/dim]")
 
 
 def _annotate_text(
     text: str,
     *,
     pipeline,
-    resolver_config,
+    pipeline_context: dict,
 ) -> Document:
     document = Document(
         text=text,
@@ -149,10 +173,42 @@ def _annotate_text(
 
     document = pipeline.run_document(document)
 
-    document.annotations = apply_resolver_if_enabled(
-        document.annotations,
-        config=resolver_config,
+    annotation_enrichers = pipeline_context.get(
+        "annotation_enrichers",
+        [],
     )
+    annotation_enrichment_pipeline = pipeline_context[
+        "annotation_enrichment_pipeline"
+    ]
+
+    if annotation_enrichers:
+        document = annotation_enrichment_pipeline.run_document(
+            document
+        )
+
+    relation_extractors = pipeline_context.get(
+        "relation_extractors",
+        [],
+    )
+    relation_pipeline = pipeline_context[
+        "relation_pipeline"
+    ]
+
+    if relation_extractors:
+        document = relation_pipeline.run_document(document)
+
+    relation_enrichers = pipeline_context.get(
+        "relation_enrichers",
+        [],
+    )
+    relation_enrichment_pipeline = pipeline_context[
+        "relation_enrichment_pipeline"
+    ]
+
+    if relation_enrichers:
+        document = relation_enrichment_pipeline.run_document(
+            document
+        )
 
     return document
 
@@ -176,7 +232,9 @@ def _render_document(
         )
         return
 
-    raise ValueError(f"Unsupported shell output format: {output_format}")
+    raise ValueError(
+        f"Unsupported shell output format: {output_format}"
+    )
 
 
 def _render_document_table(

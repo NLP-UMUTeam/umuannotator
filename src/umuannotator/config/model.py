@@ -8,12 +8,6 @@ class OntologyConfig:
 
 
 @dataclass
-class ResolverConfig:
-    enabled: bool = True
-    strategy: str = "longest_match"
-
-
-@dataclass
 class ExtendedTfidfConfig:
     enabled: bool = False
     layer: str = "ontology"

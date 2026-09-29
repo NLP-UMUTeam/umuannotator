@@ -29,3 +29,33 @@ def test_build_relation_enrichers_unknown_name():
             ],
             language="es",
         )
+
+from umuannotator.relation_enrichers import (
+    AnnotationOverlapRelationEnricher,
+)
+
+
+def test_build_annotation_overlap_enricher():
+    enrichers = build_relation_enrichers(
+        [
+            {
+                "name": "annotation-overlap",
+                "match": [
+                    "exact",
+                    "contained",
+                ],
+            }
+        ],
+        language="es",
+    )
+
+    assert len(enrichers) == 1
+    assert isinstance(
+        enrichers[0],
+        AnnotationOverlapRelationEnricher,
+    )
+
+    assert enrichers[0].match == [
+        "exact",
+        "contained",
+    ]

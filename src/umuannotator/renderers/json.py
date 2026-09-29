@@ -33,6 +33,7 @@ def relation_argument_to_dict(argument):
         "end": argument.end,
         "text": argument.text,
         "annotation_id": argument.annotation_id,
+        "annotations": argument.annotations,
         "metadata": argument.metadata,
     }
 

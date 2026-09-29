@@ -300,3 +300,115 @@ def test_temporal_filters_bad_exact_surface_sep():
 
 def test_temporal_does_not_filter_lowercase_sep_as_exact_surface():
     assert not is_bad_temporal_surface("sep")
+
+
+def test_temporal_uses_reference_datetime_from_metadata():
+    document = Document(
+        text="Ayer ocurrió el incidente.",
+        metadata={
+            "source": {
+                "publication_date": (
+                    "2025-04-29T10:00:00+02:00"
+                ),
+            }
+        },
+    )
+
+    annotator = TemporalAnnotator(
+        language="es",
+        reference_datetime_metadata_key=(
+            "source.publication_date"
+        ),
+    )
+
+    reference_datetime, source = (
+        annotator._resolve_reference_datetime(
+            document
+        )
+    )
+
+    assert (
+        reference_datetime.year,
+        reference_datetime.month,
+        reference_datetime.day,
+    ) == (
+        2025,
+        4,
+        29,
+    )
+
+    assert source == (
+        "source.publication_date"
+    )
+
+
+def test_temporal_reference_metadata_path():
+    document = Document(
+        text="Texto.",
+        metadata={
+            "source": {
+                "publication_date": (
+                    "2024-06-15"
+                ),
+            }
+        },
+    )
+
+    annotator = TemporalAnnotator(
+        reference_datetime_metadata_key=(
+            "source.publication_date"
+        ),
+    )
+
+    value = annotator._get_metadata_value(
+        document.metadata,
+        "source.publication_date",
+    )
+
+    assert value == "2024-06-15"
+
+
+def test_temporal_ayer_uses_document_reference_date():
+    document = Document(
+        text="El Gobierno anunció ayer nuevas medidas.",
+        metadata={
+            "source": {
+                "publication_date": (
+                    "2025-04-29T10:00:00+02:00"
+                ),
+            }
+        },
+    )
+
+    annotator = TemporalAnnotator(
+        language="es",
+        reference_datetime_metadata_key=(
+            "source.publication_date"
+        ),
+    )
+
+    result = annotator.annotate(
+        document
+    )
+
+    ayer = next(
+        annotation
+        for annotation in result.annotations
+        if annotation.text.lower() == "ayer"
+    )
+
+    assert ayer.metadata[
+        "normalized"
+    ].startswith(
+        "2025-04-28"
+    )
+
+    assert ayer.metadata[
+        "reference_datetime"
+    ].startswith(
+        "2025-04-29T10:00:00"
+    )
+
+    assert ayer.metadata[
+        "reference_datetime_source"
+    ] == "source.publication_date"

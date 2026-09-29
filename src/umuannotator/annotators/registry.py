@@ -1,5 +1,7 @@
 from typing import Any
+from pathlib import Path
 
+import yaml
 
 class AnnotatorFactory:
     def create(
@@ -81,6 +83,9 @@ class AnnotatorFactory:
                 locale=locale,
                 timezone=timezone,
                 layer=layer,
+                reference_datetime_metadata_key=kwargs.get(
+                    "reference_datetime_metadata_key"
+                ),
             )
 
         if name == "quantity":
@@ -99,8 +104,71 @@ class AnnotatorFactory:
             return TemporalAnnotator(
                 language=language,
                 locale=kwargs.get("locale"),
-                timezone=kwargs.get("timezone", "Europe/Madrid"),
-                layer=kwargs.get("layer", "temporal"),
+                timezone=kwargs.get(
+                    "timezone",
+                    "Europe/Madrid",
+                ),
+                layer=kwargs.get(
+                    "layer",
+                    "temporal",
+                ),
+                reference_datetime_metadata_key=kwargs.get(
+                    "reference_datetime_metadata_key"
+                ),
+            )
+
+        if name == "lexical-semantics":
+            from umuannotator.annotators.lexical_semantics import (
+                LexicalSemanticAnnotator,
+            )
+
+            source = kwargs.get("source")
+
+            if source is None:
+                raise ValueError(
+                    "lexical-semantics annotator requires source"
+                )
+
+            source_path = Path(source)
+
+            with source_path.open(
+                encoding="utf-8",
+            ) as file:
+                resource = yaml.safe_load(file) or {}
+
+            lexicon = resource.get("lexicon")
+            semantic_classes = resource.get(
+                "semantic_classes"
+            )
+
+            if not lexicon:
+                raise ValueError(
+                    "lexical-semantics resource requires lexicon"
+                )
+
+            if not semantic_classes:
+                raise ValueError(
+                    "lexical-semantics resource requires "
+                    "semantic_classes"
+                )
+
+            resource_language = resource.get(
+                "language",
+                language,
+            )
+
+            return LexicalSemanticAnnotator(
+                language=resource_language,
+                lexicon=lexicon,
+                semantic_classes=semantic_classes,
+                layer=kwargs.get(
+                    "layer",
+                    "lexical_semantics",
+                ),
+                max_hypernym_depth=kwargs.get(
+                    "max_hypernym_depth",
+                    10,
+                ),
             )
 
         raise ValueError(f"Unknown annotator: {name}")

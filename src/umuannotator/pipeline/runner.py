@@ -7,24 +7,18 @@ from umuannotator.metrics import ExtendedTfidfScorer, TfidfScorer
 from umuannotator.ontology.graph import build_graph
 from umuannotator.ontology.loader import load_ontology
 from umuannotator.pipeline import (
+    AnnotationEnrichmentPipeline,
     AnnotationPipeline,
     RelationEnrichmentPipeline,
     RelationExtractionPipeline,
 )
 from umuannotator.preprocessors.registry import build_preprocessors
-from umuannotator.relation_enrichers.registry import (
-    build_relation_enrichers,
-)
-from umuannotator.relation_extractors.registry import (
-    build_relation_extractors,
-)
+from umuannotator.relation_enrichers.registry import build_relation_enrichers
+from umuannotator.relation_extractors.registry import build_relation_extractors
 from umuannotator.renderers.colors import collect_layer_colors
 from umuannotator.renderers.json import corpus_to_dict
-from umuannotator.resolution.resolver import (
-    apply_resolver_if_enabled,
-    resolver_config_from_dict,
-)
 from umuannotator.utils.profiling import timed
+from umuannotator.annotation_enrichers.registry import build_annotation_enrichers
 
 
 def run_from_config(
@@ -46,6 +40,13 @@ def run_from_config(
         pipeline, pipeline_context = build_pipeline_from_config(config)
 
     preprocessors = pipeline_context["preprocessors"]
+
+    annotation_enrichers = pipeline_context[
+        "annotation_enrichers"
+    ]
+    annotation_enrichment_pipeline = pipeline_context[
+        "annotation_enrichment_pipeline"
+    ]
 
     ontology_path = pipeline_context["ontology_path"]
 
@@ -78,17 +79,12 @@ def run_from_config(
             show_progress=show_progress,
         )
 
-    resolver_config = resolver_config_from_dict(
-        config.get("resolver"),
-    )
-
-    if resolver_config.enabled:
-        with timed("resolver", timings):
-            for document in corpus.documents:
-                document.annotations = apply_resolver_if_enabled(
-                    document.annotations,
-                    config=resolver_config,
-                )
+    if annotation_enrichers:
+        with timed("annotation_enrichment", timings):
+            corpus = annotation_enrichment_pipeline.run_corpus(
+                corpus,
+                show_progress=show_progress,
+            )
 
     if relation_extractors:
         with timed("relation_extraction", timings):
@@ -133,6 +129,13 @@ def run_from_config(
         "relation_enricher_timings": (
             relation_enrichment_pipeline.timings
         ),
+        "annotation_enricher_timings": (
+            annotation_enrichment_pipeline.timings
+        ),
+        "annotation_enrichers": [
+            type(enricher).__name__
+            for enricher in annotation_enrichers
+        ],
         "documents": len(corpus.documents),
         "annotations": sum(
             len(document.annotations)
@@ -183,6 +186,16 @@ def build_pipeline_from_config(
         preprocessors=preprocessors,
     )
 
+    annotation_enrichers = build_annotation_enrichers(
+        config.get("annotation_enrichers", []),
+    )
+
+    annotation_enrichment_pipeline = (
+        AnnotationEnrichmentPipeline(
+            enrichers=annotation_enrichers,
+        )
+    )
+
     relation_extractors = build_relation_extractors(
         config.get("relation_extractors", []),
         language=language,
@@ -209,6 +222,10 @@ def build_pipeline_from_config(
         "relation_extractors": relation_extractors,
         "relation_pipeline": relation_pipeline,
         "relation_enrichers": relation_enrichers,
+        "annotation_enrichers": annotation_enrichers,
+        "annotation_enrichment_pipeline": (
+            annotation_enrichment_pipeline
+        ),        
         "relation_enrichment_pipeline": (
             relation_enrichment_pipeline
         ),

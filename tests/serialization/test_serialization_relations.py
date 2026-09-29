@@ -111,3 +111,81 @@ def test_serialize_relation_compact():
         ],
         "source": "stanza-dependency",
     }
+
+from umuannotator.document import (
+    Annotation,
+    Document,
+    Relation,
+    RelationArgument,
+    RelationPredicate,
+)
+from umuannotator.renderers.json import document_to_dict
+
+
+def test_relation_argument_serializes_annotations():
+    argument = RelationArgument(
+        role="subject",
+        start=0,
+        end=6,
+        text="España",
+        annotations=[
+            {
+                "start": 0,
+                "end": 6,
+                "text": "España",
+                "label": "COUNTRY",
+                "layer": "entity",
+                "source": "test",
+                "type": "entity",
+                "subtype": "country",
+                "score": None,
+                "metadata": {
+                    "iso2": "ES",
+                },
+                "match": "exact",
+            }
+        ],
+    )
+
+    relation = Relation(
+        type="predicate_argument",
+        predicate=RelationPredicate(
+            start=7,
+            end=13,
+            text="perdió",
+            lemma="perder",
+        ),
+        arguments=[
+            argument,
+        ],
+        source="test",
+    )
+
+    document = Document(
+        text="España perdió energía.",
+        relations=[
+            relation,
+        ],
+    )
+
+    data = document_to_dict(document)
+
+    serialized_argument = (
+        data["relations"][0]
+        ["arguments"][0]
+    )
+
+    assert "annotations" in serialized_argument
+    assert len(
+        serialized_argument["annotations"]
+    ) == 1
+
+    assert (
+        serialized_argument["annotations"][0]["label"]
+        == "COUNTRY"
+    )
+
+    assert (
+        serialized_argument["annotations"][0]["match"]
+        == "exact"
+    )

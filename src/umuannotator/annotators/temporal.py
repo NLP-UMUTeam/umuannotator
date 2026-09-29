@@ -78,16 +78,26 @@ class TemporalAnnotator(DucklingAnnotator):
         locale: str | None = None,
         timezone: str = "Europe/Madrid",
         layer: str = "temporal",
+        reference_datetime_metadata_key: str | None = None,
     ):
-        self.rules = get_temporal_rules(language)
+        self.rules = get_temporal_rules(
+            language
+        )
 
         super().__init__(
-            dimensions=["time", "time-grain", "duration"],
+            dimensions=[
+                "time",
+                "time-grain",
+                "duration",
+            ],
             language=language,
             locale=locale,
             timezone=timezone,
             layer=layer,
             source="duckling-temporal",
+            reference_datetime_metadata_key=(
+                reference_datetime_metadata_key
+            ),
         )
 
     def result_to_annotation(
@@ -120,7 +130,7 @@ class TemporalAnnotator(DucklingAnnotator):
         annotation.metadata["grain"] = grain
         annotation.metadata["raw_value"] = result.get("value", {})
         annotation.metadata["duckling_dim"] = result.get("dim")
-        annotation.metadata["duckling_body"] = result.get("body")
+        annotation.metadata["duckling_body"] = annotation.text
 
         return annotation
 

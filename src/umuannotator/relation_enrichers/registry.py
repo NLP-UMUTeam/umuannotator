@@ -11,6 +11,21 @@ class RelationEnricherFactory:
         language: str = "es",
         **kwargs: Any,
     ):
+        if name == "annotation-overlap":
+            from umuannotator.relation_enrichers.annotation_overlap import (
+                AnnotationOverlapRelationEnricher,
+            )
+
+            return AnnotationOverlapRelationEnricher(
+                match=kwargs.get(
+                    "match",
+                    [
+                        "exact",
+                        "contained",
+                    ],
+                ),
+            )
+
         raise ValueError(
             f"Unknown relation enricher: {name}"
         )

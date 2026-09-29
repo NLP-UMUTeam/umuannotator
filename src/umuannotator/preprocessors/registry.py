@@ -12,18 +12,40 @@ class PreprocessorFactory:
         **kwargs: Any,
     ):
         if name == "stanza":
-            from umuannotator.preprocessors.stanza import StanzaPreprocessor
+            from umuannotator.preprocessors.stanza import (
+                StanzaPreprocessor,
+            )
 
-        return StanzaPreprocessor(
-            language=kwargs.get("language", language),
-            processors=kwargs.get("processors", "tokenize,pos,lemma,ner"),
-            cache_dir=kwargs.get("cache_dir", ".cache/stanza"),
-            use_cache=kwargs.get("use_cache", True),
-            metadata_key=kwargs.get("metadata_key", "stanza"),
-            tokenize_no_ssplit=kwargs.get("tokenize_no_ssplit", True),
+            return StanzaPreprocessor(
+                language=kwargs.get(
+                    "language",
+                    language,
+                ),
+                processors=kwargs.get(
+                    "processors",
+                    "tokenize,pos,lemma,ner",
+                ),
+                cache_dir=kwargs.get(
+                    "cache_dir",
+                    ".cache/stanza",
+                ),
+                use_cache=kwargs.get(
+                    "use_cache",
+                    True,
+                ),
+                metadata_key=kwargs.get(
+                    "metadata_key",
+                    "stanza",
+                ),
+                tokenize_no_ssplit=kwargs.get(
+                    "tokenize_no_ssplit",
+                    True,
+                ),
+            )
+
+        raise ValueError(
+            f"Unknown preprocessor: {name}"
         )
-
-        raise ValueError(f"Unknown preprocessor: {name}")
 
 
 def build_preprocessors(

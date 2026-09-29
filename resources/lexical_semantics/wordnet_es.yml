@@ -1,0 +1,19 @@
+language: es
+lexicon: omw-es:2.0
+
+semantic_classes:
+  HUMAN:
+    roots:
+      - omw-es-00007846-n
+
+  ORGANIZATION:
+    roots:
+      - omw-es-08008335-n
+
+  PROCESS:
+    roots:
+      - omw-es-00407535-n
+
+  TIME:
+    roots:
+      - omw-es-15113229-n

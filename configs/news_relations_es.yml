@@ -1,6 +1,8 @@
-resolver:
-  enabled: true
-  strategy: longest_non_overlapping
+annotation_enrichers:
+  - name: overlap
+    strategy: longest_non_overlapping
+
+  - name: age
 
 preprocessors:
   - name: stanza
@@ -17,6 +19,12 @@ relation_extractors:
 
   - name: reported-speech
     source: resources/relation_extractors/reported_speech_es.yml
+
+relation_enrichers:
+  - name: annotation-overlap
+    match:
+      - exact
+      - contained
 
 ontology:
   path: resources/news_es.owl
@@ -61,7 +69,12 @@ annotators:
   - name: temporal
     layer: temporal
     color: "#d6e4ff"
+    reference_datetime_metadata_key: source.publication_date
 
   - name: quantity
     layer: cantidades
     color: "#fff2cc"
+
+  - name: lexical-semantics
+    source: resources/lexical_semantics/wordnet_es.yml
+    max_hypernym_depth: 10
