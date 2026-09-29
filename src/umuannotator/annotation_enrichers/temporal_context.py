@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any
 
 import pendulum
+import re
 
 from umuannotator.document.model import Annotation, Document
 
@@ -57,6 +58,18 @@ class TemporalContextEnricher:
             )
 
             self._refine_weekday(
+                document,
+                annotation,
+                reference_datetime,
+            )
+
+            self._refine_month_without_year(
+                document,
+                annotation,
+                reference_datetime,
+            )
+
+            self._refine_relative_time_as_duration(
                 document,
                 annotation,
                 reference_datetime,
@@ -861,3 +874,203 @@ class TemporalContextEnricher:
             return None
 
         return hour, minute, second
+
+    def _refine_month_without_year(
+        self,
+        document: Document,
+        annotation: Annotation,
+        reference_datetime: pendulum.DateTime,
+    ) -> None:
+        if annotation.label != "DATE":
+            return
+
+        if annotation.metadata.get("grain") != "month":
+            return
+
+        if self._has_explicit_year(annotation):
+            return        
+
+        normalized = annotation.metadata.get("normalized")
+
+        if not isinstance(normalized, str):
+            return
+
+        resolved = self._parse_datetime(normalized)
+
+        if resolved is None:
+            return
+
+        # This rule only corrects Duckling resolutions that point
+        # to a future year.
+        if resolved.year <= reference_datetime.year:
+            return
+
+        # A month-only expression can only be moved to the reference
+        # year if that month has already started by publication time.
+        if resolved.month > reference_datetime.month:
+            return
+
+        predicate_context = self._get_temporal_predicate_context(
+            document,
+            annotation,
+        )
+
+        if predicate_context is None:
+            return
+
+        temporal_orientation = self._classify_temporal_orientation(
+            predicate_context,
+        )
+
+        if temporal_orientation != "PAST":
+            return
+
+        candidate = resolved.replace(
+            year=reference_datetime.year,
+        )
+
+        # Do not turn the expression into a future date within the
+        # reference year.
+        if candidate > reference_datetime:
+            return
+
+        previous_normalized = normalized
+
+        annotation.metadata["normalized"] = (
+            candidate.to_iso8601_string()
+        )
+
+        annotation.metadata["context_resolution"] = {
+            "rule": "month_by_predicate_orientation",
+            "previous_normalized": previous_normalized,
+            "reference_datetime": (
+                reference_datetime.to_iso8601_string()
+            ),
+            "temporal_orientation": temporal_orientation,
+            "distance_months": (
+                (reference_datetime.year - candidate.year) * 12
+                + reference_datetime.month
+                - candidate.month
+            ),
+            "predicate_context": predicate_context,
+        }
+
+    @staticmethod
+    def _has_explicit_year(annotation: Annotation) -> bool:
+        return bool(
+            re.search(
+                r"(?<!\d)(?:1[0-9]{3}|2[0-9]{3})(?!\d)",
+                annotation.text,
+            )
+        )
+
+    def _refine_relative_time_as_duration(
+        self,
+        document: Document,
+        annotation: Annotation,
+        reference_datetime: pendulum.DateTime,
+    ) -> None:
+        if annotation.label != "DATE":
+            return
+
+        if annotation.metadata.get("duckling_dim") != "time":
+            return
+
+        body = annotation.metadata.get("duckling_body")
+        if not isinstance(body, str):
+            return
+
+        if not body.lower().startswith("en "):
+            return
+
+        if not self._is_quantified_temporal_oblique(
+            document,
+            annotation,
+        ):
+            return
+
+        predicate_context = self._get_temporal_predicate_context(
+            document,
+            annotation,
+        )
+        if predicate_context is None:
+            return
+
+        temporal_orientation = self._classify_temporal_orientation(
+            predicate_context,
+        )
+        if temporal_orientation != "PAST":
+            return
+
+        previous_normalized = annotation.metadata.get("normalized")
+
+        annotation.label = "DURATION"
+        annotation.metadata["resolved_from"] = "DATE"
+        annotation.metadata["refined_by"] = "temporal-context"
+        annotation.metadata["context_resolution"] = {
+            "rule": "relative_time_as_elapsed_duration",
+            "previous_normalized": previous_normalized,
+            "reference_datetime": reference_datetime.to_iso8601_string(),
+            "temporal_orientation": temporal_orientation,
+            "predicate_context": predicate_context,
+        }
+
+    def _is_quantified_temporal_oblique(
+        self,
+        document: Document,
+        annotation: Annotation,
+    ) -> bool:
+        stanza = document.metadata.get("stanza")
+        if not isinstance(stanza, dict):
+            return False
+
+        sentences = stanza.get("sentences")
+        if not isinstance(sentences, list):
+            return False
+
+        for sentence in sentences:
+            words = sentence.get("words")
+            if not isinstance(words, list):
+                continue
+
+            words_by_id = {
+                word.get("id"): word
+                for word in words
+                if isinstance(word, dict)
+                and isinstance(word.get("id"), int)
+            }
+
+            for word in words:
+                if not isinstance(word, dict):
+                    continue
+
+                start = word.get("start")
+                end = word.get("end")
+
+                if not isinstance(start, int) or not isinstance(end, int):
+                    continue
+
+                if start < annotation.start or end > annotation.end:
+                    continue
+
+                if word.get("upos") != "NOUN":
+                    continue
+
+                if word.get("deprel") != "obl":
+                    continue
+
+                word_id = word.get("id")
+                if not isinstance(word_id, int):
+                    continue
+
+                has_numeric_modifier = any(
+                    child.get("head") == word_id
+                    and child.get("deprel") == "nummod"
+                    and child.get("upos") == "NUM"
+                    for child in words_by_id.values()
+                )
+
+                if has_numeric_modifier:
+                    return True
+
+        return False
