@@ -4,6 +4,11 @@ annotation_enrichers:
 
   - name: age
 
+  - name: temporal-context
+    language: es
+    reference_datetime_metadata_key: source.publication_date
+    max_past_days: 90
+
 preprocessors:
   - name: stanza
     processors: tokenize,mwt,pos,lemma,depparse,ner

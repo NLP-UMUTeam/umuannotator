@@ -1,0 +1,683 @@
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any
+
+import pendulum
+
+from umuannotator.document.model import Annotation, Document
+
+from umuannotator.lang.temporal import (
+    TemporalLanguageRules,
+    get_temporal_rules,
+)
+
+
+class TemporalContextEnricher:
+    """Refine temporal annotations using document context.
+
+    Contextual corrections are intentionally conservative. An annotation
+    is modified only when the available evidence supports a substantially
+    safer interpretation than the original one.
+    """
+
+    def __init__(
+        self,
+        language: str = "es",
+        reference_datetime_metadata_key: str = "source.publication_date",
+        max_past_days: int = 90,
+    ) -> None:
+        self.language = language
+        self.rules: TemporalLanguageRules = get_temporal_rules(language)
+        self.reference_datetime_metadata_key = (
+            reference_datetime_metadata_key
+        )
+        self.max_past_days = max_past_days
+
+    def enrich(self, document: Document) -> Document:
+        reference_datetime = self._resolve_reference_datetime(document)
+
+        if reference_datetime is None:
+            return document
+
+        for annotation in document.annotations:
+            if annotation.layer != "temporal":
+                continue
+
+            if annotation.label != "DATE":
+                continue
+
+            self._refine_day_month_without_year(
+                document,
+                annotation,
+                reference_datetime,
+            )
+
+            self._refine_weekday(
+                document,
+                annotation,
+                reference_datetime,
+            )
+
+        return document
+
+    def _refine_day_month_without_year(
+        self,
+        document: Document,
+        annotation: Annotation,
+        reference_datetime: pendulum.DateTime,
+    ) -> None:
+        components = self._extract_day_month_without_year(annotation)
+
+        if components is None:
+            return
+
+        day, month = components
+
+        normalized = annotation.metadata.get("normalized")
+        if not isinstance(normalized, str):
+            return
+
+        try:
+            resolved = pendulum.parse(normalized)
+        except (ValueError, TypeError):
+            return
+
+        # This rule only considers future Duckling resolutions that may
+        # actually refer to a recent past date.
+        if resolved <= reference_datetime:
+            return
+
+        try:
+            candidate = reference_datetime.replace(
+                month=month,
+                day=day,
+            )
+        except ValueError:
+            return
+
+        if candidate > reference_datetime:
+            return
+
+        distance_days = (
+            reference_datetime.date() - candidate.date()
+        ).days
+
+        if distance_days > self.max_past_days:
+            return
+
+        predicate_context = self._get_temporal_predicate_context(
+            document,
+            annotation,
+        )
+
+        temporal_orientation = self._classify_temporal_orientation(
+            predicate_context,
+        )
+
+        # A contextual correction that contradicts Duckling is only
+        # applied when the local predicate context provides explicit
+        # evidence that the temporal expression belongs to the past.
+        if temporal_orientation != "PAST":
+            return
+
+        previous_normalized = normalized
+
+        annotation.metadata["normalized"] = (
+            self._preserve_time_and_timezone(
+                resolved,
+                candidate,
+            )
+        )
+
+        annotation.metadata["context_resolution"] = {
+            "rule": "day_month_recent_past",
+            "previous_normalized": previous_normalized,
+            "reference_datetime": (
+                reference_datetime.to_iso8601_string()
+            ),
+            "distance_days": distance_days,
+            "temporal_orientation": temporal_orientation,
+            "predicate_context": predicate_context,
+        }
+
+    def _get_temporal_predicate_context(
+        self,
+        document: Document,
+        annotation: Annotation,
+    ) -> dict[str, Any] | None:
+        stanza = document.metadata.get("stanza")
+
+        if not isinstance(stanza, dict):
+            return None
+
+        sentences = stanza.get("sentences")
+
+        if not isinstance(sentences, list):
+            return None
+
+        for sentence in sentences:
+            words = sentence.get("words")
+
+            if not isinstance(words, list):
+                continue
+
+            annotation_words = [
+                word
+                for word in words
+                if self._spans_overlap(
+                    annotation.start,
+                    annotation.end,
+                    word.get("start"),
+                    word.get("end"),
+                )
+            ]
+
+            if not annotation_words:
+                continue
+
+            words_by_id = {
+                word.get("id"): word
+                for word in words
+                if isinstance(word.get("id"), int)
+            }
+
+            contexts: list[
+                tuple[int, dict[str, Any]]
+            ] = []
+
+            for word in annotation_words:
+                result = self._walk_to_local_predicate(
+                    word,
+                    words_by_id,
+                )
+
+                if result is not None:
+                    contexts.append(result)
+
+            if not contexts:
+                continue
+
+            contexts.sort(key=lambda item: item[0])
+
+            distance, predicate_word = contexts[0]
+
+            auxiliaries = self._get_auxiliaries(
+                predicate_word,
+                words,
+            )
+
+            return {
+                "sentence_id": sentence.get("id"),
+                "distance": distance,
+                "predicate": self._word_info(predicate_word),
+                "auxiliaries": [
+                    self._word_info(auxiliary)
+                    for auxiliary in auxiliaries
+                ],
+            }
+
+        return None
+
+    def _walk_to_local_predicate(
+        self,
+        word: dict[str, Any],
+        words_by_id: dict[int, dict[str, Any]],
+    ) -> tuple[int, dict[str, Any]] | None:
+        current = word
+        visited: set[int] = set()
+        distance = 0
+
+        while True:
+            word_id = current.get("id")
+
+            if not isinstance(word_id, int):
+                return None
+
+            if word_id in visited:
+                return None
+
+            visited.add(word_id)
+
+            if self._is_predicative_word(current):
+                return distance, current
+
+            head_id = current.get("head")
+
+            if not isinstance(head_id, int) or head_id == 0:
+                return None
+
+            head = words_by_id.get(head_id)
+
+            if head is None:
+                return None
+
+            current = head
+            distance += 1
+
+    def _is_predicative_word(
+        self,
+        word: dict[str, Any],
+    ) -> bool:
+        upos = word.get("upos")
+
+        if upos in {"VERB", "AUX"}:
+            return True
+
+        # Participial predicates may be tagged as ADJ by Stanza.
+        # They form a local predicative boundary and prevent temporal
+        # evidence from leaking in from a higher clause.
+        if upos == "ADJ":
+            return (
+                self._extract_feature(
+                    word.get("feats"),
+                    "VerbForm",
+                )
+                == "Part"
+            )
+
+        return False
+
+    @staticmethod
+    def _get_auxiliaries(
+        predicate: dict[str, Any],
+        words: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        predicate_id = predicate.get("id")
+
+        if not isinstance(predicate_id, int):
+            return []
+
+        auxiliaries = [
+            word
+            for word in words
+            if word.get("head") == predicate_id
+            and isinstance(word.get("deprel"), str)
+            and word["deprel"].startswith("aux")
+        ]
+
+        auxiliaries.sort(
+            key=lambda word: (
+                word.get("start")
+                if isinstance(word.get("start"), int)
+                else 0
+            )
+        )
+
+        return auxiliaries
+
+    def _classify_temporal_orientation(
+        self,
+        context: dict[str, Any] | None,
+    ) -> str:
+        if context is None:
+            return "UNKNOWN"
+
+        predicate = context.get("predicate")
+
+        if not isinstance(predicate, dict):
+            return "UNKNOWN"
+
+        predicate_orientation = self._word_temporal_orientation(
+            predicate,
+        )
+
+        if predicate_orientation in {"PAST", "FUTURE"}:
+            return predicate_orientation
+
+        auxiliaries = context.get("auxiliaries", [])
+
+        if not isinstance(auxiliaries, list):
+            return "UNKNOWN"
+
+        orientations = {
+            self._word_temporal_orientation(auxiliary)
+            for auxiliary in auxiliaries
+        }
+
+        orientations.discard("UNKNOWN")
+
+        # Only accept auxiliary evidence when it is unambiguous.
+        if orientations == {"PAST"}:
+            return "PAST"
+
+        if orientations == {"FUTURE"}:
+            return "FUTURE"
+
+        return "UNKNOWN"
+
+    def _word_temporal_orientation(
+        self,
+        word: dict[str, Any],
+    ) -> str:
+        feats = word.get("feats")
+
+        tense = self._extract_feature(
+            feats,
+            "Tense",
+        )
+
+        verb_form = self._extract_feature(
+            feats,
+            "VerbForm",
+        )
+
+        # Future morphology provides explicit future evidence.
+        if tense == "Fut":
+            return "FUTURE"
+
+        # Past and imperfect morphology provide explicit past evidence.
+        #
+        # Stanza uses Tense=Imp for forms such as "había".
+        if tense in {"Past", "Imp"}:
+            return "PAST"
+
+        # Present, infinitive and other underspecified forms are not
+        # interpreted as temporal orientation.
+        if tense == "Pres":
+            return "UNKNOWN"
+
+        if verb_form in {"Inf", "Ger"}:
+            return "UNKNOWN"
+
+        return "UNKNOWN"
+
+    def _word_info(
+        self,
+        word: dict[str, Any],
+    ) -> dict[str, Any]:
+        feats = word.get("feats")
+
+        return {
+            "text": word.get("text"),
+            "lemma": word.get("lemma"),
+            "upos": word.get("upos"),
+            "deprel": word.get("deprel"),
+            "feats": feats,
+            "tense": self._extract_feature(
+                feats,
+                "Tense",
+            ),
+            "verb_form": self._extract_feature(
+                feats,
+                "VerbForm",
+            ),
+            "word_id": word.get("id"),
+        }
+
+    @staticmethod
+    def _extract_feature(
+        feats: str | None,
+        feature: str,
+    ) -> str | None:
+        if not isinstance(feats, str):
+            return None
+
+        prefix = f"{feature}="
+
+        for item in feats.split("|"):
+            if item.startswith(prefix):
+                return item[len(prefix):]
+
+        return None
+
+    def _extract_day_month_without_year(
+        self,
+        annotation: Annotation,
+    ) -> tuple[int, int] | None:
+        normalized = annotation.metadata.get("normalized")
+
+        if not isinstance(normalized, str):
+            return None
+
+        try:
+            resolved = pendulum.parse(normalized)
+        except (ValueError, TypeError):
+            return None
+
+        if str(resolved.year) in annotation.text:
+            return None
+
+        raw_value = annotation.metadata.get("raw_value")
+
+        if not isinstance(raw_value, dict):
+            return None
+
+        grain = annotation.metadata.get("grain")
+
+        if grain != "day":
+            return None
+
+        return resolved.day, resolved.month
+
+    @staticmethod
+    def _spans_overlap(
+        start_a: int,
+        end_a: int,
+        start_b: Any,
+        end_b: Any,
+    ) -> bool:
+        if not isinstance(start_b, int):
+            return False
+
+        if not isinstance(end_b, int):
+            return False
+
+        return start_a < end_b and start_b < end_a
+
+    @staticmethod
+    def _preserve_time_and_timezone(
+        resolved: pendulum.DateTime,
+        candidate: pendulum.DateTime,
+    ) -> str:
+        corrected = candidate.replace(
+            hour=resolved.hour,
+            minute=resolved.minute,
+            second=resolved.second,
+            microsecond=resolved.microsecond,
+        )
+
+        return corrected.to_iso8601_string()
+
+    def _resolve_reference_datetime(
+        self,
+        document: Document,
+    ) -> pendulum.DateTime | None:
+        value = self._get_metadata_value(
+            document.metadata,
+            self.reference_datetime_metadata_key,
+        )
+
+        if value is None:
+            return None
+
+        return self._parse_datetime(value)
+
+    @staticmethod
+    def _get_metadata_value(
+        metadata: dict,
+        dotted_key: str,
+    ):
+        current = metadata
+
+        for part in dotted_key.split("."):
+            if not isinstance(current, dict):
+                return None
+
+            current = current.get(part)
+
+            if current is None:
+                return None
+
+        return current
+
+    @staticmethod
+    def _parse_datetime(
+        value,
+    ) -> pendulum.DateTime | None:
+        if isinstance(value, pendulum.DateTime):
+            return value
+
+        if isinstance(value, datetime):
+            return pendulum.instance(value)
+
+        if isinstance(value, str):
+            try:
+                return pendulum.parse(value)
+            except (ValueError, TypeError):
+                return None
+
+        return None
+
+    def _refine_weekday(
+        self,
+        document: Document,
+        annotation: Annotation,
+        reference_datetime,
+    ) -> None:
+        if annotation.label != "DATE":
+            return
+
+        if annotation.metadata.get("grain") != "day":
+            return
+
+        weekday = self._get_annotation_weekday(
+            document,
+            annotation,
+        )
+        if weekday is None:
+            return
+
+        normalized = annotation.metadata.get("normalized")
+        if not isinstance(normalized, str):
+            return
+
+        resolved = self._parse_datetime(normalized)
+        if resolved is None:
+            return
+
+        predicate_context = self._get_temporal_predicate_context(
+            document,
+            annotation,
+        )
+        if predicate_context is None:
+            return
+
+        orientation = self._classify_temporal_orientation(
+            predicate_context,
+        )
+
+        if orientation == "UNKNOWN":
+            return
+
+        reference_weekday = reference_datetime.day_of_week
+
+        if orientation == "PAST":
+            days_back = (
+                reference_weekday - weekday
+            ) % 7
+
+            candidate = reference_datetime.subtract(
+                days=days_back,
+            ).start_of("day")
+
+            direction = "previous_or_same"
+
+        elif orientation == "FUTURE":
+            days_forward = (
+                weekday - reference_weekday
+            ) % 7
+
+            # Future means strictly future. If today is the
+            # requested weekday, choose the following occurrence.
+            if days_forward == 0:
+                days_forward = 7
+
+            candidate = reference_datetime.add(
+                days=days_forward,
+            ).start_of("day")
+
+            direction = "next"
+
+        else:
+            return
+
+        resolved_date = resolved.date()
+        candidate_date = candidate.date()
+
+        if resolved_date == candidate_date:
+            return
+
+        previous_normalized = normalized
+
+        annotation.metadata["normalized"] = (
+            self._preserve_time_and_timezone(
+                candidate,
+                resolved,
+            )
+        )
+
+        annotation.metadata["context_resolution"] = {
+            "rule": "weekday_by_predicate_orientation",
+            "previous_normalized": previous_normalized,
+            "reference_datetime": (
+                reference_datetime.to_iso8601_string()
+            ),
+            "temporal_orientation": orientation,
+            "candidate_direction": direction,
+            "distance_days": abs(
+                (candidate_date - reference_datetime.date()).days
+            ),
+            "predicate_context": predicate_context,
+        }
+
+
+    def _get_annotation_weekday(
+        self,
+        document: Document,
+        annotation: Annotation,
+    ) -> int | None:
+        stanza = document.metadata.get("stanza")
+        if not isinstance(stanza, dict):
+            return None
+
+        sentences = stanza.get("sentences")
+        if not isinstance(sentences, list):
+            return None
+
+        matches: set[int] = set()
+
+        for sentence in sentences:
+            words = sentence.get("words", [])
+
+            for word in words:
+                start = word.get("start")
+                end = word.get("end")
+
+                if not isinstance(start, int):
+                    continue
+
+                if not isinstance(end, int):
+                    continue
+
+                if not self._spans_overlap(
+                    annotation.start,
+                    annotation.end,
+                    start,
+                    end,
+                ):
+                    continue
+
+                lemma = str(
+                    word.get("lemma") or word.get("text") or ""
+                ).lower()
+
+                weekday = self.rules.weekdays.get(lemma)
+
+                if weekday is not None:
+                    matches.add(weekday)
+
+        if len(matches) != 1:
+            return None
+
+        return next(iter(matches))

@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from umuannotator.annotation_enrichers.overlap import (
-    AnnotationOverlapEnricher,
-)
-
+from umuannotator.annotation_enrichers.overlap import AnnotationOverlapEnricher
+from umuannotator.annotation_enrichers.temporal_context import TemporalContextEnricher
 from umuannotator.annotation_enrichers.age import AgeEnricher
 
 
@@ -32,6 +30,22 @@ def build_annotation_enricher(
             lexical_semantics_layer=config.get(
                 "lexical_semantics_layer",
                 "lexical_semantics",
+            ),
+        )
+
+    if name == "temporal-context":
+        return TemporalContextEnricher(
+            language=config.get(
+                "language",
+                "es",
+            ),
+            reference_datetime_metadata_key=config.get(
+                "reference_datetime_metadata_key",
+                "source.publication_date",
+            ),
+            max_past_days=config.get(
+                "max_past_days",
+                90,
             ),
         )
 

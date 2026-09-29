@@ -60,3 +60,12 @@ clock_time_only_patterns:
   - '^\d{1,2}:\d{2}$'
   - '^a las \d{1,2}:\d{2}$'
   - '^a la \d{1,2}:\d{2}$'
+
+weekdays:
+  lunes: 0
+  martes: 1
+  miércoles: 2
+  jueves: 3
+  viernes: 4
+  sábado: 5
+  domingo: 6

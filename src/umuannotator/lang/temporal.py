@@ -16,6 +16,7 @@ class TemporalLanguageRules:
     bad_prefixes_by_grain: dict[str, tuple[str, ...]]
     person_name_month_words: set[str]
     clock_time_only_patterns: tuple[str, ...]
+    weekdays: dict[str, int]
 
 
 EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
@@ -28,6 +29,7 @@ EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
     bad_prefixes_by_grain={},
     person_name_month_words=set(),
     clock_time_only_patterns=(),
+    weekdays={},
 )
 
 
@@ -61,6 +63,9 @@ def get_temporal_rules(language: str) -> TemporalLanguageRules:
             str(pattern)
             for pattern in data.get("clock_time_only_patterns", [])
         ),
+        weekdays=_load_weekdays(
+            data.get("weekdays", {}),
+        ),
     )
 
 
@@ -73,4 +78,16 @@ def _load_bad_prefixes_by_grain(
     return {
         str(grain): tuple(str(prefix) for prefix in prefixes)
         for grain, prefixes in value.items()
+    }
+
+
+def _load_weekdays(
+    value: dict | None,
+) -> dict[str, int]:
+    if not value:
+        return {}
+
+    return {
+        str(name).lower(): int(index)
+        for name, index in value.items()
     }
