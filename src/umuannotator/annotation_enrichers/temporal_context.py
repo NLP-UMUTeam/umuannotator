@@ -40,6 +40,9 @@ class TemporalContextEnricher:
         if reference_datetime is None:
             return document
 
+        # First refine DATE annotations. Later contextual rules must consume
+        # these final normalized dates rather than the original Duckling
+        # resolutions.
         for annotation in document.annotations:
             if annotation.layer != "temporal":
                 continue
@@ -57,6 +60,20 @@ class TemporalContextEnricher:
                 document,
                 annotation,
                 reference_datetime,
+            )
+
+        # Resolve standalone clock times only after DATE annotations have
+        # received all contextual corrections.
+        for annotation in document.annotations:
+            if annotation.layer != "temporal":
+                continue
+
+            if annotation.label != "TIME":
+                continue
+
+            self._refine_time_from_contextual_date(
+                document,
+                annotation,
             )
 
         return document
@@ -612,8 +629,8 @@ class TemporalContextEnricher:
 
         annotation.metadata["normalized"] = (
             self._preserve_time_and_timezone(
-                candidate,
                 resolved,
+                candidate,
             )
         )
 
@@ -681,3 +698,166 @@ class TemporalContextEnricher:
             return None
 
         return next(iter(matches))
+
+    def _refine_time_from_contextual_date(
+        self,
+        document: Document,
+        annotation: Annotation,
+    ) -> None:
+        if annotation.label != "TIME":
+            return
+
+        if annotation.metadata.get("date_resolved") is not False:
+            return
+
+        normalized = annotation.metadata.get("normalized")
+
+        if not isinstance(normalized, str):
+            return
+
+        clock_time = self._parse_clock_time(normalized)
+
+        if clock_time is None:
+            return
+
+        time_context = self._get_temporal_predicate_context(
+            document,
+            annotation,
+        )
+
+        time_predicate_key = self._predicate_context_key(time_context)
+
+        if time_predicate_key is None:
+            return
+
+        candidates: list[
+            tuple[Annotation, pendulum.DateTime, dict[str, Any]]
+        ] = []
+
+        for candidate_annotation in document.annotations:
+            if candidate_annotation is annotation:
+                continue
+
+            if candidate_annotation.layer != "temporal":
+                continue
+
+            if candidate_annotation.label != "DATE":
+                continue
+
+            candidate_normalized = candidate_annotation.metadata.get(
+                "normalized"
+            )
+
+            if not isinstance(candidate_normalized, str):
+                continue
+
+            candidate_date = self._parse_datetime(candidate_normalized)
+
+            if candidate_date is None:
+                continue
+
+            candidate_context = self._get_temporal_predicate_context(
+                document,
+                candidate_annotation,
+            )
+
+            candidate_predicate_key = self._predicate_context_key(
+                candidate_context
+            )
+
+            if candidate_predicate_key != time_predicate_key:
+                continue
+
+            candidates.append(
+                (
+                    candidate_annotation,
+                    candidate_date,
+                    candidate_context,
+                )
+            )
+
+        # Ambiguous contextual evidence must not modify the annotation.
+        if len(candidates) != 1:
+            return
+
+        (
+            date_annotation,
+            contextual_date,
+            predicate_context,
+        ) = candidates[0]
+
+        previous_normalized = normalized
+
+        resolved = contextual_date.replace(
+            hour=clock_time[0],
+            minute=clock_time[1],
+            second=clock_time[2],
+            microsecond=0,
+        )
+
+        annotation.metadata["normalized"] = (
+            resolved.to_iso8601_string()
+        )
+        annotation.metadata["date_resolved"] = True
+
+        annotation.metadata["context_resolution"] = {
+            "rule": "time_from_date_same_predicate",
+            "previous_normalized": previous_normalized,
+            "date_annotation": {
+                "start": date_annotation.start,
+                "end": date_annotation.end,
+                "text": date_annotation.text,
+                "normalized": date_annotation.metadata.get(
+                    "normalized"
+                ),
+            },
+            "predicate_context": predicate_context,
+        }
+
+    @staticmethod
+    def _predicate_context_key(
+        context: dict[str, Any] | None,
+    ) -> tuple[Any, int] | None:
+        if context is None:
+            return None
+
+        sentence_id = context.get("sentence_id")
+        predicate = context.get("predicate")
+
+        if not isinstance(predicate, dict):
+            return None
+
+        word_id = predicate.get("word_id")
+
+        if not isinstance(word_id, int):
+            return None
+
+        return sentence_id, word_id
+
+
+    @staticmethod
+    def _parse_clock_time(
+        value: str,
+    ) -> tuple[int, int, int] | None:
+        parts = value.split(":")
+
+        if len(parts) not in {2, 3}:
+            return None
+
+        try:
+            hour = int(parts[0])
+            minute = int(parts[1])
+            second = int(parts[2]) if len(parts) == 3 else 0
+        except ValueError:
+            return None
+
+        if not 0 <= hour <= 23:
+            return None
+
+        if not 0 <= minute <= 59:
+            return None
+
+        if not 0 <= second <= 59:
+            return None
+
+        return hour, minute, second
