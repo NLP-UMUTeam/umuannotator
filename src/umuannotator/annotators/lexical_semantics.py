@@ -104,6 +104,7 @@ class LexicalSemanticAnnotator:
                     "wordnet_pos": wordnet_pos,
                     "semantic_classes": semantic_classes,
                     "synsets": result["synsets"],
+                    "synset_classes": result["synset_classes"],
                     "disambiguated": False,
                 },
             )
@@ -127,6 +128,7 @@ class LexicalSemanticAnnotator:
 
         semantic_classes: set[str] = set()
         synset_ids: list[str] = []
+        synset_classes: dict[str, list[str]] = {}
 
         for sense in self.wordnet.senses(lemma):
             synset = sense.synset()
@@ -137,11 +139,14 @@ class LexicalSemanticAnnotator:
             synset_ids.append(synset.id)
 
             classes = self._classify_synset(synset)
+
+            synset_classes[synset.id] = sorted(classes)
             semantic_classes.update(classes)
 
         result = {
             "semantic_classes": sorted(semantic_classes),
             "synsets": sorted(set(synset_ids)),
+            "synset_classes": synset_classes,
         }
 
         self._lookup_cache[cache_key] = result

@@ -311,6 +311,14 @@ class StanzaDependencyRelationExtractor:
                 )
             )
 
+        arguments = self._remove_predicate_identical_arguments(
+            predicate=predicate,
+            arguments=arguments,
+        )
+
+        if not arguments:
+            return
+
         if subject is not None and object_ is not None:
             rule = "verb_nsubj_obj"
 
@@ -395,6 +403,14 @@ class StanzaDependencyRelationExtractor:
                 )
             )
 
+        arguments = self._remove_predicate_identical_arguments(
+            predicate=predicate,
+            arguments=arguments,
+        )
+
+        if not arguments:
+            return
+
         rule = (
             "verb_passive_agent"
             if agent is not None
@@ -455,6 +471,14 @@ class StanzaDependencyRelationExtractor:
             ),
         ]
 
+        arguments = self._remove_predicate_identical_arguments(
+            predicate=predicate,
+            arguments=arguments,
+        )
+
+        if not arguments:
+            return
+
         relation_metadata: dict[str, Any] = {
             "sentence_id": sentence.get("id"),
             "rule": "verb_nsubj_ccomp",
@@ -482,3 +506,19 @@ class StanzaDependencyRelationExtractor:
         )
 
         document.add_relation(relation)
+
+
+    @staticmethod
+    def _remove_predicate_identical_arguments(
+        *,
+        predicate,
+        arguments,
+    ):
+        return [
+            argument
+            for argument in arguments
+            if not (
+                argument.start == predicate.start
+                and argument.end == predicate.end
+            )
+        ]

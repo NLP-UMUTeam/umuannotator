@@ -983,11 +983,35 @@ class TemporalContextEnricher:
         if not body.lower().startswith("en "):
             return
 
-        if not self._is_quantified_temporal_oblique(
+        unit_info = self._get_quantified_temporal_unit(
             document,
             annotation,
-        ):
+        )
+        if unit_info is None:
             return
+
+        unit, seconds_per_unit = unit_info
+
+        previous_normalized = annotation.metadata.get("normalized")
+
+        resolved_datetime = self._parse_datetime(previous_normalized)
+        if resolved_datetime is None:
+            return
+
+        duration_seconds = (
+            resolved_datetime - reference_datetime
+        ).total_seconds()
+
+        if duration_seconds <= 0:
+            return
+
+        duration_value = duration_seconds / seconds_per_unit
+
+        if duration_seconds.is_integer():
+            duration_seconds = int(duration_seconds)
+
+        if duration_value.is_integer():
+            duration_value = int(duration_value)
 
         predicate_context = self._get_temporal_predicate_context(
             document,
@@ -1005,6 +1029,17 @@ class TemporalContextEnricher:
         previous_normalized = annotation.metadata.get("normalized")
 
         annotation.label = "DURATION"
+        annotation.subtype = "duration"
+
+        annotation.metadata["normalized"] = duration_value
+        annotation.metadata["duration"] = {
+            "unit": unit,
+            "value": duration_value,
+            "normalized": {
+                "unit": "second",
+                "value": duration_seconds,
+            },
+        }
         annotation.metadata["resolved_from"] = "DATE"
         annotation.metadata["refined_by"] = "temporal-context"
         annotation.metadata["context_resolution"] = {
@@ -1015,18 +1050,19 @@ class TemporalContextEnricher:
             "predicate_context": predicate_context,
         }
 
-    def _is_quantified_temporal_oblique(
+
+    def _get_quantified_temporal_unit(
         self,
         document: Document,
         annotation: Annotation,
-    ) -> bool:
+    ) -> tuple[str, int] | None:
         stanza = document.metadata.get("stanza")
         if not isinstance(stanza, dict):
-            return False
+            return None
 
         sentences = stanza.get("sentences")
         if not isinstance(sentences, list):
-            return False
+            return None
 
         for sentence in sentences:
             words = sentence.get("words")
@@ -1069,8 +1105,17 @@ class TemporalContextEnricher:
                     and child.get("upos") == "NUM"
                     for child in words_by_id.values()
                 )
+                if not has_numeric_modifier:
+                    continue
 
-                if has_numeric_modifier:
-                    return True
+                lemma = word.get("lemma")
+                if not isinstance(lemma, str):
+                    continue
 
-        return False
+                unit_info = self.rules.duration_units.get(
+                    lemma.lower(),
+                )
+                if unit_info is not None:
+                    return unit_info
+
+        return None

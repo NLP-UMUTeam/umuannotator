@@ -205,24 +205,24 @@ class ReportedSpeechRelationExtractor:
     def _detect_speech_type(
         content: RelationArgument,
     ) -> str:
-        text = content.text
+        text = content.text.strip()
 
-        quote_characters = {
-            '"',
-            "'",
-            "“",
-            "”",
-            "‘",
-            "’",
-            "«",
-            "»",
+        text = text.lstrip(":, \t\n")
+
+        quote_pairs = {
+            '"': '"',
+            "'": "'",
+            "“": "”",
+            "‘": "’",
+            "«": "»",
         }
 
-        if any(
-            character in text
-            for character in quote_characters
-        ):
-            return "direct"
+        for opening, closing in quote_pairs.items():
+            if (
+                text.startswith(opening)
+                and text.endswith(closing)
+            ):
+                return "direct"
 
         return "indirect"
 

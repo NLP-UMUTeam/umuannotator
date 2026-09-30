@@ -520,3 +520,76 @@ def test_temporal_date_with_noon_clock_selects_12_not_00():
 
     assert "T12:33:00" in normalized
     assert "T00:33:00" not in normalized
+
+def test_rejects_temporal_date_followed_by_percent_sign():
+    document = Document(
+        text="El 26% considera que habrá un ciberataque.",
+    )
+
+    annotator = TemporalAnnotator(language="es")
+
+    result = {
+        "dim": "time",
+        "body": "El 26",
+        "start": 0,
+        "end": 5,
+        "value": {
+            "type": "value",
+            "grain": "day",
+            "value": "2026-10-26T00:00:00.000+01:00",
+        },
+    }
+
+    annotation = annotator.result_to_annotation(document, result)
+
+    assert annotation is None
+
+
+def test_keeps_temporal_day_without_percent_sign():
+    document = Document(
+        text="El 26 llegaron los primeros participantes.",
+    )
+
+    annotator = TemporalAnnotator(language="es")
+
+    result = {
+        "dim": "time",
+        "body": "El 26",
+        "start": 0,
+        "end": 5,
+        "value": {
+            "type": "value",
+            "grain": "day",
+            "value": "2026-10-26T00:00:00.000+01:00",
+        },
+    }
+
+    annotation = annotator.result_to_annotation(document, result)
+
+    assert annotation is not None
+    assert annotation.label == "DATE"
+
+
+def test_keeps_temporal_date_with_month():
+    document = Document(
+        text="El 26 de abril ocurrió el apagón.",
+    )
+
+    annotator = TemporalAnnotator(language="es")
+
+    result = {
+        "dim": "time",
+        "body": "El 26 de abril",
+        "start": 0,
+        "end": 14,
+        "value": {
+            "type": "value",
+            "grain": "day",
+            "value": "2027-04-26T00:00:00.000+02:00",
+        },
+    }
+
+    annotation = annotator.result_to_annotation(document, result)
+
+    assert annotation is not None
+    assert annotation.label == "DATE"

@@ -1333,6 +1333,7 @@ def _relative_quantified_time_document(
     annotation_end: int,
     annotation_text: str,
     words: list[dict],
+    normalized: str = "2025-04-28T23:29:11.000+02:00",
 ) -> tuple[Document, Annotation]:
     annotation = Annotation(
         start=annotation_start,
@@ -1345,11 +1346,11 @@ def _relative_quantified_time_document(
         subtype="time",
         metadata={
             "grain": "second",
-            "normalized": "2025-04-28T23:29:11.000+02:00",
+            "normalized": normalized,
             "raw_value": {
                 "grain": "second",
                 "type": "value",
-                "value": "2025-04-28T23:29:11.000+02:00",
+                "value": normalized,
             },
             "duckling_dim": "time",
             "duckling_body": annotation_text,
@@ -1385,6 +1386,7 @@ def test_refines_relative_time_as_duration_with_past_predicate() -> None:
         annotation_start=25,
         annotation_end=42,
         annotation_text="en cinco segundos",
+        normalized="2025-04-28T23:24:16+02:00",
         words=[
             _word(
                 id=1,
@@ -1443,12 +1445,24 @@ def test_refines_relative_time_as_duration_with_past_predicate() -> None:
         == "PAST"
     )
 
+    assert annotation.subtype == "duration"
+    assert annotation.metadata["normalized"] == 5
+    assert annotation.metadata["duration"] == {
+        "unit": "second",
+        "value": 5,
+        "normalized": {
+            "unit": "second",
+            "value": 5,
+        },
+    }
+
 def test_refines_relative_time_as_duration_with_present_perfect() -> None:
     document, annotation = _relative_quantified_time_document(
         text="Ha terminado el trabajo en dos horas.",
         annotation_start=24,
         annotation_end=36,
         annotation_text="en dos horas",
+        normalized="2025-04-29T01:24:11+02:00",
         words=[
             _word(
                 id=1,
@@ -1500,6 +1514,17 @@ def test_refines_relative_time_as_duration_with_present_perfect() -> None:
     assert annotation.label == "DURATION"
     assert annotation.metadata["resolved_from"] == "DATE"
 
+    assert annotation.subtype == "duration"
+    assert annotation.metadata["normalized"] == 2
+    assert annotation.metadata["duration"] == {
+        "unit": "hour",
+        "value": 2,
+        "normalized": {
+            "unit": "second",
+            "value": 7200,
+        },
+    }
+
 
 def test_refines_relative_time_as_duration_with_past_perfect() -> None:
     document, annotation = _relative_quantified_time_document(
@@ -1507,6 +1532,7 @@ def test_refines_relative_time_as_duration_with_past_perfect() -> None:
         annotation_start=27,
         annotation_end=39,
         annotation_text="en dos horas",
+        normalized="2025-04-29T01:24:11+02:00",
         words=[
             _word(
                 id=1,
@@ -1557,6 +1583,17 @@ def test_refines_relative_time_as_duration_with_past_perfect() -> None:
 
     assert annotation.label == "DURATION"
     assert annotation.metadata["resolved_from"] == "DATE"
+
+    assert annotation.subtype == "duration"
+    assert annotation.metadata["normalized"] == 2
+    assert annotation.metadata["duration"] == {
+        "unit": "hour",
+        "value": 2,
+        "normalized": {
+            "unit": "second",
+            "value": 7200,
+        },
+    }
 
 
 def test_keeps_relative_time_as_date_with_future_predicate() -> None:

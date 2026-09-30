@@ -170,13 +170,18 @@ class AgeEnricher:
             ):
                 continue
 
-            semantic_classes = annotation.metadata.get(
-                "semantic_classes",
-                [],
+            synset_classes = annotation.metadata.get(
+                "synset_classes",
+                {},
             )
 
-            if semantic_classes == ["HUMAN"]:
-                return True
+            if not synset_classes:
+                return False
+
+            return all(
+                classes == ["HUMAN"]
+                for classes in synset_classes.values()
+            )
 
         return False
 

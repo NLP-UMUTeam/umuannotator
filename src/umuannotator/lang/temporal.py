@@ -17,6 +17,7 @@ class TemporalLanguageRules:
     person_name_month_words: set[str]
     clock_time_only_patterns: tuple[str, ...]
     weekdays: dict[str, int]
+    duration_units: dict[str, tuple[str, int]]
 
 
 EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
@@ -30,6 +31,7 @@ EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
     person_name_month_words=set(),
     clock_time_only_patterns=(),
     weekdays={},
+    duration_units={},
 )
 
 
@@ -66,6 +68,9 @@ def get_temporal_rules(language: str) -> TemporalLanguageRules:
         weekdays=_load_weekdays(
             data.get("weekdays", {}),
         ),
+        duration_units=_load_duration_units(
+            data.get("duration_units", {}),
+        ),
     )
 
 
@@ -90,4 +95,18 @@ def _load_weekdays(
     return {
         str(name).lower(): int(index)
         for name, index in value.items()
+    }
+
+def _load_duration_units(
+    value: dict | None,
+) -> dict[str, tuple[str, int]]:
+    if not value:
+        return {}
+
+    return {
+        str(lemma).lower(): (
+            str(config["unit"]),
+            int(config["seconds"]),
+        )
+        for lemma, config in value.items()
     }

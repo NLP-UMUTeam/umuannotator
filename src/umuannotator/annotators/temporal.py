@@ -127,6 +127,13 @@ class TemporalAnnotator(DucklingAnnotator):
         if self._is_false_positive_person_name(annotation, document):
             return None
 
+        if self._is_false_positive_percentage(
+            annotation,
+            document,
+            result,
+        ):
+            return None
+
         is_clock_time_only = self._is_clock_time_only(
             annotation.text,
             result,
@@ -250,6 +257,17 @@ class TemporalAnnotator(DucklingAnnotator):
         entity_type = entity.get("type") or entity.get("label")
 
         return entity_type in {"PER", "PERSON"}
+
+    def _is_false_positive_percentage(
+        self,
+        annotation: Annotation,
+        document: Document,
+        result: dict,
+    ) -> bool:
+        if result.get("dim") != "time":
+            return False
+
+        return document.text[annotation.end:].startswith("%")
 
     def _normalized_temporal_value(
         self,

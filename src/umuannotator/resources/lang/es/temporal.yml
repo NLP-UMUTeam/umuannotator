@@ -69,3 +69,24 @@ weekdays:
   viernes: 4
   sábado: 5
   domingo: 6
+
+duration_units:
+  segundo:
+    unit: second
+    seconds: 1
+
+  minuto:
+    unit: minute
+    seconds: 60
+
+  hora:
+    unit: hour
+    seconds: 3600
+
+  día:
+    unit: day
+    seconds: 86400
+
+  semana:
+    unit: week
+    seconds: 604800

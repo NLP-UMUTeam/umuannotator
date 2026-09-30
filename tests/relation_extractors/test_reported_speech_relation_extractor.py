@@ -311,3 +311,246 @@ def test_detect_direct_reported_speech(
         reported[0].metadata["speech_type"]
         == "direct"
     )
+
+def test_detect_indirect_speech_with_quoted_term(
+    tmp_path: Path,
+):
+    source = _write_config(
+        tmp_path,
+        [
+            "decir",
+            "afirmar",
+        ],
+    )
+
+    relation = Relation(
+        type="predicate_argument",
+        predicate=RelationPredicate(
+            start=12,
+            end=16,
+            text="dijo",
+            lemma="decir",
+            metadata={
+                "word_id": 3,
+            },
+        ),
+        arguments=[
+            RelationArgument(
+                role="subject",
+                start=0,
+                end=11,
+                text="El ministro",
+                metadata={
+                    "head_word_id": 2,
+                    "deprel": "nsubj",
+                },
+            ),
+            RelationArgument(
+                role="clausal_complement",
+                start=17,
+                end=55,
+                text=(
+                    'que el término "apagón" '
+                    "era incorrecto"
+                ),
+                metadata={
+                    "head_word_id": 11,
+                    "deprel": "ccomp",
+                },
+            ),
+        ],
+        source="stanza-dependency",
+        metadata={
+            "sentence_id": 0,
+            "rule": "verb_nsubj_ccomp",
+            "polarity": "positive",
+        },
+    )
+
+    document = Document(
+        text=(
+            'El ministro dijo que el término '
+            '"apagón" era incorrecto.'
+        ),
+        relations=[relation],
+    )
+
+    extractor = ReportedSpeechRelationExtractor(
+        source=source,
+    )
+
+    result = extractor.extract(document)
+
+    reported = [
+        relation
+        for relation in result.relations
+        if relation.type == "reported_speech"
+    ]
+
+    assert len(reported) == 1
+
+    assert (
+        reported[0].metadata["speech_type"]
+        == "indirect"
+    )
+
+
+def test_detect_indirect_speech_with_internal_quote(
+    tmp_path: Path,
+):
+    source = _write_config(
+        tmp_path,
+        [
+            "decir",
+            "afirmar",
+        ],
+    )
+
+    relation = Relation(
+        type="predicate_argument",
+        predicate=RelationPredicate(
+            start=12,
+            end=16,
+            text="dijo",
+            lemma="decir",
+            metadata={
+                "word_id": 3,
+            },
+        ),
+        arguments=[
+            RelationArgument(
+                role="subject",
+                start=0,
+                end=11,
+                text="El ministro",
+                metadata={
+                    "head_word_id": 2,
+                    "deprel": "nsubj",
+                },
+            ),
+            RelationArgument(
+                role="clausal_complement",
+                start=17,
+                end=79,
+                text=(
+                    'que la propuesta "no era suficiente" '
+                    "para resolver el problema"
+                ),
+                metadata={
+                    "head_word_id": 10,
+                    "deprel": "ccomp",
+                },
+            ),
+        ],
+        source="stanza-dependency",
+        metadata={
+            "sentence_id": 0,
+            "rule": "verb_nsubj_ccomp",
+            "polarity": "positive",
+        },
+    )
+
+    document = Document(
+        text=(
+            'El ministro dijo que la propuesta '
+            '"no era suficiente" para resolver '
+            "el problema."
+        ),
+        relations=[relation],
+    )
+
+    extractor = ReportedSpeechRelationExtractor(
+        source=source,
+    )
+
+    result = extractor.extract(document)
+
+    reported = [
+        relation
+        for relation in result.relations
+        if relation.type == "reported_speech"
+    ]
+
+    assert len(reported) == 1
+
+    assert (
+        reported[0].metadata["speech_type"]
+        == "indirect"
+    )
+
+
+def test_detect_direct_speech_with_angle_quotes(
+    tmp_path: Path,
+):
+    source = _write_config(
+        tmp_path,
+        [
+            "decir",
+            "afirmar",
+        ],
+    )
+
+    relation = Relation(
+        type="predicate_argument",
+        predicate=RelationPredicate(
+            start=12,
+            end=16,
+            text="dijo",
+            lemma="decir",
+            metadata={
+                "word_id": 3,
+            },
+        ),
+        arguments=[
+            RelationArgument(
+                role="subject",
+                start=0,
+                end=11,
+                text="El ministro",
+                metadata={
+                    "head_word_id": 2,
+                    "deprel": "nsubj",
+                },
+            ),
+            RelationArgument(
+                role="clausal_complement",
+                start=16,
+                end=35,
+                text=": «No habrá cortes»",
+                metadata={
+                    "head_word_id": 7,
+                    "deprel": "ccomp",
+                },
+            ),
+        ],
+        source="stanza-dependency",
+        metadata={
+            "sentence_id": 0,
+            "rule": "verb_nsubj_ccomp",
+            "polarity": "positive",
+        },
+    )
+
+    document = Document(
+        text="El ministro dijo: «No habrá cortes».",
+        relations=[relation],
+    )
+
+    extractor = ReportedSpeechRelationExtractor(
+        source=source,
+    )
+
+    result = extractor.extract(document)
+
+    reported = [
+        relation
+        for relation in result.relations
+        if relation.type == "reported_speech"
+    ]
+
+    assert len(reported) == 1
+
+    assert (
+        reported[0].metadata["speech_type"]
+        == "direct"
+    )

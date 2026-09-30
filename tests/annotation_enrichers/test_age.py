@@ -17,6 +17,10 @@ def test_refines_human_nominal_duration_as_age():
                 source="wordnet",
                 metadata={
                     "semantic_classes": ["HUMAN"],
+                    "synset_classes": {
+                        "sense-1": ["HUMAN"],
+                        "sense-2": ["HUMAN"],
+                    },
                 },
             ),
             Annotation(
@@ -137,6 +141,10 @@ def test_preserves_non_human_nominal_duration():
                 source="wordnet",
                 metadata={
                     "semantic_classes": ["PROCESS"],
+                    "synset_classes": {
+                        "sense-1": ["PROCESS"],
+                        "sense-2": [],
+                    },
                 },
             ),
             Annotation(
@@ -229,6 +237,120 @@ def test_preserves_non_human_nominal_duration():
     assert temporal.metadata["duckling_dim"] == "duration"
     assert temporal.metadata["normalized"] == 2
 
+    assert "resolved_from" not in temporal.metadata
+    assert "refined_by" not in temporal.metadata
+    assert "rule" not in temporal.metadata
+    assert "age_evidence" not in temporal.metadata
+
+def test_preserves_duration_for_ambiguous_human_head():
+    text = "Una cabeza de 77 años fue descrita."
+
+    document = Document(
+        text=text,
+        annotations=[
+            Annotation(
+                start=4,
+                end=10,
+                text="cabeza",
+                label="LEXICAL_SEMANTICS",
+                layer="lexical_semantics",
+                source="wordnet",
+                metadata={
+                    "semantic_classes": ["HUMAN"],
+                    "synset_classes": {
+                        "sense-1": [],
+                        "sense-2": ["HUMAN"],
+                        "sense-3": [],
+                    },
+                },
+            ),
+            Annotation(
+                start=14,
+                end=21,
+                text="77 años",
+                label="DURATION",
+                layer="temporal",
+                source="duckling-temporal",
+                metadata={
+                    "duckling_dim": "duration",
+                    "normalized": 77,
+                },
+            ),
+        ],
+        metadata={
+            "stanza": {
+                "sentences": [
+                    {
+                        "id": 0,
+                        "words": [
+                            {
+                                "id": 1,
+                                "text": "Una",
+                                "start": 0,
+                                "end": 3,
+                                "lemma": "uno",
+                                "upos": "DET",
+                                "head": 2,
+                                "deprel": "det",
+                            },
+                            {
+                                "id": 2,
+                                "text": "cabeza",
+                                "start": 4,
+                                "end": 10,
+                                "lemma": "cabeza",
+                                "upos": "NOUN",
+                                "head": 6,
+                                "deprel": "nsubj",
+                            },
+                            {
+                                "id": 3,
+                                "text": "de",
+                                "start": 11,
+                                "end": 13,
+                                "lemma": "de",
+                                "upos": "ADP",
+                                "head": 5,
+                                "deprel": "case",
+                            },
+                            {
+                                "id": 4,
+                                "text": "77",
+                                "start": 14,
+                                "end": 16,
+                                "lemma": "77",
+                                "upos": "NUM",
+                                "head": 5,
+                                "deprel": "nummod",
+                            },
+                            {
+                                "id": 5,
+                                "text": "años",
+                                "start": 17,
+                                "end": 21,
+                                "lemma": "año",
+                                "upos": "NOUN",
+                                "head": 2,
+                                "deprel": "nmod",
+                            },
+                        ],
+                    }
+                ],
+            }
+        },
+    )
+
+    enricher = AgeEnricher()
+
+    result = enricher.enrich(document)
+
+    temporal = next(
+        annotation
+        for annotation in result.annotations
+        if annotation.layer == "temporal"
+    )
+
+    assert temporal.label == "DURATION"
     assert "resolved_from" not in temporal.metadata
     assert "refined_by" not in temporal.metadata
     assert "rule" not in temporal.metadata
