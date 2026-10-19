@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from copy import deepcopy
+import json
 
 import typer
 from prompt_toolkit import PromptSession
@@ -44,6 +46,7 @@ def shell(
     pipeline, pipeline_context = build_pipeline_from_config(config)
 
     current_output_format = output_format
+    session_metadata: dict = {}
 
     _print_banner(pipeline_context)
 
@@ -84,11 +87,81 @@ def shell(
             console.print("[green]Output format set to table.[/green]")
             continue
 
+        if text == ":meta":
+            if session_metadata:
+                console.print_json(data=session_metadata)
+            else:
+                console.print("[dim]No session metadata set.[/dim]")
+            continue
+
+        if text == ":meta clear":
+            session_metadata.clear()
+            console.print("[green]Metadata cleared.[/green]")
+            continue
+
+        if text.startswith(":meta unset "):
+            key = text[len(":meta unset "):].strip()
+
+            if not key:
+                console.print(
+                    "[yellow]Usage: :meta unset <key>[/yellow]"
+                )
+                continue
+
+            removed = _unset_nested_metadata(
+                session_metadata,
+                key,
+            )
+
+            if removed:
+                console.print(
+                    f"[green]Metadata {key} removed.[/green]"
+                )
+            else:
+                console.print(
+                    f"[yellow]Metadata {key} not found.[/yellow]"
+                )
+
+            continue
+
+        if text.startswith(":meta "):
+            payload = text[len(":meta "):].strip()
+
+            parts = payload.split(maxsplit=1)
+
+            if len(parts) != 2:
+                console.print(
+                    "[yellow]Usage: :meta <key> <value>[/yellow]"
+                )
+                continue
+
+            key, raw_value = parts
+
+            value = _parse_metadata_value(raw_value)
+
+            try:
+                _set_nested_metadata(
+                    session_metadata,
+                    key,
+                    value,
+                )
+            except ValueError as exc:
+                console.print(
+                    f"[red]{exc}[/red]"
+                )
+                continue
+
+            console.print(
+                f"[green]Metadata {key} set.[/green]"
+            )
+            continue
+
         document = _annotate_text(
             text,
             pipeline=pipeline,
             pipeline_context=pipeline_context,
-        )
+            metadata=session_metadata,
+            )
 
         _render_document(
             document,
@@ -107,7 +180,11 @@ def _print_banner(
         "[cyan]:quit[/cyan], "
         "[cyan]:exit[/cyan], "
         "[cyan]:json[/cyan], "
-        "[cyan]:table[/cyan]"
+        "[cyan]:table[/cyan], "
+        "[cyan]:meta[/cyan], "
+        "[cyan]:meta <key> <value>[/cyan], "
+        "[cyan]:meta unset <key>[/cyan], "
+        "[cyan]:meta clear[/cyan]"
     )
 
     preprocessors = pipeline_context.get("preprocessors", [])
@@ -165,10 +242,11 @@ def _annotate_text(
     *,
     pipeline,
     pipeline_context: dict,
+    metadata: dict | None = None,
 ) -> Document:
     document = Document(
         text=text,
-        metadata={},
+        metadata=deepcopy(metadata or {}),
     )
 
     document = pipeline.run_document(document)
@@ -211,6 +289,79 @@ def _annotate_text(
         )
 
     return document
+
+
+def _parse_metadata_value(
+    value: str,
+):
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+def _set_nested_metadata(
+    metadata: dict,
+    key: str,
+    value,
+) -> None:
+    parts = key.split(".")
+    current = metadata
+
+    for part in parts[:-1]:
+        existing = current.get(part)
+
+        if existing is None:
+            current[part] = {}
+            current = current[part]
+            continue
+
+        if not isinstance(existing, dict):
+            raise ValueError(
+                f"Cannot set nested metadata '{key}': "
+                f"'{part}' is not an object."
+            )
+
+        current = existing
+
+    current[parts[-1]] = value
+
+
+def _unset_nested_metadata(
+    metadata: dict,
+    key: str,
+) -> bool:
+    parts = key.split(".")
+    current = metadata
+
+    parents = []
+
+    for part in parts[:-1]:
+        value = current.get(part)
+
+        if not isinstance(value, dict):
+            return False
+
+        parents.append((current, part))
+        current = value
+
+    leaf = parts[-1]
+
+    if leaf not in current:
+        return False
+
+    del current[leaf]
+
+    # Remove empty parent dictionaries.
+    for parent, part in reversed(parents):
+        child = parent.get(part)
+
+        if isinstance(child, dict) and not child:
+            del parent[part]
+        else:
+            break
+
+    return True
 
 
 def _render_document(

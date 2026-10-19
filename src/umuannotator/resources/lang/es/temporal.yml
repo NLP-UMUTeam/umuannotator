@@ -3,6 +3,10 @@ language: es
 bad_exact_surfaces:
   - SEP
 
+same_reference_weekday_prefixes:
+  - este
+  - esta
+
 bad_starts:
   - a
   - en

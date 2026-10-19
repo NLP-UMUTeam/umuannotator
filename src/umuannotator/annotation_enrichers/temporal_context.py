@@ -26,6 +26,7 @@ class TemporalContextEnricher:
         self,
         language: str = "es",
         reference_datetime_metadata_key: str = "source.publication_date",
+        timezone: str = "Europe/Madrid",
         max_past_days: int = 90,
     ) -> None:
         self.language = language
@@ -33,6 +34,7 @@ class TemporalContextEnricher:
         self.reference_datetime_metadata_key = (
             reference_datetime_metadata_key
         )
+        self.timezone = timezone
         self.max_past_days = max_past_days
 
     def enrich(self, document: Document) -> Document:
@@ -541,19 +543,28 @@ class TemporalContextEnricher:
 
         return current
 
-    @staticmethod
     def _parse_datetime(
+        self,
         value,
     ) -> pendulum.DateTime | None:
         if isinstance(value, pendulum.DateTime):
             return value
 
         if isinstance(value, datetime):
+            if value.tzinfo is None:
+                return pendulum.instance(
+                    value,
+                    tz=self.timezone,
+                )
+
             return pendulum.instance(value)
 
         if isinstance(value, str):
             try:
-                return pendulum.parse(value)
+                return pendulum.parse(
+                    value,
+                    tz=self.timezone,
+                )
             except (ValueError, TypeError):
                 return None
 
@@ -575,21 +586,60 @@ class TemporalContextEnricher:
             document,
             annotation,
         )
+
         if weekday is None:
             return
 
         normalized = annotation.metadata.get("normalized")
+
         if not isinstance(normalized, str):
             return
 
         resolved = self._parse_datetime(normalized)
+
         if resolved is None:
+            return
+
+        reference_weekday = reference_datetime.day_of_week
+
+        # Expressions such as "este martes" refer to the reference day
+        # when the reference itself is a Tuesday. This rule does not need
+        # predicate tense/orientation.
+        if (
+            weekday == reference_weekday
+            and self._is_same_reference_weekday_expression(annotation)
+        ):
+            candidate = reference_datetime.start_of("day")
+
+            if resolved.date() == candidate.date():
+                return
+
+            previous_normalized = normalized
+
+            annotation.metadata["normalized"] = (
+                self._preserve_time_and_timezone(
+                    resolved,
+                    candidate,
+                )
+            )
+
+            annotation.metadata["context_resolution"] = {
+                "rule": "weekday_same_as_reference",
+                "previous_normalized": previous_normalized,
+                "reference_datetime": (
+                    reference_datetime.to_iso8601_string()
+                ),
+                "candidate_direction": "same",
+                "distance_days": 0,
+            }
+
             return
 
         predicate_context = self._get_temporal_predicate_context(
             document,
             annotation,
         )
+
         if predicate_context is None:
             return
 
@@ -1119,3 +1169,14 @@ class TemporalContextEnricher:
                     return unit_info
 
         return None
+
+    def _is_same_reference_weekday_expression(
+        self,
+        annotation: Annotation,
+    ) -> bool:
+        surface = annotation.text.strip().lower()
+
+        return any(
+            surface.startswith(f"{prefix} ")
+            for prefix in self.rules.same_reference_weekday_prefixes
+        )

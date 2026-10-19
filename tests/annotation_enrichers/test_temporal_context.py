@@ -1774,3 +1774,214 @@ def test_does_not_refine_non_quantified_en_time_as_duration() -> None:
 
     assert annotation.label == "DATE"
     assert "context_resolution" not in annotation.metadata
+
+def test_resolves_este_weekday_to_same_reference_day() -> None:
+    text = "este martes"
+
+    document = _weekday_document(
+        text=text,
+        annotation_start=0,
+        annotation_end=11,
+        annotation_text="este martes",
+        normalized="2025-05-06T00:00:00+02:00",
+        publication_date="2025-04-29T08:44:29",
+        words=[
+            _word(
+                id=1,
+                text="este",
+                start=0,
+                end=4,
+                lemma="este",
+                upos="DET",
+                head=2,
+                deprel="det",
+                feats="Gender=Masc|Number=Sing|PronType=Dem",
+            ),
+            _word(
+                id=2,
+                text="martes",
+                start=5,
+                end=11,
+                lemma="martes",
+                upos="NOUN",
+                head=0,
+                deprel="root",
+            ),
+        ],
+    )
+
+    TemporalContextEnricher(
+        language="es",
+        timezone="Europe/Madrid",
+    ).enrich(document)
+
+    annotation = document.annotations[0]
+
+    assert (
+        annotation.metadata["normalized"]
+        == "2025-04-29T00:00:00+02:00"
+    )
+
+    resolution = annotation.metadata["context_resolution"]
+
+    assert resolution["rule"] == "weekday_same_as_reference"
+    assert (
+        resolution["previous_normalized"]
+        == "2025-05-06T00:00:00+02:00"
+    )
+    assert (
+        resolution["reference_datetime"]
+        == "2025-04-29T08:44:29+02:00"
+    )
+    assert resolution["candidate_direction"] == "same"
+    assert resolution["distance_days"] == 0
+
+
+def test_este_weekday_same_reference_overrides_future_orientation() -> None:
+    text = "El servicio quedará normalizado este martes."
+
+    document = _weekday_document(
+        text=text,
+        annotation_start=32,
+        annotation_end=43,
+        annotation_text="este martes",
+        normalized="2025-05-06T00:00:00+02:00",
+        publication_date="2025-04-29T08:44:29",
+        words=[
+            _word(
+                id=1,
+                text="quedará",
+                start=12,
+                end=19,
+                lemma="quedar",
+                upos="VERB",
+                head=0,
+                deprel="root",
+                feats="Mood=Ind|Tense=Fut|VerbForm=Fin",
+            ),
+            _word(
+                id=2,
+                text="este",
+                start=32,
+                end=36,
+                lemma="este",
+                upos="DET",
+                head=3,
+                deprel="det",
+            ),
+            _word(
+                id=3,
+                text="martes",
+                start=37,
+                end=43,
+                lemma="martes",
+                upos="NOUN",
+                head=1,
+                deprel="obl",
+            ),
+        ],
+    )
+
+    TemporalContextEnricher(
+        language="es",
+        timezone="Europe/Madrid",
+    ).enrich(document)
+
+    annotation = document.annotations[0]
+
+    assert (
+        annotation.metadata["normalized"]
+        == "2025-04-29T00:00:00+02:00"
+    )
+
+    assert (
+        annotation.metadata["context_resolution"]["rule"]
+        == "weekday_same_as_reference"
+    )
+
+def test_does_not_force_plain_weekday_to_reference_day_without_context() -> None:
+    text = "martes"
+
+    document = _weekday_document(
+        text=text,
+        annotation_start=0,
+        annotation_end=6,
+        annotation_text="martes",
+        normalized="2025-05-06T00:00:00+02:00",
+        publication_date="2025-04-29T08:44:29",
+        words=[
+            _word(
+                id=1,
+                text="martes",
+                start=0,
+                end=6,
+                lemma="martes",
+                upos="NOUN",
+                head=0,
+                deprel="root",
+            ),
+        ],
+    )
+
+    TemporalContextEnricher(
+        language="es",
+        timezone="Europe/Madrid",
+    ).enrich(document)
+
+    annotation = document.annotations[0]
+
+    assert (
+        annotation.metadata["normalized"]
+        == "2025-05-06T00:00:00+02:00"
+    )
+
+    assert "context_resolution" not in annotation.metadata
+
+
+def test_preserves_explicit_reference_timezone() -> None:
+    text = "este martes"
+
+    document = _weekday_document(
+        text=text,
+        annotation_start=0,
+        annotation_end=11,
+        annotation_text="este martes",
+        normalized="2025-05-06T00:00:00+02:00",
+        publication_date="2025-04-29T08:44:29Z",
+        words=[
+            _word(
+                id=1,
+                text="este",
+                start=0,
+                end=4,
+                lemma="este",
+                upos="DET",
+                head=2,
+                deprel="det",
+            ),
+            _word(
+                id=2,
+                text="martes",
+                start=5,
+                end=11,
+                lemma="martes",
+                upos="NOUN",
+                head=0,
+                deprel="root",
+            ),
+        ],
+    )
+
+    TemporalContextEnricher(
+        language="es",
+        timezone="Europe/Madrid",
+    ).enrich(document)
+
+    resolution = document.annotations[0].metadata[
+        "context_resolution"
+    ]
+
+    assert (
+        resolution["reference_datetime"]
+        == "2025-04-29T08:44:29Z"
+    )

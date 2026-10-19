@@ -18,7 +18,7 @@ class TemporalLanguageRules:
     clock_time_only_patterns: tuple[str, ...]
     weekdays: dict[str, int]
     duration_units: dict[str, tuple[str, int]]
-
+    same_reference_weekday_prefixes: set[str]
 
 EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
     bad_exact_surfaces=set(),
@@ -32,6 +32,7 @@ EMPTY_TEMPORAL_RULES = TemporalLanguageRules(
     clock_time_only_patterns=(),
     weekdays={},
     duration_units={},
+    same_reference_weekday_prefixes=set(),
 )
 
 
@@ -70,6 +71,9 @@ def get_temporal_rules(language: str) -> TemporalLanguageRules:
         ),
         duration_units=_load_duration_units(
             data.get("duration_units", {}),
+        ),
+        same_reference_weekday_prefixes=set(
+            data.get("same_reference_weekday_prefixes", [])
         ),
     )
 

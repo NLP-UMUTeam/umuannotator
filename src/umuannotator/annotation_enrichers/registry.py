@@ -47,6 +47,10 @@ def build_annotation_enricher(
                 "max_past_days",
                 90,
             ),
+            timezone=config.get(
+                "timezone",
+                "Europe/Madrid",
+            ),            
         )
 
     raise ValueError(

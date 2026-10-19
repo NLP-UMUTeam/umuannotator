@@ -7,6 +7,7 @@ annotation_enrichers:
   - name: temporal-context
     language: es
     reference_datetime_metadata_key: source.publication_date
+    timezone: Europe/Madrid
     max_past_days: 90
 
 preprocessors:
