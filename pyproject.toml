@@ -23,7 +23,9 @@ dependencies = [
     "jinja2",
     "pyduckling-native-phihos",
     "pendulum",
-    "prompt-toolkit"
+    "prompt-toolkit",
+    "wn",
+    "requests",    
 ]
 
 [project.optional-dependencies]
