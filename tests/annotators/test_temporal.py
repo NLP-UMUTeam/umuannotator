@@ -593,3 +593,4 @@ def test_keeps_temporal_date_with_month():
 
     assert annotation is not None
     assert annotation.label == "DATE"
+

@@ -134,6 +134,13 @@ class TemporalAnnotator(DucklingAnnotator):
         ):
             return None
 
+        if self._is_false_positive_nominal_cardinal(
+            annotation,
+            document,
+            result,
+        ):
+            return None
+
         is_clock_time_only = self._is_clock_time_only(
             annotation.text,
             result,
@@ -335,3 +342,78 @@ class TemporalAnnotator(DucklingAnnotator):
             int(match.group(1)),
             int(match.group(2)),
         )
+
+    def _is_false_positive_nominal_cardinal(
+        self,
+        annotation: Annotation,
+        document: Document,
+        result: dict,
+    ) -> bool:
+        if result.get("dim") != "time":
+            return False
+
+        if self._grain(result) != "hour":
+            return False
+
+        stanza = document.metadata.get("stanza")
+
+        if not isinstance(stanza, dict):
+            return False
+
+        sentences = stanza.get("sentences")
+
+        if not isinstance(sentences, list):
+            return False
+
+        for sentence in sentences:
+            words = sentence.get("words")
+
+            if not isinstance(words, list):
+                continue
+
+            words_by_id = {
+                word.get("id"): word
+                for word in words
+                if isinstance(word, dict)
+                and isinstance(word.get("id"), int)
+            }
+
+            for word in words:
+                if not isinstance(word, dict):
+                    continue
+
+                start = word.get("start")
+                end = word.get("end")
+
+                if not isinstance(start, int):
+                    continue
+
+                if not isinstance(end, int):
+                    continue
+
+                if not (
+                    annotation.start < end
+                    and start < annotation.end
+                ):
+                    continue
+
+                if word.get("upos") != "NUM":
+                    continue
+
+                if word.get("deprel") != "nummod":
+                    continue
+
+                head_id = word.get("head")
+
+                if not isinstance(head_id, int):
+                    continue
+
+                head = words_by_id.get(head_id)
+
+                if not isinstance(head, dict):
+                    continue
+
+                if head.get("upos") in {"NOUN", "PROPN"}:
+                    return True
+
+        return False
