@@ -4,10 +4,15 @@ from typing import Any
 from umuannotator.io.json import write_json_output
 from umuannotator.io.jsonl import write_jsonl_output
 from umuannotator.io.text import write_text_output
-from umuannotator.serialization.profiles import apply_output_profile
+from umuannotator.serialization.profiles import (
+    apply_output_profile,
+)
 
 
-def infer_output_format(output_path: str, output_format: str | None = None) -> str:
+def infer_output_format(
+    output_path: str,
+    output_format: str | None = None,
+) -> str:
     if output_format:
         return output_format
 
@@ -19,10 +24,16 @@ def infer_output_format(output_path: str, output_format: str | None = None) -> s
     if suffix == ".json":
         return "json"
 
-    if suffix in {".jsonl", ".ndjson"}:
+    if suffix in {
+        ".jsonl",
+        ".ndjson",
+    }:
         return "jsonl"
 
-    if suffix in {".txt", ".text"}:
+    if suffix in {
+        ".txt",
+        ".text",
+    }:
         return "text"
 
     return "json"
@@ -34,8 +45,12 @@ def write_output(
     *,
     output_format: str | None = None,
     output_profile: str = "compact",
+    append: bool = False,
 ) -> None:
-    output_format = infer_output_format(output_path, output_format)
+    output_format = infer_output_format(
+        output_path,
+        output_format,
+    )
 
     serialized_data = apply_output_profile(
         data,
@@ -43,15 +58,43 @@ def write_output(
     )
 
     if output_format == "json":
-        write_json_output(serialized_data, output_path)
+        if append:
+            raise ValueError(
+                "Append mode is only supported "
+                "for JSONL output."
+            )
+
+        write_json_output(
+            serialized_data,
+            output_path,
+        )
+
         return
 
     if output_format == "jsonl":
-        write_jsonl_output(serialized_data, output_path)
+        write_jsonl_output(
+            serialized_data,
+            output_path,
+            append=append,
+        )
+
         return
 
     if output_format == "text":
-        write_text_output(serialized_data, output_path)
+        if append:
+            raise ValueError(
+                "Append mode is only supported "
+                "for JSONL output."
+            )
+
+        write_text_output(
+            serialized_data,
+            output_path,
+        )
+
         return
 
-    raise ValueError(f"Unsupported output format: {output_format}")
+    raise ValueError(
+        f"Unsupported output format: "
+        f"{output_format}"
+    )

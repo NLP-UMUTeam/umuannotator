@@ -1,11 +1,25 @@
-from pathlib import Path
+import json
 
 from umuannotator.pipeline.runner import run_from_config
+
+
+def _read_jsonl(path):
+    with path.open(
+        "r",
+        encoding="utf-8",
+    ) as f:
+        return [
+            json.loads(line)
+            for line in f
+            if line.strip()
+        ]
+
 
 def test_run_from_config_with_csv_input(tmp_path):
     owl_path = tmp_path / "food.owl"
     config_path = tmp_path / "config.yml"
     csv_path = tmp_path / "data.csv"
+    output_path = tmp_path / "output.jsonl"
 
     owl_path.write_text(
         """<?xml version="1.0"?>
@@ -65,28 +79,50 @@ metrics:
         encoding="utf-8",
     )
 
-    data = run_from_config(
+    summary = run_from_config(
         config_path=str(config_path),
         input_path=str(csv_path),
+        output_path=str(output_path),
         input_format="csv",
+        output_format="jsonl",
         text_column="text",
         show_progress=False,
     )
 
-    assert data["metadata"]["documents"] == 1
-    assert data["metadata"]["annotations"] >= 1
+    assert summary["documents"] == 1
+    assert summary["annotations"] >= 1
 
-    annotations = data["documents"][0]["annotations"]
+    documents = _read_jsonl(
+        output_path
+    )
 
-    assert annotations[0]["text"].lower() == "pizza"
-    assert annotations[0]["label"] == "Pizza"
-    assert annotations[0]["layer"] == "ontology"
+    assert len(documents) == 1
+
+    annotations = documents[0][
+        "annotations"
+    ]
+
+    assert (
+        annotations[0]["text"].lower()
+        == "pizza"
+    )
+    assert (
+        annotations[0]["label"]
+        == "Pizza"
+    )
+    assert (
+        annotations[0]["layer"]
+        == "ontology"
+    )
 
 
-def test_run_from_config_with_jsonl_input(tmp_path):
+def test_run_from_config_with_jsonl_input(
+    tmp_path,
+):
     owl_path = tmp_path / "food.owl"
     config_path = tmp_path / "config.yml"
     jsonl_path = tmp_path / "data.jsonl"
+    output_path = tmp_path / "output.jsonl"
 
     owl_path.write_text(
         """<?xml version="1.0"?>
@@ -135,20 +171,41 @@ metrics:
     )
 
     jsonl_path.write_text(
-        '{"id": "doc-1", "text": "I like pizza"}\n',
+        (
+            '{"id": "doc-1", '
+            '"text": "I like pizza"}\n'
+        ),
         encoding="utf-8",
     )
 
-    data = run_from_config(
+    summary = run_from_config(
         config_path=str(config_path),
         input_path=str(jsonl_path),
+        output_path=str(output_path),
         input_format="jsonl",
+        output_format="jsonl",
         text_column="text",
         id_column="id",
         show_progress=False,
     )
 
-    document = data["documents"][0]
+    assert summary["documents"] == 1
 
-    assert document["metadata"]["doc_id"] == "doc-1"
-    assert document["annotations"][0]["text"].lower() == "pizza"
+    documents = _read_jsonl(
+        output_path
+    )
+
+    assert len(documents) == 1
+
+    document = documents[0]
+
+    assert (
+        document["metadata"]["doc_id"]
+        == "doc-1"
+    )
+    assert (
+        document["annotations"][0][
+            "text"
+        ].lower()
+        == "pizza"
+    )

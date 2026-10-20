@@ -7,6 +7,7 @@ from typing import Any
 
 from umuannotator.document.model import Document
 
+STANZA_CACHE_VERSION = "2"
 
 def text_hash(
     text: str,
@@ -16,6 +17,7 @@ def text_hash(
     tokenize_no_ssplit: bool = True,
 ) -> str:
     value = (
+        f"{STANZA_CACHE_VERSION}\n"
         f"{language}\n"
         f"{processors}\n"
         f"{tokenize_no_ssplit}\n"
@@ -36,6 +38,7 @@ class StanzaPreprocessor:
         use_cache: bool = True,
         metadata_key: str = "stanza",
         tokenize_no_ssplit: bool = True,
+        use_gpu: bool = False,
     ):
         self.language = language
         self.processors = processors
@@ -43,6 +46,7 @@ class StanzaPreprocessor:
         self.use_cache = use_cache
         self.metadata_key = metadata_key
         self.tokenize_no_ssplit = tokenize_no_ssplit
+        self.use_gpu = use_gpu
 
         self.nlp = None
 
@@ -210,6 +214,7 @@ class StanzaPreprocessor:
     def _pipeline(self):
         if self.nlp is None:
             import stanza
+            from stanza.pipeline.core import DownloadMethod
 
             self.nlp = stanza.Pipeline(
                 lang=self.language,
@@ -217,6 +222,8 @@ class StanzaPreprocessor:
                 tokenize_no_ssplit=(
                     self.tokenize_no_ssplit
                 ),
+                use_gpu=self.use_gpu,
+                download_method=DownloadMethod.NONE,
             )
 
         return self.nlp

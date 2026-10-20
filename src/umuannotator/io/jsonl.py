@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sys
 from contextlib import contextmanager
@@ -12,8 +14,31 @@ def _open_input(input_path: str) -> Iterator[TextIO]:
     if input_path == "-":
         yield sys.stdin
     else:
-        with Path(input_path).open("r", encoding="utf-8") as f:
+        with Path(input_path).open(
+            "r",
+            encoding="utf-8",
+        ) as f:
             yield f
+
+
+def _item_to_document(
+    item: dict,
+    *,
+    idx: int,
+    text_column: str,
+    id_column: str,
+) -> Document:
+    document = Document(
+        text=str(item[text_column]),
+    )
+
+    document.metadata["doc_id"] = item.get(
+        id_column,
+        idx,
+    )
+    document.metadata["source"] = item
+
+    return document
 
 
 def read_jsonl_input(
@@ -33,19 +58,63 @@ def read_jsonl_input(
 
             item = json.loads(line)
 
-            document = Document(
-                text=str(item[text_column]),
+            documents.append(
+                _item_to_document(
+                    item,
+                    idx=idx,
+                    text_column=text_column,
+                    id_column=id_column,
+                )
             )
 
-            document.metadata["doc_id"] = item.get(id_column, idx)
-            document.metadata["source"] = item
-
-            documents.append(document)
-
-    return Corpus(documents=documents)
+    return Corpus(
+        documents=documents,
+    )
 
 
-def read_jsonl_render_input(input_path: str) -> dict:
+def iter_jsonl_input_batches(
+    input_path: str,
+    *,
+    text_column: str = "text",
+    id_column: str = "id",
+    batch_size: int = 100,
+) -> Iterator[Corpus]:
+    documents = []
+
+    with _open_input(input_path) as f:
+        for idx, line in enumerate(f):
+            line = line.strip()
+
+            if not line:
+                continue
+
+            item = json.loads(line)
+
+            documents.append(
+                _item_to_document(
+                    item,
+                    idx=idx,
+                    text_column=text_column,
+                    id_column=id_column,
+                )
+            )
+
+            if len(documents) >= batch_size:
+                yield Corpus(
+                    documents=documents,
+                )
+
+                documents = []
+
+    if documents:
+        yield Corpus(
+            documents=documents,
+        )
+
+
+def read_jsonl_render_input(
+    input_path: str,
+) -> dict:
     """
     Read annotated JSONL output and wrap it as a renderable corpus dict.
 
@@ -60,7 +129,9 @@ def read_jsonl_render_input(input_path: str) -> dict:
             if not line:
                 continue
 
-            documents.append(json.loads(line))
+            documents.append(
+                json.loads(line)
+            )
 
     return {
         "documents": documents,
@@ -71,18 +142,48 @@ def read_jsonl_render_input(input_path: str) -> dict:
 def write_jsonl_output(
     data: dict,
     output_path: str,
+    *,
+    append: bool = False,
 ) -> None:
-    f = sys.stdout if output_path == "-" else open(output_path, "w", encoding="utf-8")
+    if output_path == "-":
+        f = sys.stdout
+    else:
+        path = Path(output_path)
+
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        mode = "a" if append else "w"
+
+        f = path.open(
+            mode,
+            encoding="utf-8",
+        )
 
     try:
-        metadata = data.get("metadata", {})
+        metadata = data.get(
+            "metadata",
+            {},
+        )
 
-        for document in data.get("documents", []):
+        for document in data.get(
+            "documents",
+            [],
+        ):
             item = {
                 "metadata": metadata,
                 **document,
             }
-            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+            f.write(
+                json.dumps(
+                    item,
+                    ensure_ascii=False,
+                )
+                + "\n"
+            )
     finally:
         if output_path != "-":
             f.close()

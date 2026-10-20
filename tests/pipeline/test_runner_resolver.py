@@ -1,3 +1,5 @@
+import json
+
 import yaml
 
 from umuannotator.document.model import Annotation
@@ -37,6 +39,8 @@ def test_run_from_config_applies_annotation_overlap_enricher(
     monkeypatch,
 ):
     input_path = tmp_path / "input.txt"
+    output_path = tmp_path / "output.jsonl"
+
     input_path.write_text(
         "@gobierno anuncia ayudas hoy.",
         encoding="utf-8",
@@ -69,17 +73,33 @@ def test_run_from_config_applies_annotation_overlap_enricher(
 
     monkeypatch.setattr(
         "umuannotator.pipeline.runner.build_annotators",
-        lambda *args, **kwargs: [OverlappingAnnotator()],
+        lambda *args, **kwargs: [
+            OverlappingAnnotator()
+        ],
     )
 
-    data = run_from_config(
+    summary = run_from_config(
         config_path=str(config_path),
         input_path=str(input_path),
+        output_path=str(output_path),
         input_format="text",
+        output_format="jsonl",
         show_progress=False,
     )
 
-    annotations = data["documents"][0]["annotations"]
+    assert summary["documents"] == 1
+
+    with output_path.open(
+        "r",
+        encoding="utf-8",
+    ) as f:
+        document = json.loads(
+            next(f)
+        )
+
+    annotations = document[
+        "annotations"
+    ]
 
     assert [
         (
