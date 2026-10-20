@@ -78,55 +78,72 @@ class ExtendedTfidfScorer:
         self.decay_function = decay_function
         self.aggregation = aggregation
 
-    def score(self, corpus: Corpus) -> Corpus:
+    def score(
+        self,
+        corpus: Corpus,
+    ) -> Corpus:
         """
-        Compute ontology-expanded TF-IDF scores.
-
-        For every ontology annotation:
-
-        1. Read the stable concept URI from annotation metadata.
-        2. Compute reachable concepts in the ontology graph.
-        3. Obtain shortest semantic distances.
-        4. Apply decay.
-        5. Aggregate contributions.
-
-        The resulting concept scores are stored in:
-
-            document.metadata["tfidf_extended"]
-
-        The keys of this dictionary are concept URIs.
+        Compute ontology-expanded TF-IDF scores for all documents
+        in a corpus.
         """
         for document in corpus.documents:
-            scores: dict[str, float] = {}
-
-            for annotation in document.annotations:
-                if annotation.layer != self.layer:
-                    continue
-
-                if annotation.score is None:
-                    continue
-
-                concept_id = self._annotation_concept_id(
-                    annotation,
-                )
-
-                distances = self._distances(concept_id)
-
-                for concept, distance in distances.items():
-                    contribution = (
-                        annotation.score
-                        * self._distance_weight(distance)
-                    )
-
-                    self._aggregate(
-                        scores,
-                        concept,
-                        contribution,
-                    )
-
-            document.metadata["tfidf_extended"] = scores
+            self.score_document(
+                document
+            )
 
         return corpus
+
+
+    def score_document(
+        self,
+        document,
+    ):
+        """
+        Compute ontology-expanded TF-IDF scores for one document.
+
+        The document annotations are expected to have already been
+        weighted with standard TF-IDF.
+
+        Results are stored in:
+
+            document.metadata["tfidf_extended"]
+        """
+        scores: dict[str, float] = {}
+
+        for annotation in document.annotations:
+            if annotation.layer != self.layer:
+                continue
+
+            if annotation.score is None:
+                continue
+
+            concept_id = self._annotation_concept_id(
+                annotation,
+            )
+
+            distances = self._distances(
+                concept_id
+            )
+
+            for concept, distance in distances.items():
+                contribution = (
+                    annotation.score
+                    * self._distance_weight(
+                        distance
+                    )
+                )
+
+                self._aggregate(
+                    scores,
+                    concept,
+                    contribution,
+                )
+
+        document.metadata[
+            "tfidf_extended"
+        ] = scores
+
+        return document
 
     def _annotation_concept_id(
         self,

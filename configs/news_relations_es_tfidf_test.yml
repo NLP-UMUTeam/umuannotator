@@ -1,0 +1,98 @@
+annotation_enrichers:
+  - name: overlap
+    strategy: longest_non_overlapping
+
+  - name: age
+
+  - name: temporal-context
+    language: es
+    reference_datetime_metadata_key: source.publication_date
+    timezone: Europe/Madrid
+    max_past_days: 90
+
+preprocessors:
+  - name: stanza
+    processors: tokenize,mwt,pos,lemma,depparse,ner
+    cache_dir: .cache/stanza
+    use_cache: true
+    metadata_key: stanza
+    tokenize_no_ssplit: false
+
+relation_extractors:
+  - name: stanza-dependency
+
+  - name: copular-predication
+
+  - name: reported-speech
+    source: resources/relation_extractors/reported_speech_es.yml
+
+relation_enrichers:
+  - name: annotation-overlap
+    match:
+      - exact
+      - contained
+
+ontology:
+  path: resources/news_es.owl
+  language: es
+
+  entity_types:
+    include:
+      - owl:Class
+      - owl:NamedIndividual
+
+  annotation_properties:
+    regex: regex
+    code: code
+    category: category
+    priority: priority
+
+  relations:
+    - property: rdfs:subClassOf
+      distance: 1
+      direction: child_to_parent
+
+    - property: rdf:type
+      distance: 1
+      direction: instance_to_class
+
+annotators:
+  - name: ontology
+    color: "#ffd6d6"
+
+  - name: pattern
+    source: resources/patterns/news_es.yml
+    layer: pattern
+    ignore_case: true
+    word_boundaries: true
+    conflict_strategy: longest_priority
+    color: "#e2f7d4"
+
+  - name: stanza-ner
+    color: "#eadcf8"
+
+  - name: temporal
+    layer: temporal
+    color: "#d6e4ff"
+    reference_datetime_metadata_key: source.publication_date
+
+  - name: quantity
+    layer: cantidades
+    color: "#fff2cc"
+
+  - name: lexical-semantics
+    source: resources/lexical_semantics/wordnet_es.yml
+    max_hypernym_depth: 10
+
+metrics:
+  tfidf:
+    enabled: true
+    layer: ontology
+
+  extended_tfidf:
+    enabled: true
+    layer: ontology
+    max_distance: 5
+    decay:
+      type: exponential
+      value: 0.5

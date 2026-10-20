@@ -1,5 +1,13 @@
-from umuannotator.document import Annotation, Corpus, Document
-from umuannotator.metrics.extended_tfidf import ExtendedTfidfScorer
+from copy import deepcopy
+
+from umuannotator.document import (
+    Annotation,
+    Corpus,
+    Document,
+)
+from umuannotator.metrics.extended_tfidf import (
+    ExtendedTfidfScorer,
+)
 from umuannotator.ontology.graph import build_graph
 from umuannotator.ontology.loader import load_ontology
 
@@ -38,11 +46,20 @@ CONFIG = {
 
 
 def test_extended_tfidf_generates_parent_scores():
-    rdf_graph = load_ontology("resources/pizza_rich.owl")
-    ontology_graph = build_graph(rdf_graph, CONFIG)
+    rdf_graph = load_ontology(
+        "resources/pizza_rich.owl"
+    )
+    ontology_graph = build_graph(
+        rdf_graph,
+        CONFIG,
+    )
 
-    hawaian_uri = "http://example.org/pizza#HawaianPizza"
-    pizza_uri = "http://example.org/pizza#Pizza"
+    hawaian_uri = (
+        "http://example.org/pizza#HawaianPizza"
+    )
+    pizza_uri = (
+        "http://example.org/pizza#Pizza"
+    )
 
     document = Document(
         text="Me gusta la pizza hawaiana",
@@ -65,17 +82,95 @@ def test_extended_tfidf_generates_parent_scores():
         ],
     )
 
-    corpus = Corpus(documents=[document])
+    corpus = Corpus(
+        documents=[document]
+    )
 
     corpus = ExtendedTfidfScorer(
         ontology_graph,
         decay=0.5,
         max_distance=5,
-    ).score(corpus)
+    ).score(
+        corpus
+    )
 
-    scores = corpus.documents[0].metadata["tfidf_extended"]
+    scores = corpus.documents[
+        0
+    ].metadata["tfidf_extended"]
 
     assert hawaian_uri in scores
     assert pizza_uri in scores
     assert scores[hawaian_uri] == 1.0
     assert scores[pizza_uri] == 0.5
+
+
+def test_extended_tfidf_score_document_matches_score():
+    rdf_graph = load_ontology(
+        "resources/pizza_rich.owl"
+    )
+    ontology_graph = build_graph(
+        rdf_graph,
+        CONFIG,
+    )
+
+    hawaian_uri = (
+        "http://example.org/pizza#HawaianPizza"
+    )
+
+    documents = [
+        Document(
+            text="Me gusta la pizza hawaiana",
+            annotations=[
+                Annotation(
+                    start=12,
+                    end=26,
+                    text="pizza hawaiana",
+                    label="HawaianPizza",
+                    layer="ontology",
+                    source="test",
+                    type="ontology",
+                    score=2.0,
+                    metadata={
+                        "concept_id": hawaian_uri,
+                        "concept_uri": hawaian_uri,
+                        "concept_name": "HawaianPizza",
+                    },
+                )
+            ],
+        )
+    ]
+
+    corpus_documents = deepcopy(
+        documents
+    )
+    individual_documents = deepcopy(
+        documents
+    )
+
+    scorer_corpus = ExtendedTfidfScorer(
+        ontology_graph=ontology_graph,
+        decay=0.5,
+        max_distance=5,
+    )
+
+    scorer_corpus.score(
+        Corpus(
+            documents=corpus_documents
+        )
+    )
+
+    scorer_individual = ExtendedTfidfScorer(
+        ontology_graph=ontology_graph,
+        decay=0.5,
+        max_distance=5,
+    )
+
+    for document in individual_documents:
+        scorer_individual.score_document(
+            document
+        )
+
+    assert (
+        individual_documents
+        == corpus_documents
+    )

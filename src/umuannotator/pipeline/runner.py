@@ -4,9 +4,10 @@ from time import perf_counter
 
 from math import ceil
 from time import perf_counter
-
 from tqdm.auto import tqdm
+from pathlib import Path
 
+from umuannotator.metrics.streaming import apply_streaming_tfidf
 from umuannotator.annotation_enrichers.registry import (
     build_annotation_enrichers,
 )
@@ -123,20 +124,78 @@ def _run_batched_jsonl(
     sep: str,
     show_progress: bool,
 ) -> dict:
-    _ensure_no_corpus_metrics(
-        config
+    metrics_config = config.get(
+        "metrics",
+        {},
     )
 
-    # Truncate/create the output before processing.
-    # This also creates parent directories.
+    tfidf_config = metrics_config.get(
+        "tfidf",
+        {},
+    )
+
+    extended_config = metrics_config.get(
+        "extended_tfidf",
+        {},
+    )
+
+    tfidf_enabled = tfidf_config.get(
+        "enabled",
+        False,
+    )
+
+    extended_enabled = extended_config.get(
+        "enabled",
+        False,
+    )
+
+    if extended_enabled and not tfidf_enabled:
+        raise ValueError(
+            "extended_tfidf requires tfidf "
+            "to be enabled because it propagates "
+            "the TF-IDF scores of annotations."
+        )
+
+    metrics_enabled = (
+        tfidf_enabled
+        or extended_enabled
+    )
+
+    if metrics_enabled and output_path == "-":
+        raise ValueError(
+            "Corpus-level metrics require a file "
+            "output because the streaming second "
+            "pass needs an intermediate JSONL file."
+        )
+
+    if metrics_enabled:
+        final_path = Path(output_path)
+
+        stage1_path = str(
+            final_path.with_name(
+                final_path.name + ".stage1"
+            )
+        )
+
+        local_output_path = stage1_path
+
+        # Stage 1 must preserve all information needed
+        # to reconstruct Document objects in stage 2.
+        local_output_profile = "full"
+    else:
+        stage1_path = None
+        local_output_path = output_path
+        local_output_profile = output_profile
+
+    # Truncate/create the pass-1 output before processing.
     write_output(
         {
             "documents": [],
             "metadata": {},
         },
-        output_path,
+        local_output_path,
         output_format="jsonl",
-        output_profile=output_profile,
+        output_profile=local_output_profile,
         append=False,
     )
 
@@ -187,9 +246,7 @@ def _run_batched_jsonl(
             corpus = _process_local_corpus(
                 corpus=corpus,
                 pipeline=pipeline,
-                pipeline_context=(
-                    pipeline_context
-                ),
+                pipeline_context=pipeline_context,
                 show_progress=False,
             )
 
@@ -199,9 +256,9 @@ def _run_batched_jsonl(
 
             write_output(
                 data,
-                output_path,
+                local_output_path,
                 output_format="jsonl",
-                output_profile=output_profile,
+                output_profile=local_output_profile,
                 append=True,
             )
 
@@ -212,15 +269,52 @@ def _run_batched_jsonl(
 
             total_annotations += sum(
                 len(document.annotations)
-                for document in corpus.documents
+                for document
+                in corpus.documents
             )
 
             total_relations += sum(
                 len(document.relations)
-                for document in corpus.documents
+                for document
+                in corpus.documents
             )
 
             progress.update(1)
+
+    if metrics_enabled:
+        tfidf_scorer = TfidfScorer(
+            layer=tfidf_config.get(
+                "layer",
+                "ontology",
+            ),
+        )
+
+        extended_scorer = None
+
+        if extended_enabled:
+            extended_scorer = (
+                _build_extended_tfidf_scorer(
+                    extended_config=extended_config,
+                    ontology_path=(
+                        pipeline_context[
+                            "ontology_path"
+                        ]
+                    ),
+                    config=config,
+                )
+            )
+
+        apply_streaming_tfidf(
+            stage1_path,
+            output_path,
+            tfidf_scorer=tfidf_scorer,
+            extended_tfidf_scorer=extended_scorer,
+            output_profile=output_profile,
+        )
+
+        Path(stage1_path).unlink(
+            missing_ok=True
+        )
 
     elapsed = (
         perf_counter() - started
@@ -389,47 +483,6 @@ def _process_local_corpus(
 
     return corpus
 
-
-def _ensure_no_corpus_metrics(
-    config: dict,
-) -> None:
-    metrics_config = config.get(
-        "metrics",
-        {},
-    )
-
-    tfidf_enabled = (
-        metrics_config.get(
-            "tfidf",
-            {},
-        ).get(
-            "enabled",
-            False,
-        )
-    )
-
-    extended_enabled = (
-        metrics_config.get(
-            "extended_tfidf",
-            {},
-        ).get(
-            "enabled",
-            False,
-        )
-    )
-
-    if (
-        tfidf_enabled
-        or extended_enabled
-    ):
-        raise NotImplementedError(
-            "Corpus-level metrics cannot yet "
-            "be used with batched JSONL output. "
-            "They will be handled in a global "
-            "second pass."
-        )
-
-
 def build_pipeline_from_config(
     config: dict,
 ) -> tuple[AnnotationPipeline, dict]:
@@ -582,11 +635,9 @@ def _run_extended_tfidf(
     ontology_path: str | None,
     config: dict,
 ):
-    extended_config = (
-        metrics_config.get(
-            "extended_tfidf",
-            {},
-        )
+    extended_config = metrics_config.get(
+        "extended_tfidf",
+        {},
     )
 
     if not extended_config.get(
@@ -595,6 +646,23 @@ def _run_extended_tfidf(
     ):
         return corpus
 
+    scorer = _build_extended_tfidf_scorer(
+        extended_config=extended_config,
+        ontology_path=ontology_path,
+        config=config,
+    )
+
+    return scorer.score(
+        corpus
+    )
+
+
+def _build_extended_tfidf_scorer(
+    *,
+    extended_config: dict,
+    ontology_path: str | None,
+    config: dict,
+) -> ExtendedTfidfScorer:
     if ontology_path is None:
         raise ValueError(
             "extended_tfidf requires "
@@ -610,11 +678,9 @@ def _run_extended_tfidf(
         config,
     )
 
-    decay_config = (
-        extended_config.get(
-            "decay",
-            {},
-        )
+    decay_config = extended_config.get(
+        "decay",
+        {},
     )
 
     return ExtendedTfidfScorer(
@@ -635,6 +701,4 @@ def _run_extended_tfidf(
             "layer",
             "ontology",
         ),
-    ).score(
-        corpus
     )
