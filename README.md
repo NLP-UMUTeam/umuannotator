@@ -224,6 +224,56 @@ umuannotator run \
   --output-profile full
 ```
 
+## Batched processing and resume
+
+JSONL outputs are processed incrementally in batches. The batch size can be
+configured with `--batch-size`:
+
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input headlines.jsonl \
+  --input-format jsonl \
+  --output outputs/news.jsonl \
+  --output-format jsonl \
+  --batch-size 100
+```
+
+For file-based JSONL outputs, UMUAnnotator creates a workspace next to the
+output file:
+
+```text
+outputs/news.jsonl
+outputs/news.jsonl.work/
+├── state.json
+├── stage1/
+│   ├── batch_000001.jsonl
+│   └── ...
+└── stage2/
+    └── ...
+```
+
+Completed batches are written atomically, so an interrupted execution can be
+continued with:
+
+```bash
+umuannotator run \
+  --config configs/news.yml \
+  --input headlines.jsonl \
+  --input-format jsonl \
+  --output outputs/news.jsonl \
+  --output-format jsonl \
+  --batch-size 100 \
+  --resume
+```
+
+`--resume` reuses completed batches and processes only the missing ones.
+The same batch size must be used when resuming an existing workspace.
+
+When corpus-level metrics such as TF-IDF or TF-IDF-e are enabled, the first
+stage stores the annotated documents and the second stage applies the global
+metrics. Both stages can be resumed independently.
+
 ---
 
 ## Configuration overview

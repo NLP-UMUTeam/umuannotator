@@ -1,13 +1,30 @@
 from __future__ import annotations
 
-from time import perf_counter
+import json
 
+from time import perf_counter
+from collections import Counter
 from math import ceil
 from time import perf_counter
 from tqdm.auto import tqdm
 from pathlib import Path
 
-from umuannotator.metrics.streaming import apply_streaming_tfidf
+from umuannotator.metrics.streaming import (
+    collect_tfidf_statistics,
+)
+from umuannotator.pipeline.workspace import (
+    assemble_batches,
+    initialize_workspace,
+    list_completed_batches,
+    read_state,
+    write_batch_atomic,
+    write_state,
+)
+from umuannotator.serialization.documents import (
+    deserialize_document,
+    serialize_document,
+)
+
 from umuannotator.annotation_enrichers.registry import (
     build_annotation_enrichers,
 )
@@ -46,7 +63,7 @@ from umuannotator.relation_extractors.registry import (
 from umuannotator.renderers.json import corpus_to_dict
 
 
-BATCH_SIZE = 100
+DEFAULT_BATCH_SIZE = 100
 
 
 def run_from_config(
@@ -61,6 +78,8 @@ def run_from_config(
     id_column: str = "id",
     sep: str = ",",
     show_progress: bool = True,
+    batch_size: int = DEFAULT_BATCH_SIZE,
+    resume: bool = False,
 ) -> dict:
     config = load_config(
         config_path
@@ -92,6 +111,8 @@ def run_from_config(
             id_column=id_column,
             sep=sep,
             show_progress=show_progress,
+            batch_size=batch_size,
+            resume=resume,
         )
 
     return _run_full_corpus(
@@ -123,211 +144,167 @@ def _run_batched_jsonl(
     id_column: str,
     sep: str,
     show_progress: bool,
+    batch_size: int,
+    resume: bool = False,
 ) -> dict:
-    metrics_config = config.get(
-        "metrics",
-        {},
-    )
-
-    tfidf_config = metrics_config.get(
-        "tfidf",
-        {},
-    )
-
-    extended_config = metrics_config.get(
-        "extended_tfidf",
-        {},
-    )
-
-    tfidf_enabled = tfidf_config.get(
-        "enabled",
-        False,
-    )
-
-    extended_enabled = extended_config.get(
-        "enabled",
-        False,
-    )
-
-    if extended_enabled and not tfidf_enabled:
+    if output_path == "-":
         raise ValueError(
-            "extended_tfidf requires tfidf "
-            "to be enabled because it propagates "
-            "the TF-IDF scores of annotations."
+            "Batched workspace execution requires "
+            "a file output path."
         )
-
-    metrics_enabled = (
-        tfidf_enabled
-        or extended_enabled
-    )
-
-    if metrics_enabled and output_path == "-":
-        raise ValueError(
-            "Corpus-level metrics require a file "
-            "output because the streaming second "
-            "pass needs an intermediate JSONL file."
-        )
-
-    if metrics_enabled:
-        final_path = Path(output_path)
-
-        stage1_path = str(
-            final_path.with_name(
-                final_path.name + ".stage1"
-            )
-        )
-
-        local_output_path = stage1_path
-
-        # Stage 1 must preserve all information needed
-        # to reconstruct Document objects in stage 2.
-        local_output_profile = "full"
-    else:
-        stage1_path = None
-        local_output_path = output_path
-        local_output_profile = output_profile
-
-    # Truncate/create the pass-1 output before processing.
-    write_output(
-        {
-            "documents": [],
-            "metadata": {},
-        },
-        local_output_path,
-        output_format="jsonl",
-        output_profile=local_output_profile,
-        append=False,
-    )
-
-    total_documents = 0
-    total_annotations = 0
-    total_relations = 0
-    total_batches = 0
 
     started = perf_counter()
 
-    input_documents = count_corpus_input_documents(
-        input_path,
-        input_format=input_format,
-        text_column=text_column,
-        id_column=id_column,
-        sep=sep,
+    metrics = _resolve_metrics_config(
+        config
     )
 
-    expected_batches = (
-        ceil(
-            input_documents / BATCH_SIZE
-        )
-        if input_documents is not None
-        else None
+    stage2_required = (
+        metrics["stage2_required"]
+        or output_profile != "full"
     )
 
-    batches = iter_corpus_input_batches(
-        input_path,
-        input_format=input_format,
-        text_column=text_column,
-        id_column=id_column,
-        sep=sep,
-        batch_size=BATCH_SIZE,
+    workspace = initialize_workspace(
+        output_path,
+        batch_size=batch_size,
+        stage2_required=stage2_required,
+        resume=resume,
     )
 
-    with tqdm(
-        total=expected_batches,
-        desc="Processing",
-        unit="batch",
-        disable=not show_progress,
-        dynamic_ncols=True,
-    ) as progress:
-        for corpus in batches:
-            batch_documents = len(
-                corpus.documents
-            )
+    state = read_state(
+        workspace
+    )
 
-            corpus = _process_local_corpus(
-                corpus=corpus,
-                pipeline=pipeline,
-                pipeline_context=pipeline_context,
-                show_progress=False,
-            )
 
-            data = corpus_to_dict(
-                corpus
-            )
-
-            write_output(
-                data,
-                local_output_path,
-                output_format="jsonl",
-                output_profile=local_output_profile,
-                append=True,
-            )
-
-            total_batches += 1
-            total_documents += (
-                batch_documents
-            )
-
-            total_annotations += sum(
-                len(document.annotations)
-                for document
-                in corpus.documents
-            )
-
-            total_relations += sum(
-                len(document.relations)
-                for document
-                in corpus.documents
-            )
-
-            progress.update(1)
-
-    if metrics_enabled:
-        tfidf_scorer = TfidfScorer(
-            layer=tfidf_config.get(
-                "layer",
-                "ontology",
+    if resume and state.get(
+        "completed",
+        False,
+    ):
+        return {
+            "documents": 0,
+            "annotations": 0,
+            "relations": 0,
+            "batches": 0,
+            "batch_size": batch_size,
+            "elapsed_seconds": (
+                perf_counter() - started
             ),
+            "resumed": True,
+            "already_completed": True,
+        }
+
+    input_documents = (
+        count_corpus_input_documents(
+            input_path,
+            input_format=input_format,
+            text_column=text_column,
+            id_column=id_column,
+            sep=sep,
         )
+    )
 
-        extended_scorer = None
+    summary = _run_stage1(
+        pipeline=pipeline,
+        pipeline_context=pipeline_context,
+        workspace=workspace,
+        input_path=input_path,
+        input_format=input_format,
+        text_column=text_column,
+        id_column=id_column,
+        sep=sep,
+        batch_size=batch_size,
+        input_documents=input_documents,
+        show_progress=show_progress,
+        resume=resume,
+    )
 
-        if extended_enabled:
-            extended_scorer = (
-                _build_extended_tfidf_scorer(
-                    extended_config=extended_config,
-                    ontology_path=(
-                        pipeline_context[
-                            "ontology_path"
-                        ]
-                    ),
-                    config=config,
-                )
-            )
+    stage2_summary = None
 
-        apply_streaming_tfidf(
-            stage1_path,
-            output_path,
-            tfidf_scorer=tfidf_scorer,
-            extended_tfidf_scorer=extended_scorer,
+    if metrics["stage2_required"]:
+        stage2_summary = _run_stage2(
+            workspace=workspace,
+            metrics=metrics,
+            pipeline_context=(
+                pipeline_context
+            ),
+            config=config,
             output_profile=output_profile,
+            show_progress=show_progress,
+            resume=resume,
         )
 
-        Path(stage1_path).unlink(
-            missing_ok=True
+        final_batch_directory = (
+            workspace.stage2
         )
 
-    elapsed = (
+    elif output_profile == "full":
+        final_batch_directory = (
+            workspace.stage1
+        )
+
+    else:
+        _build_profiled_stage2(
+            workspace=workspace,
+            output_profile=output_profile,
+            resume=resume,
+        )
+
+        final_batch_directory = (
+            workspace.stage2
+        )
+
+        state = read_state(
+            workspace
+        )
+
+        state["stage2_complete"] = True
+
+        write_state(
+            workspace,
+            state,
+        )
+
+    assemble_batches(
+        final_batch_directory,
+        output_path,
+    )
+
+    _mark_workspace_completed(
+        workspace
+    )
+
+    summary["elapsed_seconds"] = (
         perf_counter() - started
     )
 
-    return {
-        "documents": total_documents,
-        "annotations": total_annotations,
-        "relations": total_relations,
-        "batches": total_batches,
-        "batch_size": BATCH_SIZE,
-        "elapsed_seconds": elapsed,
+    summary["resumed"] = resume
+    summary["already_completed"] = False
+
+    summary["stage1"] = {
+        "processed_batches": summary[
+            "processed_batches"
+        ],
+        "reused_batches": summary[
+            "reused_batches"
+        ],
     }
+
+    if stage2_summary is not None:
+        summary["stage2"] = (
+            stage2_summary
+        )
+
+    summary.pop(
+        "processed_batches",
+        None,
+    )
+
+    summary.pop(
+        "reused_batches",
+        None,
+    )
+
+    return summary
 
 
 def _run_full_corpus(
@@ -701,4 +678,459 @@ def _build_extended_tfidf_scorer(
             "layer",
             "ontology",
         ),
+    )
+
+
+def _build_profiled_stage2(
+    *,
+    workspace,
+    output_profile: str,
+    resume: bool = False,
+) -> None:
+    stage1_batches = sorted(
+        workspace.stage1.glob(
+            "batch_*.jsonl"
+        )
+    )
+
+    completed_batches = (
+        list_completed_batches(
+            workspace.stage2
+        )
+        if resume
+        else set()
+    )
+
+    for batch_index, batch_file in enumerate(
+        stage1_batches,
+        start=1,
+    ):
+        if batch_index in completed_batches:
+            continue
+
+        lines = []
+
+        with batch_file.open(
+            "r",
+            encoding="utf-8",
+        ) as f:
+            for line in f:
+                line = line.strip()
+
+                if not line:
+                    continue
+
+                document = deserialize_document(
+                    json.loads(
+                        line
+                    )
+                )
+
+                serialized = serialize_document(
+                    document,
+                    output_profile=output_profile,
+                )
+
+                lines.append(
+                    json.dumps(
+                        serialized,
+                        ensure_ascii=False,
+                    )
+                )
+
+        write_batch_atomic(
+            workspace.stage2,
+            batch_index,
+            lines,
+        )
+
+def _resolve_metrics_config(
+    config: dict,
+) -> dict:
+    metrics_config = config.get(
+        "metrics",
+        {},
+    )
+
+    tfidf = metrics_config.get(
+        "tfidf",
+        {},
+    )
+
+    extended = metrics_config.get(
+        "extended_tfidf",
+        {},
+    )
+
+    tfidf_enabled = tfidf.get(
+        "enabled",
+        False,
+    )
+
+    extended_enabled = extended.get(
+        "enabled",
+        False,
+    )
+
+    if extended_enabled and not tfidf_enabled:
+        raise ValueError(
+            "extended_tfidf requires tfidf "
+            "to be enabled because it propagates "
+            "TF-IDF annotation scores."
+        )
+
+    return {
+        "tfidf": tfidf,
+        "extended": extended,
+        "tfidf_enabled": tfidf_enabled,
+        "extended_enabled": extended_enabled,
+        "stage2_required": (
+            tfidf_enabled
+            or extended_enabled
+        ),
+    }
+
+def _run_stage1(
+    *,
+    pipeline,
+    pipeline_context: dict,
+    workspace,
+    input_path: str,
+    input_format: str | None,
+    text_column: str,
+    id_column: str,
+    sep: str,
+    batch_size: int,
+    input_documents: int | None,
+    show_progress: bool,
+    resume: bool,
+) -> dict:
+    expected_batches = (
+        ceil(
+            input_documents / batch_size
+        )
+        if input_documents is not None
+        else None
+    )
+
+    batches = iter_corpus_input_batches(
+        input_path,
+        input_format=input_format,
+        text_column=text_column,
+        id_column=id_column,
+        sep=sep,
+        batch_size=batch_size,
+    )
+
+    completed_batches = (
+        list_completed_batches(
+            workspace.stage1
+        )
+        if resume
+        else set()
+    )
+
+    total_documents = 0
+    total_annotations = 0
+    total_relations = 0
+    total_batches = 0
+
+    with tqdm(
+        total=expected_batches,
+        desc="Pass 1",
+        unit="batch",
+        disable=not show_progress,
+        dynamic_ncols=True,
+    ) as progress:
+        for batch_index, corpus in enumerate(
+            batches,
+            start=1,
+        ):
+            if batch_index in completed_batches:
+                progress.update(1)
+                continue
+
+            batch_documents = len(
+                corpus.documents
+            )
+
+            corpus = _process_local_corpus(
+                corpus=corpus,
+                pipeline=pipeline,
+                pipeline_context=(
+                    pipeline_context
+                ),
+                show_progress=False,
+            )
+
+            lines = []
+
+            for document in corpus.documents:
+                serialized = serialize_document(
+                    document,
+                    output_profile="full",
+                )
+
+                lines.append(
+                    json.dumps(
+                        serialized,
+                        ensure_ascii=False,
+                    )
+                )
+
+            write_batch_atomic(
+                workspace.stage1,
+                batch_index,
+                lines,
+            )
+
+            total_batches += 1
+            total_documents += (
+                batch_documents
+            )
+
+            total_annotations += sum(
+                len(document.annotations)
+                for document
+                in corpus.documents
+            )
+
+            total_relations += sum(
+                len(document.relations)
+                for document
+                in corpus.documents
+            )
+
+            progress.update(1)
+
+    state = read_state(
+        workspace
+    )
+
+    state["stage1_complete"] = True
+
+    write_state(
+        workspace,
+        state,
+    )
+
+    return {
+        "documents": total_documents,
+        "annotations": total_annotations,
+        "relations": total_relations,
+        "batches": total_batches,
+        "batch_size": batch_size,
+        "processed_batches": total_batches,
+        "reused_batches": len(
+            completed_batches
+        ),
+    }
+
+def _run_stage2(
+    *,
+    workspace,
+    metrics: dict,
+    pipeline_context: dict,
+    config: dict,
+    output_profile: str,
+    show_progress: bool,
+    resume: bool,
+) -> dict:
+    tfidf_config = metrics[
+        "tfidf"
+    ]
+
+    extended_config = metrics[
+        "extended"
+    ]
+
+    extended_enabled = metrics[
+        "extended_enabled"
+    ]
+
+    tfidf_layer = tfidf_config.get(
+        "layer",
+        "ontology",
+    )
+
+    stage1_batches = sorted(
+        workspace.stage1.glob(
+            "batch_*.jsonl"
+        )
+    )
+
+    #
+    # Global TF-IDF statistics
+    #
+
+    total_metric_documents = 0
+    document_frequency = Counter()
+
+    for batch_file in stage1_batches:
+        (
+            batch_total,
+            batch_df,
+        ) = collect_tfidf_statistics(
+            str(batch_file),
+            layer=tfidf_layer,
+        )
+
+        total_metric_documents += (
+            batch_total
+        )
+
+        document_frequency.update(
+            batch_df
+        )
+
+    tfidf_scorer = TfidfScorer(
+        layer=tfidf_layer,
+    )
+
+    tfidf_scorer.fit_statistics(
+        total_documents=(
+            total_metric_documents
+        ),
+        document_frequency=(
+            document_frequency
+        ),
+    )
+
+    #
+    # Optional ontology expansion
+    #
+
+    extended_scorer = None
+
+    if extended_enabled:
+        extended_scorer = (
+            _build_extended_tfidf_scorer(
+                extended_config=(
+                    extended_config
+                ),
+                ontology_path=(
+                    pipeline_context[
+                        "ontology_path"
+                    ]
+                ),
+                config=config,
+            )
+        )
+
+    completed_batches = (
+        list_completed_batches(
+            workspace.stage2
+        )
+        if resume
+        else set()
+    )
+
+    #
+    # Apply metrics batch by batch
+    #
+
+    processed_batches = 0
+
+    with tqdm(
+        total=len(stage1_batches),
+        desc="Pass 2",
+        unit="batch",
+        disable=not show_progress,
+        dynamic_ncols=True,
+    ) as progress:
+        for batch_index, batch_file in enumerate(
+            stage1_batches,
+            start=1,
+        ):
+            if batch_index in completed_batches:
+                progress.update(1)
+                continue
+
+            lines = []
+
+            with batch_file.open(
+                "r",
+                encoding="utf-8",
+            ) as f:
+                for line in f:
+                    line = line.strip()
+
+                    if not line:
+                        continue
+
+                    document = (
+                        deserialize_document(
+                            json.loads(
+                                line
+                            )
+                        )
+                    )
+
+                    tfidf_scorer.score_document(
+                        document
+                    )
+
+                    if (
+                        extended_scorer
+                        is not None
+                    ):
+                        extended_scorer.score_document(
+                            document
+                        )
+
+                    serialized = serialize_document(
+                        document,
+                        output_profile=(
+                            output_profile
+                        ),
+                    )
+
+                    lines.append(
+                        json.dumps(
+                            serialized,
+                            ensure_ascii=False,
+                        )
+                    )
+
+            write_batch_atomic(
+                workspace.stage2,
+                batch_index,
+                lines,
+            )
+
+            processed_batches += 1
+
+            progress.update(1)
+
+    state = read_state(
+        workspace
+    )
+
+    state["stage2_complete"] = True
+
+    write_state(
+        workspace,
+        state,
+    )
+
+    return {
+        "processed_batches": processed_batches,
+        "reused_batches": len(
+            completed_batches
+        ),
+    }
+
+def _mark_workspace_completed(
+    workspace,
+) -> None:
+    state = read_state(
+        workspace
+    )
+
+    state["status"] = "completed"
+    state["completed"] = True
+
+    write_state(
+        workspace,
+        state,
     )

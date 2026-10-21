@@ -209,3 +209,55 @@ metrics:
         ].lower()
         == "pizza"
     )
+
+def test_run_from_config_uses_custom_batch_size(
+    tmp_path,
+):
+    config_path = tmp_path / "config.yml"
+    input_path = tmp_path / "input.jsonl"
+    output_path = tmp_path / "output.jsonl"
+
+    config_path.write_text(
+        """
+ontology:
+  language: en
+
+annotators: []
+
+metrics:
+  tfidf:
+    enabled: false
+  extended_tfidf:
+    enabled: false
+""",
+        encoding="utf-8",
+    )
+
+    with input_path.open(
+        "w",
+        encoding="utf-8",
+    ) as f:
+        for idx in range(205):
+            f.write(
+                f'{{"id": {idx}, "text": "document {idx}"}}\n'
+            )
+
+    summary = run_from_config(
+        config_path=str(config_path),
+        input_path=str(input_path),
+        output_path=str(output_path),
+        input_format="jsonl",
+        output_format="jsonl",
+        batch_size=64,
+        show_progress=False,
+    )
+
+    assert summary["documents"] == 205
+    assert summary["batches"] == 4
+    assert summary["batch_size"] == 64
+
+    assert len(
+        output_path.read_text(
+            encoding="utf-8"
+        ).splitlines()
+    ) == 205

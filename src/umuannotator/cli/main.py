@@ -105,6 +105,20 @@ def run(
             "or full."
         ),
     ),
+    batch_size: int = typer.Option(
+        100,
+        "--batch-size",
+        min=1,
+        help="Number of documents processed per batch.",
+    ),    
+    resume: bool = typer.Option(
+        False,
+        "--resume",
+        help=(
+            "Resume an interrupted batched "
+            "JSONL run from its workspace."
+        ),
+    ),
 ):
     summary = run_from_config(
         config_path=config_path,
@@ -117,26 +131,60 @@ def run(
         id_column=id_column,
         sep=sep,
         show_progress=show_progress,
-    )
-
-    typer.echo(
-        (
-            f"Processed "
-            f"{summary['documents']:,} documents, "
-            f"{summary['annotations']:,} annotations, "
-            f"{summary['relations']:,} relations."
-        )
+        batch_size=batch_size,
+        resume=resume,
     )
 
     if summary.get(
-        "batches",
-        1,
-    ) > 1:
+        "already_completed",
+        False,
+    ):
+        typer.echo(
+            "The workspace is already completed."
+        )
+        return
+
+    if summary.get(
+        "resumed",
+        False,
+    ):
+        typer.echo(
+            "Resumed run."
+        )
+    else:
         typer.echo(
             (
-                f"Batches: "
-                f"{summary['batches']:,} "
-                f"(batch size "
-                f"{summary['batch_size']})."
+                f"Processed "
+                f"{summary['documents']:,} documents, "
+                f"{summary['annotations']:,} annotations, "
+                f"{summary['relations']:,} relations."
+            )
+        )
+
+    stage1 = summary.get(
+        "stage1"
+    )
+
+    if stage1 is not None:
+        typer.echo(
+            (
+                f"Pass 1: "
+                f"{stage1['processed_batches']:,} "
+                f"batches processed, "
+                f"{stage1['reused_batches']:,} reused."
+            )
+        )
+
+    stage2 = summary.get(
+        "stage2"
+    )
+
+    if stage2 is not None:
+        typer.echo(
+            (
+                f"Pass 2: "
+                f"{stage2['processed_batches']:,} "
+                f"batches processed, "
+                f"{stage2['reused_batches']:,} reused."
             )
         )
